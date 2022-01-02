@@ -28,6 +28,8 @@
 #define LIB_PREN             "lib"
 #endif
 
+namespace ti::common {
+
 class DllWrapper final {
 public:
     DllWrapper()
@@ -97,3 +99,5 @@ private:
     LIB_LIBRARY library;
     std::unordered_map<std::string, LIB_PROCESS> cache;
 };
+
+}

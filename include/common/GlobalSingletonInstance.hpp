@@ -2,6 +2,8 @@
 
 #include "GlobalSingletonContext.hpp"
 
+namespace ti::common {
+
 template <typename T>
 class GlobalSingletonInstance final {
 public:
@@ -24,3 +26,5 @@ public:
 private:
     T* instance;
 };
+
+}

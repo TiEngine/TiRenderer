@@ -3,6 +3,8 @@
 #include "Singleton.hpp"
 #include "DllWrapper.hpp"
 
+namespace ti::common {
+
 class GlobalSingletonContext final : public Singleton<GlobalSingletonContext> {
 public:
     // singleton manager dynamic library: sgtmgr.dll or (lib)sgtmgr.so
@@ -48,3 +50,5 @@ public:
 private:
     DllWrapper manager;
 };
+
+}
