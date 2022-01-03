@@ -2,4 +2,6 @@
 project(applications)
 
 add_subdirectory(application)
-add_subdirectory(appdemo)
+if(MSVC)
+  add_subdirectory(appdemo)
+endif()
