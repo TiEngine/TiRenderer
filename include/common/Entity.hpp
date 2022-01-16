@@ -1,27 +1,41 @@
 #pragma once
 
-#include "EntityId.hpp"
+#include <cstdint>
 
 namespace ti::common {
 
-class Entity : public EntityId {
+class Entity {
 public:
-    Entity() : EntityId(gid++) {}
+    using EntityId = uint32_t;
 
-    EID GetEntityID()
+    explicit Entity(EntityId id = 0) : id(id)
     {
-        return (*this);
     }
 
-    bool IsValid()
+    bool IsInvalid()
     {
-        return ((*this) != 0);
+        return (id == 0);
+    }
+
+    operator EntityId() const
+    {
+        return id;
     }
 
 private:
-    static constexpr EID MAX_INTERNAL_ENTITIES = 100000;
-    // Generated ID begin from MAX_INTERNAL_ENTITIES
-    static inline EID gid = MAX_INTERNAL_ENTITIES;
+    EntityId id;
+};
+
+}
+
+namespace std {
+
+template <>
+struct hash<ti::common::Entity> {
+    ti::common::Entity::EntityId operator()(const ti::common::Entity& entity) const
+    {
+        return entity;
+    }
 };
 
 }
