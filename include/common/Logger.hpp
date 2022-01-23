@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef TI_SINGLE_THREAD
+#ifndef TI_OPT_SINGLE_THREAD
 #include <thread>
 #endif
 #include "GlobalSingleton.hpp"
@@ -51,7 +51,7 @@ public:
 private:
     static void DefaultCallback(const std::string& level, const std::string& tag, const std::string& what)
     {
-        #ifndef TI_SINGLE_THREAD
+        #ifndef TI_OPT_SINGLE_THREAD
         size_t id = std::hash<std::thread::id>()(std::this_thread::get_id());
         #endif
         #ifdef _MSC_VER
@@ -59,10 +59,10 @@ private:
         #else
         printf
         #endif
-        #ifdef TI_SINGLE_THREAD
-        ("[%s] %s - %s", level.c_str(), tag.c_str(), what.c_str());
+        #ifdef TI_OPT_SINGLE_THREAD
+        ("[%s][%s] %s", level.c_str(), tag.c_str(), what.c_str());
         #else
-        ("[%s][%llu] %s - %s", level.c_str(), id, tag.c_str(), what.c_str());
+        ("[%s][%llu][%s] %s\n", level.c_str(), id, tag.c_str(), what.c_str());
         #endif
     }
 

@@ -2,6 +2,8 @@
 #include <crtdbg.h>
 #include <tchar.h>
 
+#include <DirectXMath.h>
+
 #include "application/Application.h"
 #include "common/Registry.hpp"
 
@@ -9,13 +11,13 @@ META_COMPONENT(Scale) {
 };
 
 DATA_COMPONENT(Scale) {
-    int a;
+    DirectX::XMFLOAT4 scale;
 };
 
 COMPONENT(Scale);
 
 
-#ifdef TI_WINAPP_WINDOW
+#ifdef TI_OPT_WINAPP_WINDOW
 INT WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PTSTR pCmdLine, INT nCmdShow)
 #else
 int main(int argc, char* argv[])
@@ -31,7 +33,7 @@ int main(int argc, char* argv[])
     ti::common::Entity ent = registry.CreateEntity();
     registry.AddComponent<ScaleComponent>(ent);
     registry.ForEach<ScaleComponent>([](ti::common::Entity entity, ScaleComponent& component) {
-        component.data.a++;
+        component.data.scale.x++;
     });
     ScaleComponent* comp = registry.GetComponent<ScaleComponent>(ent);
 
