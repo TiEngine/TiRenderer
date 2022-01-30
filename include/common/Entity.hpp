@@ -8,7 +8,7 @@ class Entity {
 public:
     using EntityId = uint32_t;
 
-    explicit Entity(EntityId id = 0) : id(id)
+    explicit constexpr Entity(EntityId id = 0) noexcept : id(id)
     {
     }
 

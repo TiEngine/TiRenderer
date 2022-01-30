@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/Component.hpp"
+#include "common/Registry.hpp"
 
 namespace ti::framework {
 
@@ -12,6 +12,22 @@ DATA_COMPONENT(Relation) {
     std::vector<common::Entity> childs;
 };
 
-EXTRA_COMPONENT(Relation, false);
+COMPONENT(Relation);
+
+class RelationHelper {
+LOG_TAG(RelationHelper)
+
+public:
+    RelationHelper(common::Registry& registry, common::Entity entity)
+        : registry(registry), entity(entity)
+    {
+    }
+
+    bool Reparent(common::Entity parent = common::Entity());
+
+private:
+    common::Registry& registry;
+    common::Entity entity;
+};
 
 }

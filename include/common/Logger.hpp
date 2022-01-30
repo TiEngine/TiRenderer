@@ -29,6 +29,8 @@
 #define TI_LOG_RET_E(tag, what)  do { TI_LOG_E(tag, what); return; } while(0)
 #define TI_LOG_RET_F(tag, what)  do { TI_LOG_F(tag, what); return; } while(0)
 
+#define LOG_TAG(name) static constexpr char* TAG = #name;
+
 namespace ti::common {
 
 class Logger final : public GlobalSingleton<Logger> {

@@ -6,19 +6,19 @@
 #define META_COMPONENT(name) struct name##MetaComponent
 #define DATA_COMPONENT(name) struct name##DataComponent
 
-#define EXTRA_COMPONENT(name, pod)                             \
+#define COMPONENT_IMPLEMENTATION(name, pod)                    \
 struct name##Component {                                       \
     name##MetaComponent meta;                                  \
     name##DataComponent data;                                  \
     static_assert((std::is_trivial<name##MetaComponent>::value \
         && std::is_standard_layout<name##MetaComponent>::value \
-        ) || !pod, "MetaComponent must be POD!");              \
+        ) || !(pod), "MetaComponent must be POD!");            \
     static_assert((std::is_trivial<name##DataComponent>::value \
         && std::is_standard_layout<name##DataComponent>::value \
-        ) || !pod, "DataComponent must be POD!");              \
+        ) || !(pod), "DataComponent must be POD!");            \
 }
 
-#define COMPONENT(name) EXTRA_COMPONENT(name, true)
+#define COMPONENT(name) COMPONENT_IMPLEMENTATION(name, false)
 
 namespace ti::common {
 

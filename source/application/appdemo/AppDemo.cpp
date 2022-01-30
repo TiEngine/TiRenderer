@@ -7,6 +7,8 @@
 #include "application/Application.h"
 #include "common/Registry.hpp"
 
+//#include "framework/scene/component/TransformComponent.h"
+
 META_COMPONENT(Scale) {
 };
 
@@ -23,6 +25,8 @@ INT WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PTSTR pCmdLin
 int main(int argc, char* argv[])
 #endif
 {
+    TI_LOG_I("AppDemo", "TiRenderer Application.");
+
     #if defined(DEBUG) || defined(_DEBUG)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     TI_LOG_D("AppDemo", "Enable runtime memory check for debug builds.");
@@ -36,6 +40,9 @@ int main(int argc, char* argv[])
         component.data.scale.x++;
     });
     ScaleComponent* comp = registry.GetComponent<ScaleComponent>(ent);
+
+    //ti::framework::TransformComponent tr;
+    //tr.data.local.position.x = 1.0f;
 
     return 0;
 }
