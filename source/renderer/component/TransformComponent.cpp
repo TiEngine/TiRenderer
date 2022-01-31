@@ -3,6 +3,21 @@
 
 namespace ti::renderer {
 
+Transform Transform::operator*(const Transform& other) const
+{
+    using namespace math; // For calling: operator+, operator*.
+    Transform result;
+    math::XMStoreFloat3(&result.position,
+        math::XMLoadFloat3(&this->position) + math::XMLoadFloat3(&other.position));
+    math::XMStoreFloat4(&result.rotation,
+        math::XMQuaternionMultiply( // q2*q1 (left multiply)
+            math::XMLoadFloat4(&this->rotation),   // q1
+            math::XMLoadFloat4(&other.rotation))); // q2
+    math::XMStoreFloat3(&result.scale,
+        math::XMLoadFloat3(&this->scale) * math::XMLoadFloat3(&other.scale));
+    return result;
+}
+
 void TransformHelper::UpdateGlobalTransform()
 {
     auto transformComponent = registry.GetComponent<TransformComponent>(entity);

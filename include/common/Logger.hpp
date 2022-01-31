@@ -64,7 +64,7 @@ private:
         #ifdef TI_OPT_SINGLE_THREAD
         ("[%s][%s] %s", level.c_str(), tag.c_str(), what.c_str());
         #else
-        ("[%s][%llu][%s] %s\n", level.c_str(), id, tag.c_str(), what.c_str());
+        ("[%s][%llu]:[%s] %s\n", level.c_str(), id, tag.c_str(), what.c_str());
         #endif
     }
 

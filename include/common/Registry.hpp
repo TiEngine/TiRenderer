@@ -7,7 +7,9 @@
 
 namespace ti::common {
 
-class Registry {
+class Registry final {
+LOG_TAG(Registry)
+
 public:
     using TypeHash = decltype(typeid(void).hash_code());
 
@@ -104,9 +106,6 @@ public:
         }
         return true;
     }
-
-protected:
-    static constexpr char* TAG = "Registry";
 
 private:
     #if defined (DEBUG) || defined (_DEBUG)

@@ -6,9 +6,11 @@
 namespace ti::renderer {
 
 struct Transform {
-    math::XMFLOAT3 position;
-    math::XMFLOAT4 rotation;
-    math::XMFLOAT3 scale;
+    math::XMFLOAT3 position{};
+    math::XMFLOAT4 rotation{};
+    math::XMFLOAT3 scale{};
+
+    Transform operator*(const Transform& other) const;
 };
 
 META_COMPONENT(Transform) {
