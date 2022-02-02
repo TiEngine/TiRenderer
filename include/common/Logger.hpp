@@ -5,6 +5,10 @@
 #endif
 #include "GlobalSingleton.hpp"
 
+// Logger.hpp is the header that almost all files include, so
+// include the header file for memory leak check in this file.
+#include "MemoryLeakChecker.hpp"
+
 #define TI_LOG_D(tag, what) ti::common::Logger::GetReference().Output("D", tag, what)
 #define TI_LOG_I(tag, what) ti::common::Logger::GetReference().Output("I", tag, what)
 #define TI_LOG_W(tag, what) ti::common::Logger::GetReference().Output("W", tag, what)
@@ -62,9 +66,9 @@ private:
         printf
         #endif
         #ifdef TI_OPT_SINGLE_THREAD
-        ("[%s][%s] %s", level.c_str(), tag.c_str(), what.c_str());
+        ("[%s]:[%s] %s\n", level.c_str(), tag.c_str(), what.c_str());
         #else
-        ("[%s][%llu]:[%s] %s\n", level.c_str(), id, tag.c_str(), what.c_str());
+        ("[%llu][%s]:[%s] %s\n", id, level.c_str(), tag.c_str(), what.c_str());
         #endif
     }
 

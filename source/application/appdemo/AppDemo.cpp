@@ -1,48 +1,91 @@
 #include <Windows.h>
-#include <crtdbg.h>
-#include <tchar.h>
+#include <tchar.h> // for _tWinMain (ANSI: WinMain, Unicode: wWinMain)
 
-#include <DirectXMath.h>
+#include "common/Logger.hpp"
 
-#include "application/Application.h"
-#include "common/Registry.hpp"
+#pragma comment(linker,                                     \
+                "/manifestdependency:\""                    \
+                "type='win32' "                             \
+                "name='Microsoft.Windows.Common-Controls' " \
+                "version='6.0.0.0' "                        \
+                "processorArchitecture='*' "                \
+                "publicKeyToken='6595b64144ccf1df' "        \
+                "language='*'\"")
 
-//#include "framework/scene/component/TransformComponent.h"
+LRESULT CALLBACK WndMsgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-META_COMPONENT(Scale) {
-};
-
-DATA_COMPONENT(Scale) {
-    DirectX::XMFLOAT4 scale;
-};
-
-COMPONENT(Scale);
-
+void BeginProc(HWND hwnd);
+void UpdateProc();
+void EndProc();
 
 #ifdef TI_OPT_WINAPP_WINDOW
 INT WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PTSTR pCmdLine, INT nCmdShow)
 #else
 int main(int argc, char* argv[])
 #endif
-{
-    TI_LOG_I("AppDemo", "TiRenderer Application.");
+{   LOG_TAG(AppDemo)
+
+    TI_LOG_I(TAG, "TiRenderer Application.");
 
     #if defined(DEBUG) || defined(_DEBUG)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    TI_LOG_D("AppDemo", "Enable runtime memory check for debug builds.");
+    TI_LOG_D(TAG, "Enable runtime memory check for debug builds.");
     #endif
 
-    ti::common::Registry registry;
-    registry.RegistComponentStorage<ScaleComponent>(new ti::common::ComponentBuffer<ScaleComponent>);
-    ti::common::Entity ent = registry.CreateEntity();
-    registry.AddComponent<ScaleComponent>(ent);
-    registry.ForEach<ScaleComponent>([](ti::common::Entity entity, ScaleComponent& component) {
-        component.data.scale.x++;
-    });
-    ScaleComponent* comp = registry.GetComponent<ScaleComponent>(ent);
+    TI_LOG_I(TAG, "Initialize window.");
+    MSG msg{};
+    HWND hwnd{};
+    // GetModuleHandle(NULL) will return HMODULE which we can interpret as a HINSTANCE.
+    // If call it from a dll, it will return the instance of the exe that has loaded
+    // the dll, not of the dll itself. Here we just want to get a exe instance.
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    {
+        WNDCLASS wndclass{};
+        wndclass.style = CS_HREDRAW | CS_VREDRAW;
+        wndclass.lpfnWndProc = WndMsgProc;
+        wndclass.cbClsExtra = 0;
+        wndclass.cbWndExtra = 0;
+        wndclass.hInstance = hInstance;
+        wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wndclass.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+        wndclass.lpszMenuName = NULL;
+        wndclass.lpszClassName = TAG;
 
-    //ti::framework::TransformComponent tr;
-    //tr.data.local.position.x = 1.0f;
+        if (!RegisterClass(&wndclass)) {
+            TI_LOG_F(TAG, "Register main window class failed, requires at least WindowsNT!");
+            MessageBox(NULL, TEXT("Register main window class failed, requires at least WindowsNT!"),
+                TEXT("TiRenderer"), MB_ICONERROR | MB_OK);
+            return 0;
+        }
 
-    return 0;
+        hwnd = CreateWindow(TAG, TEXT("TiRenderer"), WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+            GetDesktopWindow(), NULL, hInstance, NULL);
+        if (!hwnd) {
+            TI_LOG_F(TAG, "Create application window failed!");
+            MessageBox(NULL, TEXT("Create application window failed!"),
+                TEXT("TiRenderer"), MB_ICONERROR | MB_OK);
+            return 0;
+        }
+
+        ShowWindow(hwnd, SW_SHOW);
+        UpdateWindow(hwnd);
+    }
+
+    TI_LOG_I(TAG, "Program BEGIN running.");
+    BeginProc(hwnd);
+    {
+        while (msg.message != WM_QUIT) {
+            if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            } else {
+                UpdateProc();
+            }
+        }
+    }
+    EndProc();
+    TI_LOG_I(TAG, "Program END running.");
+    return static_cast<int>(msg.wParam);
 }
