@@ -1,5 +1,9 @@
 #pragma once
 
+// The macro was defined to disable msvc deprecation alerts for codecvt,
+// which is currently marked as deprecated by the c++ spec, but c++ does
+// not provide a new and stable one to replace it.
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #include <codecvt>
 
 namespace std {

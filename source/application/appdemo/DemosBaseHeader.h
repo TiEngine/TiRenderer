@@ -1,6 +1,7 @@
 #pragma once
 
 #include "application/Application.h"
+#include "backend/BackendContext.h"
 
 class DemoBase {
 public:
@@ -25,4 +26,8 @@ public:
     virtual void Begin() override;
     virtual void Finish() override;
     virtual void Update() override;
+
+private:
+    ti::backend::BackendContext* backend = nullptr;
+    ti::backend::Device* device = nullptr;
 };
