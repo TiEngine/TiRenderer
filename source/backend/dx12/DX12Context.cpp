@@ -13,6 +13,7 @@ DX12Context::DX12Context()
         debugger->EnableDebugLayer();
     }
     #endif
+
     TI_LOG_I(TAG, "Create DX12 context (and DXGIFactory): " +
         std::to_string(reinterpret_cast<uintptr_t>(this)));
     LogIfFailedF(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi)));

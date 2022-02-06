@@ -27,11 +27,22 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
     }
 
     GetDeviceDescriptorSize();
+    CreateDeviceCommandQueue();
 }
 
 DX12Device::~DX12Device()
 {
     TI_LOG_I(TAG, "Destroy DX12 device: " + std::to_string(reinterpret_cast<uintptr_t>(this)));
+}
+
+Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
+{
+    return nullptr;
+}
+
+bool DX12Device::DestroySwapchain(Swapchain* swapchain)
+{
+    return false;
 }
 
 void DX12Device::EnumAdapters()
@@ -103,6 +114,15 @@ void DX12Device::GetDeviceDescriptorSize()
     descriptorSizeOfDsv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
     descriptorSizeOfSampler = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
     descriptorSizeOfCbvSrvUav = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+void DX12Device::CreateDeviceCommandQueue()
+{
+    TI_LOG_I(TAG, "Create device command queue.");
+    D3D12_COMMAND_QUEUE_DESC desc{};
+    desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    LogIfFailedF(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&commandQueue)));
 }
 
 }

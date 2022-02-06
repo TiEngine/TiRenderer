@@ -1,8 +1,7 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d12.h>
 #include "backend/Device.h"
+#include "DX12Swapchain.h"
 
 namespace ti::backend {
 
@@ -11,18 +10,18 @@ public:
     explicit DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
     ~DX12Device() override;
 
+    Swapchain* CreateSwapchain(Swapchain::Description description) override;
+    bool DestroySwapchain(Swapchain* swapchain) override;
+
 protected:
     // TODO:  Support select a adapter by custom.
     //        Currently only the default adapter is used.
-    // FIXME: Adapters should not be placed in the DX12Device,
-    //        and dxgi should not be passed to DX12Device too
-    //        in construct function.
-    //        DX12Device should not have the variable of dxgi!
-    //        Move it to DX12Context and add CreateAdapter
-    //        function in DX12Context.
+    // FIXME: Adapters should not be placed in the DX12Device.
+    //        Move it to DX12Context and add CreateAdapter function in DX12Context.
     void EnumAdapters();
 
-    void GetDeviceDescriptorSize();
+    void GetDeviceDescriptorSize();  // called in the construct function
+    void CreateDeviceCommandQueue(); // called in the construct function
 
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
@@ -34,6 +33,10 @@ private:
     UINT descriptorSizeOfDsv = 0;
     UINT descriptorSizeOfSampler = 0;
     UINT descriptorSizeOfCbvSrvUav = 0;
+
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
+
+    std::vector<DX12Swapchain> swapchains;
 };
 
 }
