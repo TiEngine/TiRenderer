@@ -37,11 +37,19 @@ DX12Device::~DX12Device()
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
-    return nullptr;
+    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, commandQueue));
+    swapchains.back()->Setup(description);
+    return swapchains.back().get();
 }
 
 bool DX12Device::DestroySwapchain(Swapchain* swapchain)
 {
+    for (auto iter = swapchains.begin(); iter != swapchains.end(); iter++) {
+        if (swapchain == iter->get()) {
+            swapchains.erase(iter);
+            return true;
+        }
+    }
     return false;
 }
 

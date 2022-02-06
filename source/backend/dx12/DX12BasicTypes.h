@@ -1,7 +1,12 @@
 #pragma once
 
+#include <d3d12.h>
+#include "backend/BasicTypes.h"
+
 namespace ti::backend {
 
-void ConvertFormat();
+DXGI_FORMAT ConvertFormat(Format format);
+
+unsigned int ConvertMSAA(MSAA msaa);
 
 }

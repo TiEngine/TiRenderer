@@ -76,6 +76,11 @@ int main(int argc, char* argv[])
     TI_LOG_I(TAG, "Program BEGIN running.");
     BeginProc(hwnd);
     {
+        // Default window size, this is window size, and is not swapchain size!
+        RECT rect{};
+        GetWindowRect(hwnd, &rect);
+        MoveWindow(hwnd, rect.left, rect.top, 800, 600, TRUE);
+        // Message loop to process windows message and draw each frame.
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);

@@ -2,12 +2,15 @@
 
 #include "application/Application.h"
 #include "backend/BackendContext.h"
+#include "backend/Device.h"
 
 class DemoBase {
 public:
     virtual void Begin() = 0;
     virtual void Finish() = 0;
     virtual void Update() = 0;
+
+    virtual void Resize(HWND window, unsigned int width, unsigned int height) = 0;
 
     DemoBase() = default;
     virtual ~DemoBase() = default;
@@ -23,11 +26,15 @@ private:
 
 class Demo_01_Backend : public DemoBase {
 public:
-    virtual void Begin() override;
-    virtual void Finish() override;
-    virtual void Update() override;
+    void Begin() override;
+    void Finish() override;
+    void Update() override;
+
+    void Resize(HWND window, unsigned int width, unsigned int height) override;
 
 private:
     ti::backend::BackendContext* backend = nullptr;
     ti::backend::Device* device = nullptr;
+
+    ti::backend::Swapchain* swapchain = nullptr;
 };

@@ -20,8 +20,8 @@ protected:
     //        Move it to DX12Context and add CreateAdapter function in DX12Context.
     void EnumAdapters();
 
-    void GetDeviceDescriptorSize();  // called in the construct function
-    void CreateDeviceCommandQueue(); // called in the construct function
+    void GetDeviceDescriptorSize();
+    void CreateDeviceCommandQueue();
 
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
@@ -36,7 +36,7 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 
-    std::vector<DX12Swapchain> swapchains;
+    std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
 };
 
 }

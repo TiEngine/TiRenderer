@@ -8,6 +8,12 @@ std::unique_ptr<DemoBase> g_demo;
 LRESULT WndMsgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
+    case WM_SIZE:
+        if (g_demo) {
+            g_demo->Resize(hwnd, LOWORD(lParam), HIWORD(lParam));
+        }
+        return 0;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
