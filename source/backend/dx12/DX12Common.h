@@ -7,7 +7,7 @@ do {                                       \
     HRESULT hr = (expression);             \
     if(FAILED(hr)) {                       \
         ti::common::Logger::GetReference() \
-        .Output(#level, TAG, "FAIL:" +     \
+        .Output(#level, TAG, "LOC: " +     \
         std::string(__FILE__) + ": " +     \
         std::to_string(__LINE__) + ": " +  \
         std::string(#expression));         \
@@ -26,7 +26,7 @@ do {                                               \
     success = SUCCEEDED(hr);                       \
     if(!success) {                                 \
         ti::common::Logger::GetReference()         \
-        .Output(#level, TAG, "FAIL:" +             \
+        .Output(#level, TAG, "LOC: " +             \
         std::string(__FILE__) + ": " +             \
         std::to_string(__LINE__) + ": " +          \
         std::string(#expression));                 \

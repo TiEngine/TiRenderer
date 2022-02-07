@@ -6,9 +6,8 @@ namespace ti::backend {
 
 DX12Swapchain::DX12Swapchain(
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
-    Microsoft::WRL::ComPtr<ID3D12Device> device,
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue)
-    : dxgi(dxgi), device(device), queue(queue)
+    : dxgi(dxgi), queue(queue)
 {
 }
 
@@ -32,28 +31,12 @@ void DX12Swapchain::Setup(Description description)
     desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.BufferCount = description.bufferCount;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
     desc.OutputWindow = (HWND)(description.window);
     desc.Windowed = !description.fullScreen;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-    desc.SampleDesc.Count = ConvertMSAA(description.msaa);
-    desc.SampleDesc.Quality = 0;
-    if (ConvertMSAA(description.msaa) > 1) {
-        D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevels{};
-        msQualityLevels.Format = ConvertFormat(description.format);
-        msQualityLevels.SampleCount = ConvertMSAA(description.msaa);
-        msQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
-        msQualityLevels.NumQualityLevels = 0; // output variable
-        bool checkFeatureSupportSuccess = false;
-        LogOutIfFailedE(device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
-            &msQualityLevels, sizeof(msQualityLevels)), checkFeatureSupportSuccess);
-        if (checkFeatureSupportSuccess && (msQualityLevels.NumQualityLevels > 0)) {
-            desc.SampleDesc.Quality = msQualityLevels.NumQualityLevels - 1;
-        } else {
-            desc.SampleDesc.Count = 1;
-            TI_LOG_E(TAG, "Unexpected MSAA type or MSAA quality level, fallback to use MSAAx1.");
-        }
-    }
 
     // NB: Swapchain uses the queue to perform flush.
     LogIfFailedF(dxgi->CreateSwapChain(queue.Get(), &desc, swapchain.GetAddressOf()));

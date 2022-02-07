@@ -13,15 +13,7 @@ DXGI_FORMAT ConvertFormat(Format format)
 
 unsigned int ConvertMSAA(MSAA msaa)
 {
-    switch (msaa) {
-    case MSAA::NONE:
-        return 1;
-    case MSAA::MSAAx4:
-        return 4;
-    default:
-        return 0;
-    }
-    return 0;
+    return static_cast<unsigned int>(msaa);
 }
 
 }
