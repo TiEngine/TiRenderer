@@ -10,10 +10,13 @@ std::string ti::backend::FormatResult(HRESULT hr)
     // MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT): Use user default language for formating.
     FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE,
-        NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)(&message), 0, NULL);
-    std::string output(static_cast<const char*>(message));
-    LocalFree(message);
-    return output;
+        NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message, 0, NULL);
+    if (message) {
+        std::string output(static_cast<const char*>(message));
+        LocalFree(message);
+        return output;
+    }
+    return "Cannot format, see debug layer message for detail.";
 }
 
 }

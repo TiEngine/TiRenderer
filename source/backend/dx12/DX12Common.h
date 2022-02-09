@@ -8,8 +8,8 @@ do {                                                           \
     success = SUCCEEDED(hr);                                   \
     if(!success) {                                             \
         ti::common::Logger::GetReference().Output(#level, TAG, \
-            "ERROR: %d: %s. LOCATION: %s: %d: %s",             \
-            hr, ti::backend::FormatResult(hr),                 \
+            "[ERROR: %d: %s |LOCATION: %s: %d. |EXPRESS: %s]", \
+            hr, ti::backend::FormatResult(hr).c_str(),         \
             __FILE__, __LINE__, #expression);                  \
     }                                                          \
 } while(0)
