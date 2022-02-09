@@ -8,7 +8,7 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
 {
     EnumAdapters();
 
-    TI_LOG_I(TAG, "Create DX12 device: " + std::to_string(reinterpret_cast<uintptr_t>(this)));
+    TI_LOG_I(TAG, "Create DX12 device: %p", this);
     bool createHardwareDeviceSuccess = false;
     LogOutIfFailedI(D3D12CreateDevice(
         NULL, // use default adapter
@@ -32,12 +32,13 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
 
 DX12Device::~DX12Device()
 {
-    TI_LOG_I(TAG, "Destroy DX12 device: " + std::to_string(reinterpret_cast<uintptr_t>(this)));
+    DestroyDeviceCommandQueue();
+    TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
 }
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
-    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, commandQueue));
+    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, queue));
     swapchains.back()->Setup(description);
     return swapchains.back().get();
 }
@@ -63,13 +64,13 @@ void DX12Device::EnumAdapters()
     for (UINT i = 0; dxgi->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; i++) {
         DXGI_ADAPTER_DESC desc;
         adapter->GetDesc(&desc);
-        TI_LOG_D(TAG, "* " + std::to_string(i) + " : " + std::to_string(desc.Description));
+        TI_LOG_D(TAG, "* %d : %s", i, std::to_string(desc.Description).c_str());
         adapters.emplace_back(adapter);
     }
 
     TI_LOG_D(TAG, "Enum each adapter outputs...");
     for (size_t n = 0; n < adapters.size(); n++) {
-        TI_LOG_D(TAG, "Adapter " + std::to_string(n)  + " Outputs:");
+        TI_LOG_D(TAG, "Adapter %d Outputs:", n);
 
         // Adaptor output: usually is a displayer(monitor).
         size_t outputsCount = 0;
@@ -77,7 +78,7 @@ void DX12Device::EnumAdapters()
         for (UINT i = 0; adapters[n]->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; i++) {
             DXGI_OUTPUT_DESC desc;
             output->GetDesc(&desc);
-            TI_LOG_D(TAG, "* " + std::to_string(i) + " : " + std::to_string(desc.DeviceName));
+            TI_LOG_D(TAG, "* %d : %s", i, std::to_string(desc.DeviceName).c_str());
 
             TI_LOG_D(TAG, "  - OutputDisplayModes");
             {
@@ -98,7 +99,7 @@ void DX12Device::EnumAdapters()
                         "Height = " + std::to_string(mode.Height) + ", " +
                         "Refresh = " + std::to_string(n) + "/" + std::to_string(d) +
                         "=" + std::to_string(static_cast<float>(n) / static_cast<float>(d));
-                    TI_LOG_D(TAG, "    " + text);
+                    TI_LOG_D(TAG, "    %s", text.c_str());
                 }
             }
 
@@ -107,7 +108,7 @@ void DX12Device::EnumAdapters()
         }
 
         if (outputsCount == 0) {
-            TI_LOG_D(TAG, "Adapter " + std::to_string(n) + " has no output.");
+            TI_LOG_D(TAG, "Adapter %d has no output.", n);
         }
     }
 
@@ -130,7 +131,12 @@ void DX12Device::CreateDeviceCommandQueue()
     D3D12_COMMAND_QUEUE_DESC desc{};
     desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    LogIfFailedF(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&commandQueue)));
+    LogIfFailedF(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&queue)));
+}
+
+void DX12Device::DestroyDeviceCommandQueue()
+{
+    TI_LOG_I(TAG, "Destroy device command queue.");
 }
 
 }

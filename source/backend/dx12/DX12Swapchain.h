@@ -13,8 +13,9 @@ public:
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue);
     ~DX12Swapchain() override;
-    void Setup(Description description) override;
-    void Finish();
+
+    void Setup(Description description);
+    void Shutdown();
 
     //////
 

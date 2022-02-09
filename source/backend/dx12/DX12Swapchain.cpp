@@ -13,13 +13,12 @@ DX12Swapchain::DX12Swapchain(
 
 DX12Swapchain::~DX12Swapchain()
 {
-    Finish();
+    Shutdown();
 }
 
 void DX12Swapchain::Setup(Description description)
 {
-    TI_LOG_I(TAG, "Create DX12 swapchain: " +
-        std::to_string(reinterpret_cast<uintptr_t>(this)));
+    TI_LOG_I(TAG, "Create DX12 swapchain: %p", this);
 
     DXGI_SWAP_CHAIN_DESC desc{};
     desc.BufferDesc.Width = description.width;
@@ -42,10 +41,9 @@ void DX12Swapchain::Setup(Description description)
     LogIfFailedF(dxgi->CreateSwapChain(queue.Get(), &desc, swapchain.GetAddressOf()));
 }
 
-void DX12Swapchain::Finish()
+void DX12Swapchain::Shutdown()
 {
-    TI_LOG_I(TAG, "Destroy DX12 swapchain: " +
-        std::to_string(reinterpret_cast<uintptr_t>(this)));
+    TI_LOG_I(TAG, "Destroy DX12 swapchain: %p", this);
 }
 
 }

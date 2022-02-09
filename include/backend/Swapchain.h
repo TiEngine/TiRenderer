@@ -15,7 +15,6 @@ public:
         void* window = nullptr;
         bool fullScreen = false;
     };
-    virtual void Setup(Description description) = 0;
 
 protected:
     Swapchain() = default;

@@ -22,10 +22,12 @@ protected:
 
     void GetDeviceDescriptorSize();
     void CreateDeviceCommandQueue();
+    void DestroyDeviceCommandQueue();
 
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
 
     // Descriptor handle increment size, i.e.
     // the descriptor size in the descriptor heap.
@@ -33,8 +35,6 @@ private:
     UINT descriptorSizeOfDsv = 0;
     UINT descriptorSizeOfSampler = 0;
     UINT descriptorSizeOfCbvSrvUav = 0;
-
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
 };

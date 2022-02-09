@@ -49,8 +49,8 @@ common::Entity Scene::CreateNode(common::Entity parent)
             if (parentRelation) {
                 parentRelation->data.childs.emplace_back(entity);
             } else {
-                TI_LOG_W(TAG, "Parent entity " + std::to_string(parent) + " does not has the"
-                    " RelationComponent! Current entity is " + std::to_string(entity) + ".");
+                TI_LOG_W(TAG, "Parent entity %d does not has the RelationComponent!"
+                    " Current entity is %d.", parent, entity);
             }
         }
     }
@@ -61,8 +61,8 @@ void Scene::DestroyNode(common::Entity entity)
 {
     auto relation = registry.GetComponent<RelationComponent>(entity);
     if (!relation) {
-        TI_LOG_RET_W(TAG, "DestroyNode processing: current entity " + std::to_string(entity) +
-            " does not has RelationComponent! Destroy occurr error at this entity.");
+        TI_LOG_RET_W(TAG, "DestroyNode processing: current entity %d does not has RelationComponent!"
+            " Destroy occurr error at this entity.", entity);
     }
     for (common::Entity child : relation->data.childs) {
         DestroyNode(child); // recursively destroy all children
@@ -75,7 +75,7 @@ bool Scene::ReparentNode(common::Entity current, common::Entity parent)
     auto currentRelation = registry.GetComponent<RelationComponent>(current);
     if (!currentRelation) {
         TI_LOG_RETF_W(TAG, "ReparentNode failed because current entity does not has the RelationComponent!"
-            " Current entity is " + std::to_string(current) + ".");
+            " Current entity is %d.", current);
     }
     if (!currentRelation->data.parent.IsInvalid()) {
         auto oldParentRelation = registry.GetComponent<RelationComponent>(currentRelation->data.parent);
@@ -85,12 +85,12 @@ bool Scene::ReparentNode(common::Entity current, common::Entity parent)
             if (iter != childs.end()) {
                 childs.erase(iter); // erase from old parent
             } else {
-                TI_LOG_W(TAG, "Old parent entity " + std::to_string(currentRelation->data.parent) + " childs"
-                    " does not has current entity. Current entity is " + std::to_string(current) + ".");
+                TI_LOG_W(TAG, "Old parent entity %d childs does not has current entity."
+                    " Current entity is %d.", currentRelation->data.parent, current);
             }
         } else {
-            TI_LOG_W(TAG, "Old parent entity " + std::to_string(currentRelation->data.parent) +
-                " does not has the RelationComponent! Current entity is " + std::to_string(current) + ".");
+            TI_LOG_W(TAG, "Old parent entity %d does not has the RelationComponent!"
+                " Current entity is %d.", currentRelation->data.parent, current);
         }
     }
     currentRelation->data.parent = parent; // update new parent
@@ -99,8 +99,8 @@ bool Scene::ReparentNode(common::Entity current, common::Entity parent)
         if (parentRelation) {
             parentRelation->data.childs.emplace_back(current);
         } else {
-            TI_LOG_W(TAG, "New parent entity " + std::to_string(parent) + " does not has the"
-                " RelationComponent! Current entity is " + std::to_string(current) + ".");
+            TI_LOG_W(TAG, "New parent entity %d does not has the RelationComponent!"
+                " Current entity is %d.", parent, current);
         }
     }
     return true;

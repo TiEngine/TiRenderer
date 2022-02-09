@@ -19,8 +19,8 @@ public:
         #if defined (DEBUG) || defined (_DEBUG)
         componentNameHashMap[typeid(Component).name()] = typeid(Component).hash_code();
         #endif
-        TI_LOG_I(TAG, "Regist component storage, type name is `" + std::string(typeid(Component).name())
-            + "`, type hash is " + std::to_string(typeid(Component).hash_code()) + ".");
+        TI_LOG_I(TAG, "Regist component storage, type name is `%s`, type hash is %d.",
+            typeid(Component).name(), typeid(Component).hash_code());
         return storages.emplace(typeid(Component).hash_code(), storage).second;
     }
 
@@ -30,8 +30,8 @@ public:
         #if defined (DEBUG) || defined (_DEBUG)
         componentNameHashMap.erase(typeid(Component).name());
         #endif
-        TI_LOG_I(TAG, "Unregist component storage, type name is `" + std::string(typeid(Component).name())
-            + "`, type hash is " + std::to_string(typeid(Component).hash_code()) + ".");
+        TI_LOG_I(TAG, "Unregist component storage, type name is `%s`, type hash is %d.",
+            typeid(Component).name(), typeid(Component).hash_code());
         auto storage = storages.find(typeid(Component).hash_code());
         if (storage == storages.end()) {
             return nullptr;

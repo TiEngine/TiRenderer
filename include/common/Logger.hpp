@@ -9,29 +9,29 @@
 // include the header file for memory leak check in this file.
 #include "MemoryLeakChecker.hpp"
 
-#define TI_LOG_D(tag, what) ti::common::Logger::GetReference().Output("D", tag, what)
-#define TI_LOG_I(tag, what) ti::common::Logger::GetReference().Output("I", tag, what)
-#define TI_LOG_W(tag, what) ti::common::Logger::GetReference().Output("W", tag, what)
-#define TI_LOG_E(tag, what) ti::common::Logger::GetReference().Output("E", tag, what)
-#define TI_LOG_F(tag, what) ti::common::Logger::GetReference().Output("F", tag, what)
+#define TI_LOG_D(tag, format, ...) ti::common::Logger::GetReference().Output("D", tag, format, __VA_ARGS__)
+#define TI_LOG_I(tag, format, ...) ti::common::Logger::GetReference().Output("I", tag, format, __VA_ARGS__)
+#define TI_LOG_W(tag, format, ...) ti::common::Logger::GetReference().Output("W", tag, format, __VA_ARGS__)
+#define TI_LOG_E(tag, format, ...) ti::common::Logger::GetReference().Output("E", tag, format, __VA_ARGS__)
+#define TI_LOG_F(tag, format, ...) ti::common::Logger::GetReference().Output("F", tag, format, __VA_ARGS__)
 
-#define TI_LOG_RETN_D(tag, what) do { TI_LOG_D(tag, what); return nullptr; } while(0)
-#define TI_LOG_RETN_I(tag, what) do { TI_LOG_I(tag, what); return nullptr; } while(0)
-#define TI_LOG_RETN_W(tag, what) do { TI_LOG_W(tag, what); return nullptr; } while(0)
-#define TI_LOG_RETN_E(tag, what) do { TI_LOG_E(tag, what); return nullptr; } while(0)
-#define TI_LOG_RETN_F(tag, what) do { TI_LOG_F(tag, what); return nullptr; } while(0)
+#define TI_LOG_RETN_D(tag, format, ...) do { TI_LOG_D(tag, format, __VA_ARGS__); return nullptr; } while(0)
+#define TI_LOG_RETN_I(tag, format, ...) do { TI_LOG_I(tag, format, __VA_ARGS__); return nullptr; } while(0)
+#define TI_LOG_RETN_W(tag, format, ...) do { TI_LOG_W(tag, format, __VA_ARGS__); return nullptr; } while(0)
+#define TI_LOG_RETN_E(tag, format, ...) do { TI_LOG_E(tag, format, __VA_ARGS__); return nullptr; } while(0)
+#define TI_LOG_RETN_F(tag, format, ...) do { TI_LOG_F(tag, format, __VA_ARGS__); return nullptr; } while(0)
 
-#define TI_LOG_RETF_D(tag, what) do { TI_LOG_D(tag, what); return false; } while(0)
-#define TI_LOG_RETF_I(tag, what) do { TI_LOG_I(tag, what); return false; } while(0)
-#define TI_LOG_RETF_W(tag, what) do { TI_LOG_W(tag, what); return false; } while(0)
-#define TI_LOG_RETF_E(tag, what) do { TI_LOG_E(tag, what); return false; } while(0)
-#define TI_LOG_RETF_F(tag, what) do { TI_LOG_F(tag, what); return false; } while(0)
+#define TI_LOG_RETF_D(tag, format, ...) do { TI_LOG_D(tag, format, __VA_ARGS__); return false; } while(0)
+#define TI_LOG_RETF_I(tag, format, ...) do { TI_LOG_I(tag, format, __VA_ARGS__); return false; } while(0)
+#define TI_LOG_RETF_W(tag, format, ...) do { TI_LOG_W(tag, format, __VA_ARGS__); return false; } while(0)
+#define TI_LOG_RETF_E(tag, format, ...) do { TI_LOG_E(tag, format, __VA_ARGS__); return false; } while(0)
+#define TI_LOG_RETF_F(tag, format, ...) do { TI_LOG_F(tag, format, __VA_ARGS__); return false; } while(0)
 
-#define TI_LOG_RET_D(tag, what)  do { TI_LOG_D(tag, what); return; } while(0)
-#define TI_LOG_RET_I(tag, what)  do { TI_LOG_I(tag, what); return; } while(0)
-#define TI_LOG_RET_W(tag, what)  do { TI_LOG_W(tag, what); return; } while(0)
-#define TI_LOG_RET_E(tag, what)  do { TI_LOG_E(tag, what); return; } while(0)
-#define TI_LOG_RET_F(tag, what)  do { TI_LOG_F(tag, what); return; } while(0)
+#define TI_LOG_RET_D(tag, format, ...)  do { TI_LOG_D(tag, format, __VA_ARGS__); return; } while(0)
+#define TI_LOG_RET_I(tag, format, ...)  do { TI_LOG_I(tag, format, __VA_ARGS__); return; } while(0)
+#define TI_LOG_RET_W(tag, format, ...)  do { TI_LOG_W(tag, format, __VA_ARGS__); return; } while(0)
+#define TI_LOG_RET_E(tag, format, ...)  do { TI_LOG_E(tag, format, __VA_ARGS__); return; } while(0)
+#define TI_LOG_RET_F(tag, format, ...)  do { TI_LOG_F(tag, format, __VA_ARGS__); return; } while(0)
 
 #define LOG_TAG(name) static constexpr char* TAG = #name;
 
@@ -51,6 +51,20 @@ public:
 
     void Output(const std::string& level, const std::string& tag, const std::string& what)
     {
+        callback(level, tag, what);
+    }
+
+    void Output(const char* level, const char* tag, const char* format, ...)
+    {
+        constexpr int BufferSize = 1024;
+        char buffer[BufferSize]{};
+
+        va_list args{};
+        va_start(args, format);
+        vsnprintf(buffer, BufferSize, format, args);
+        va_end(args);
+
+        std::string what(buffer);
         callback(level, tag, what);
     }
 

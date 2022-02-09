@@ -14,15 +14,13 @@ DX12Context::DX12Context()
     }
     #endif
 
-    TI_LOG_I(TAG, "Create DX12 context (and DXGIFactory): " +
-        std::to_string(reinterpret_cast<uintptr_t>(this)));
-    LogIfFailedF(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi)));
+    TI_LOG_I(TAG, "Create DX12 context (and DXGIFactory): %p", this);
+    LogIfFailedF(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgi)));
 }
 
 DX12Context::~DX12Context()
 {
-    TI_LOG_I(TAG, "Destroy DX12 context: " +
-        std::to_string(reinterpret_cast<uintptr_t>(this)));
+    TI_LOG_I(TAG, "Destroy DX12 context: %p", this);
 }
 
 Device* DX12Context::CreateDevice()
