@@ -8,9 +8,9 @@ do {                                                           \
     success = SUCCEEDED(hr);                                   \
     if(!success) {                                             \
         ti::common::Logger::GetReference().Output(#level, TAG, \
-            "[ERROR: %d: %s |LOCATION: %s: %d. |EXPRESS: %s]", \
-            hr, ti::backend::FormatResult(hr).c_str(),         \
-            __FILE__, __LINE__, #expression);                  \
+          "LOCATION: %s, %d. EXPRESSION: %s. ERROR: 0x%x, %s", \
+            __FILE__, __LINE__, #expression, hr, ti::backend:: \
+              FormatResult(hr).c_str());                       \
     }                                                          \
 } while(0)
 
@@ -44,7 +44,6 @@ namespace ti::backend {
 
 LOG_TAG(DX12Backend)
 
-// Format HRESULT to message string.
 std::string FormatResult(HRESULT hr);
 
 }

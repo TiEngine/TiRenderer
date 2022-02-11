@@ -21,7 +21,7 @@ DX12Context::DX12Context()
     Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiInfoQueue)))) {
         dxgiFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-        // DX12 not support redirect debug layer message currently, see:
+        // DX12 does not support redirect debug layer message currently, see:
         // https://devblogs.microsoft.com/directx/d3d12-debug-layer-message-callback/
         // Sample code is:
         // ComPtr<IDXGIInfoQueue1> dxgiInfoQueue;

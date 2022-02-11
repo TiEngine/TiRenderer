@@ -32,8 +32,8 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
 
 DX12Device::~DX12Device()
 {
-    DestroyDeviceCommandQueue();
     TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
+    DestroyDeviceCommandQueue();
 }
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
@@ -137,6 +137,9 @@ void DX12Device::CreateDeviceCommandQueue()
 void DX12Device::DestroyDeviceCommandQueue()
 {
     TI_LOG_I(TAG, "Destroy device command queue.");
+    if (queue.Reset() > 0) {
+        TI_LOG_W(TAG, "There are still instances that refer to command queue.");
+    }
 }
 
 }

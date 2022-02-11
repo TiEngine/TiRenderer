@@ -14,36 +14,36 @@ using tstring = wstring;
 using tstring = string;
 #endif
 
-wstring string_to_wstring(const string& str)
+inline wstring string_to_wstring(const string& str)
 {
     using convert_type = codecvt_utf8<wchar_t>;
     wstring_convert<convert_type, wchar_t> cv;
     return cv.from_bytes(str);
 }
 
-string wstring_to_string(const wstring& wstr)
+inline string wstring_to_string(const wstring& wstr)
 {
     using convert_type = codecvt_utf8<wchar_t>;
     wstring_convert<convert_type, wchar_t> cv;
     return cv.to_bytes(wstr);
 }
 
-wstring to_wstring(const string& str)
+inline wstring to_wstring(const string& str)
 {
     return string_to_wstring(str);
 }
 
-wstring to_wstring(const wstring& wstr)
+inline wstring to_wstring(const wstring& wstr)
 {
     return wstr;
 }
 
-string to_string(const wstring& wstr)
+inline string to_string(const wstring& wstr)
 {
     return wstring_to_string(wstr);
 }
 
-string to_string(const string& str)
+inline string to_string(const string& str)
 {
     return str;
 }

@@ -71,7 +71,7 @@ public:
 private:
     static void DefaultCallback(const std::string& level, const std::string& tag, const std::string& what)
     {
-        #ifndef TI_OPT_SINGLE_THREAD
+        #ifdef TI_OPT_MULTI_THREADS
         size_t id = std::hash<std::thread::id>()(std::this_thread::get_id());
         #endif
         #ifdef _MSC_VER
@@ -79,7 +79,7 @@ private:
         #else
         printf
         #endif
-        #ifdef TI_OPT_SINGLE_THREAD
+        #ifndef TI_OPT_MULTI_THREADS
         ("[%s]:[%s] %s\n", level.c_str(), tag.c_str(), what.c_str());
         #else
         ("[%llu][%s]:[%s] %s\n", id, level.c_str(), tag.c_str(), what.c_str());

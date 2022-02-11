@@ -21,10 +21,13 @@ void Demo_01_Backend::Update()
 
 void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int height)
 {
+    if (swapchain) {
+        device->DestroySwapchain(swapchain);
+    }
+
     ti::backend::Swapchain::Description swapchainDescription;
     swapchainDescription.width = width;
     swapchainDescription.height = height;
     swapchainDescription.window = window;
     swapchain = device->CreateSwapchain(swapchainDescription);
-
 }

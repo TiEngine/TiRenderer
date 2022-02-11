@@ -1,4 +1,5 @@
 #include "backend/BackendContext.h"
+#include "common/DllWrapper.hpp"
 
 namespace {
 static std::unordered_map<ti::backend::BackendContext::Backend,
