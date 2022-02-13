@@ -1,1 +1,2 @@
 DirectXMath="https://github.com/microsoft/DirectXMath/releases"
+DirectXHeaders="https://github.com/microsoft/DirectX-Headers/releases"
