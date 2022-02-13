@@ -1,7 +1,7 @@
 #pragma once
 
-#include <d3d12.h>
 #include "backend/BasicTypes.h"
+#include "DX12BackendHeaders.h"
 
 namespace ti::backend {
 

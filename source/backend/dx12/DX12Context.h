@@ -2,10 +2,8 @@
 
 #include <vector>
 #include <memory>
-#include <wrl.h>
-#include <d3d12.h>
-#include <dxgi1_4.h>
 #include "backend/BackendContext.h"
+#include "DX12BackendHeaders.h"
 #include "DX12Device.h"
 
 namespace ti::backend {

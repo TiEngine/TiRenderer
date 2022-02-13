@@ -6,9 +6,12 @@ namespace ti::backend {
 
 DX12Swapchain::DX12Swapchain(
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
+    Microsoft::WRL::ComPtr<ID3D12Device> device,
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue)
-    : dxgi(dxgi), queue(queue)
+    : dxgi(dxgi), device(device), queue(queue)
 {
+    descriptorSizeOfRtv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    descriptorSizeOfDsv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 DX12Swapchain::~DX12Swapchain()
@@ -19,31 +22,127 @@ DX12Swapchain::~DX12Swapchain()
 void DX12Swapchain::Setup(Description description)
 {
     TI_LOG_I(TAG, "Create DX12 swapchain: %p", this);
+    this->description = description;
 
-    DXGI_SWAP_CHAIN_DESC desc{};
-    desc.BufferDesc.Width = description.width;
-    desc.BufferDesc.Height = description.height;
-    desc.BufferDesc.RefreshRate.Numerator = description.refreshRate;
-    desc.BufferDesc.RefreshRate.Denominator = 1;
-    desc.BufferDesc.Format = ConvertFormat(description.format);
-    desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-    desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.BufferCount = description.bufferCount;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
-    desc.OutputWindow = (HWND)(description.window);
-    desc.Windowed = !description.fullScreen;
-    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
+    DXGI_SWAP_CHAIN_DESC swapchainDesc{};
+    swapchainDesc.BufferDesc.Width = description.width;
+    swapchainDesc.BufferDesc.Height = description.height;
+    swapchainDesc.BufferDesc.RefreshRate.Numerator = description.refreshRate;
+    swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
+    swapchainDesc.BufferDesc.Format = ConvertFormat(description.colorFormat);
+    swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchainDesc.BufferCount = description.bufferCount;
+    swapchainDesc.SampleDesc.Count = 1;
+    swapchainDesc.SampleDesc.Quality = 0;
+    swapchainDesc.OutputWindow = (HWND)(description.window);
+    swapchainDesc.Windowed = !description.fullScreen;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     // NB: Swapchain uses the queue to perform flush.
-    LogIfFailedF(dxgi->CreateSwapChain(queue.Get(), &desc, swapchain.GetAddressOf()));
+    LogIfFailedF(dxgi->CreateSwapChain(queue.Get(), &swapchainDesc, &swapchain));
+
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+    rtvHeapDesc.NumDescriptors = description.bufferCount;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    rtvHeapDesc.NodeMask = 0;
+    LogIfFailedF(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
+
+    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
+    dsvHeapDesc.NumDescriptors = description.bufferCount;
+    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    dsvHeapDesc.NodeMask = 0;
+    LogIfFailedF(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap)));
+
+    Resize(description.width, description.height);
 }
 
 void DX12Swapchain::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 swapchain: %p", this);
+    description = {};
+    swapchain.Reset();
+
+    rtvHeap.Reset();
+    dsvHeap.Reset();
+
+    currentBufferIndex = 0;
+    renderTargetHandlesInHeap.resize(0);
+    depthStencilHandlesInHeap.resize(0);
+    renderTargetBuffer.resize(0);
+    depthStencilBuffer.resize(0);
+}
+
+void DX12Swapchain::Resize(unsigned int width, unsigned int height)
+{
+    // If call Resize when during rendering, you need to call Device::FlushAndWaitIdle first
+    // to make sure that all command in the command queue have been executed, because Resize
+    // will rebuild swaphain resources(render target or depth stencil resources/views).
+    TI_LOG_I(TAG, "Swapchain resize: width * height = %d * %d", width, height);
+    description.width = width;
+    description.height = height;
+
+    LogIfFailedF(swapchain->ResizeBuffers(description.bufferCount, width, height,
+        ConvertFormat(description.colorFormat), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+
+    currentBufferIndex = 0;
+    renderTargetHandlesInHeap.resize(description.bufferCount);
+    depthStencilHandlesInHeap.resize(description.bufferCount);
+    renderTargetBuffer.resize(description.bufferCount);
+    depthStencilBuffer.resize(description.bufferCount);
+
+    { // Get the render target buffer from swapchain and create the render target view.
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart());
+        for (unsigned int i = 0; i < description.bufferCount; i++) {
+            LogIfFailedF(swapchain->GetBuffer(i, IID_PPV_ARGS(&renderTargetBuffer[i])));
+            device->CreateRenderTargetView(renderTargetBuffer[i].Get(), NULL, rtvHeapHandle);
+            renderTargetHandlesInHeap[i] = rtvHeapHandle;
+            rtvHeapHandle.Offset(1, descriptorSizeOfRtv);
+        }
+    }
+
+    { // Create the depth stencil buffer and view.
+        D3D12_RESOURCE_DESC depthStencilDesc{};
+        depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        depthStencilDesc.Alignment = 0;
+        depthStencilDesc.Width = description.width;
+        depthStencilDesc.Height = description.height;
+        depthStencilDesc.DepthOrArraySize = 1;
+        depthStencilDesc.MipLevels = 1; // 1 mip levels
+        depthStencilDesc.Format = ConvertFormat(description.depthStencilFormat);
+        depthStencilDesc.SampleDesc.Count = 1;
+        depthStencilDesc.SampleDesc.Quality = 0;
+        depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+        D3D12_CLEAR_VALUE depthStencilClear{};
+        depthStencilClear.Format = depthStencilDesc.Format;
+        depthStencilClear.DepthStencil.Depth = 1.0f;
+        depthStencilClear.DepthStencil.Stencil = 0;
+
+        D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
+        depthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+        depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+        depthStencilViewDesc.Format = depthStencilDesc.Format;
+        depthStencilViewDesc.Texture2D.MipSlice = 0; // mip level 0
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHeapHandle(dsvHeap->GetCPUDescriptorHandleForHeapStart());
+        for (unsigned int i = 0; i < description.bufferCount; i++) {
+            // Create the depth stencil buffer.
+            LogIfFailedF(device->CreateCommittedResource(
+                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+                &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthStencilClear,
+                IID_PPV_ARGS(&depthStencilBuffer[i])));
+            // Create descriptor(depth stencil view) for mip level 0 of each depth stencil buffer.
+            device->CreateDepthStencilView(depthStencilBuffer[i].Get(),
+                &depthStencilViewDesc, dsvHeapHandle);
+            depthStencilHandlesInHeap[i] = dsvHeapHandle;
+            dsvHeapHandle.Offset(1, descriptorSizeOfDsv);
+        }
+    }
 }
 
 }

@@ -3,7 +3,6 @@
 #include "DX12Common.h"
 
 namespace ti::backend {
-
 DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
 {
     EnumAdapters();
@@ -26,7 +25,6 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
             D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
     }
 
-    GetDeviceDescriptorSize();
     CreateDeviceCommandQueue();
 }
 
@@ -38,7 +36,7 @@ DX12Device::~DX12Device()
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
-    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, queue));
+    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, device, queue));
     swapchains.back()->Setup(description);
     return swapchains.back().get();
 }
@@ -52,6 +50,32 @@ bool DX12Device::DestroySwapchain(Swapchain* swapchain)
         }
     }
     return false;
+}
+
+void DX12Device::FlushAndWaitIdle()
+{
+    // Advance the fence value to mark commands up to this fence point.
+    currentFence++;
+
+    // Add an instruction to the command queue to set a new fence point.
+    // Because we are on the GPU timeline, the new fence point won't be
+    // set until the GPU finishes processing all the commands prior to
+    // this Signal().
+    LogIfFailedF(queue->Signal(fence.Get(), currentFence));
+
+    // Wait until the GPU has completed commands up to this fence point.
+    if (fence->GetCompletedValue() < currentFence) {
+        HANDLE eventHandle = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+        if (eventHandle != NULL) {
+            // Fire event when GPU hits current fence.
+            LogIfFailedF(fence->SetEventOnCompletion(currentFence, eventHandle));
+            // Wait until the GPU hits current fence event is fired.
+            WaitForSingleObject(eventHandle, INFINITE);
+            CloseHandle(eventHandle);
+        } else {
+            TI_LOG_F(TAG, "Flush command queue and wait idle failed, can not create event!");
+        }
+    }
 }
 
 void DX12Device::EnumAdapters()
@@ -117,14 +141,6 @@ void DX12Device::EnumAdapters()
     }
 }
 
-void DX12Device::GetDeviceDescriptorSize()
-{
-    descriptorSizeOfRtv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    descriptorSizeOfDsv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-    descriptorSizeOfSampler = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
-    descriptorSizeOfCbvSrvUav = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-}
-
 void DX12Device::CreateDeviceCommandQueue()
 {
     TI_LOG_I(TAG, "Create device command queue.");
@@ -138,8 +154,8 @@ void DX12Device::DestroyDeviceCommandQueue()
 {
     TI_LOG_I(TAG, "Destroy device command queue.");
     if (queue.Reset() > 0) {
+        // If run here, there must be a resource leak!
         TI_LOG_W(TAG, "There are still instances that refer to command queue.");
     }
 }
-
 }

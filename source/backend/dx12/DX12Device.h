@@ -13,6 +13,8 @@ public:
     Swapchain* CreateSwapchain(Swapchain::Description description) override;
     bool DestroySwapchain(Swapchain* swapchain) override;
 
+    void FlushAndWaitIdle() override;
+
 protected:
     // TODO:  Support select a adapter by custom.
     //        Currently only the default adapter is used.
@@ -20,7 +22,6 @@ protected:
     //        Move it to DX12Context and add CreateAdapter function in DX12Context.
     void EnumAdapters();
 
-    void GetDeviceDescriptorSize();
     void CreateDeviceCommandQueue();
     void DestroyDeviceCommandQueue();
 
@@ -29,12 +30,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
 
-    // Descriptor handle increment size, i.e.
-    // the descriptor size in the descriptor heap.
-    UINT descriptorSizeOfRtv = 0;
-    UINT descriptorSizeOfDsv = 0;
-    UINT descriptorSizeOfSampler = 0;
-    UINT descriptorSizeOfCbvSrvUav = 0;
+    UINT64 currentFence = 0;
+    Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
 };
