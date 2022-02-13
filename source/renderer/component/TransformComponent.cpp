@@ -8,7 +8,7 @@ Transform Transform::operator*(const Transform& other) const
     using namespace math; // For calling: operator+, operator*.
     Transform result;
     math::XMStoreFloat3(&result.position,
-        math::XMLoadFloat3(&this->position) + math::XMLoadFloat3(&other.position));
+        (CalculateMatrix(*this) * CalculateMatrix(other)).r[3]);
     math::XMStoreFloat4(&result.rotation,
         math::XMQuaternionMultiply( // q2*q1 (left multiply)
             math::XMLoadFloat4(&this->rotation),   // q1
@@ -16,6 +16,17 @@ Transform Transform::operator*(const Transform& other) const
     math::XMStoreFloat3(&result.scale,
         math::XMLoadFloat3(&this->scale) * math::XMLoadFloat3(&other.scale));
     return result;
+}
+
+math::XMMATRIX Transform::CalculateMatrix(const Transform& transform)
+{
+    math::XMMATRIX T = math::XMMatrixTranslation(
+        transform.position.x, transform.position.y, transform.position.z);
+    math::XMMATRIX R = math::XMMatrixRotationQuaternion(
+        math::XMLoadFloat4(&transform.rotation));
+    math::XMMATRIX S = math::XMMatrixScaling(
+        transform.scale.x, transform.scale.y, transform.scale.z);
+    return T * R * S;
 }
 
 void TransformHelper::UpdateGlobalTransform()

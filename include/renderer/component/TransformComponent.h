@@ -11,6 +11,8 @@ struct Transform {
     math::XMFLOAT3 scale{};
 
     Transform operator*(const Transform& other) const;
+
+    static math::XMMATRIX CalculateMatrix(const Transform& transform);
 };
 
 META_COMPONENT(Transform) {
