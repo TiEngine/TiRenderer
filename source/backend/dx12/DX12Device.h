@@ -2,18 +2,26 @@
 
 #include "backend/Device.h"
 #include "DX12Swapchain.h"
+#include "DX12CommandAllocator.h"
 
 namespace ti::backend {
 
 class DX12Device : public Device {
 public:
-    explicit DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
+    explicit DX12Device(
+        Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
     ~DX12Device() override;
+
+    void Setup(Description description);
+    void Shutdown();
 
     Swapchain* CreateSwapchain(Swapchain::Description description) override;
     bool DestroySwapchain(Swapchain* swapchain) override;
 
-    void FlushAndWaitIdle() override;
+    CommandAllocator* CreateCommandAllocator(CommandAllocator::Description description) override;
+    bool DestroyCommandAllocator(CommandAllocator* commandAllocator) override;
+
+    void WaitIdle() override;
 
 protected:
     // TODO:  Support select a adapter by custom.
@@ -22,11 +30,10 @@ protected:
     //        Move it to DX12Context and add CreateAdapter function in DX12Context.
     void EnumAdapters();
 
-    void CreateDeviceCommandQueue();
-    void DestroyDeviceCommandQueue();
-
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
+
+    Description description;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
 
@@ -34,6 +41,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
+    std::vector<std::unique_ptr<DX12CommandAllocator>> commandAllocators;
 };
 
 }

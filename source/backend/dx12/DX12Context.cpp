@@ -6,7 +6,6 @@
 #endif
 
 namespace ti::backend {
-
 DX12Context::DX12Context()
 {
     UINT dxgiFactoryFlags = 0;
@@ -38,21 +37,13 @@ DX12Context::~DX12Context()
     TI_LOG_I(TAG, "Destroy DX12 context: %p", this);
 }
 
-Device* DX12Context::CreateDevice()
+Device* DX12Context::CreateDevice(Device::Description description)
 {
-    devices.emplace_back(std::make_unique<DX12Device>(dxgi));
-    return devices.back().get();
+    return CreateInstance<Device>(devices, description, dxgi);
 }
 
 bool DX12Context::DestroyDevice(Device* device)
 {
-    for (auto iter = devices.begin(); iter != devices.end(); iter++) {
-        if (device == iter->get()) {
-            devices.erase(iter);
-            return true;
-        }
-    }
-    return false;
+    return DestroyInstance(devices, device);
 }
-
 }

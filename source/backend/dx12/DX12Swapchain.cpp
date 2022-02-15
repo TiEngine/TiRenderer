@@ -3,7 +3,6 @@
 #include "DX12Common.h"
 
 namespace ti::backend {
-
 DX12Swapchain::DX12Swapchain(
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
     Microsoft::WRL::ComPtr<ID3D12Device> device,
@@ -85,6 +84,9 @@ void DX12Swapchain::Resize(unsigned int width, unsigned int height)
     description.width = width;
     description.height = height;
 
+    // Before resize swapchain, release all render target buffer references
+    // which from the swapchain, otherwise resize will fail.
+    renderTargetBuffer.resize(0);
     LogIfFailedF(swapchain->ResizeBuffers(description.bufferCount, width, height,
         ConvertFormat(description.colorFormat), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
@@ -144,5 +146,4 @@ void DX12Swapchain::Resize(unsigned int width, unsigned int height)
         }
     }
 }
-
 }

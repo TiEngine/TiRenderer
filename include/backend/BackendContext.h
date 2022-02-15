@@ -1,10 +1,9 @@
 #pragma once
 
 #include "BackendApi.h"
+#include "Device.h"
 
 namespace ti::backend {
-class Device;
-
 class BackendContext {
 public:
     enum class Backend {
@@ -16,7 +15,7 @@ public:
     BackendApi static BackendContext* CreateBackend(Backend type);
     BackendApi static void DestroyBackend(Backend type);
 
-    virtual Device* CreateDevice() = 0;
+    virtual Device* CreateDevice(Device::Description description) = 0;
     virtual bool DestroyDevice(Device* device) = 0;
 
 protected:

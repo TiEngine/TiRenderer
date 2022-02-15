@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <memory>
 #include "backend/BackendContext.h"
 #include "DX12BackendHeaders.h"
 #include "DX12Device.h"
@@ -10,10 +8,10 @@ namespace ti::backend {
 
 class DX12Context : public BackendContext {
 public:
-    DX12Context();
+    explicit DX12Context();
     ~DX12Context() override;
 
-    Device* CreateDevice() override;
+    Device* CreateDevice(Device::Description description) override;
     bool DestroyDevice(Device* device) override;
 
 private:

@@ -8,7 +8,7 @@ namespace ti::backend {
 
 class DX12Swapchain : public Swapchain {
 public:
-    DX12Swapchain(
+    explicit DX12Swapchain(
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
         Microsoft::WRL::ComPtr<ID3D12Device> device,
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue);

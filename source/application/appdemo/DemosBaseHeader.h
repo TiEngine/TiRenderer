@@ -37,5 +37,8 @@ private:
     ti::backend::BackendContext* backend = nullptr;
     ti::backend::Device* device = nullptr;
 
+    ti::backend::CommandAllocator* commandAllocator = nullptr;
+    ti::backend::CommandList* commandList = nullptr;
+
     ti::backend::Swapchain* swapchain = nullptr;
 };

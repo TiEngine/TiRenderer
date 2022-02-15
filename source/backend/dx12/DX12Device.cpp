@@ -3,10 +3,20 @@
 #include "DX12Common.h"
 
 namespace ti::backend {
-DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
+DX12Device::DX12Device(
+    Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi)
+    : dxgi(dxgi)
 {
     EnumAdapters();
+}
 
+DX12Device::~DX12Device()
+{
+    Shutdown();
+}
+
+void DX12Device::Setup(Description description)
+{
     TI_LOG_I(TAG, "Create DX12 device: %p", this);
     bool createHardwareDeviceSuccess = false;
     LogOutIfFailedI(D3D12CreateDevice(
@@ -25,34 +35,50 @@ DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
             D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
     }
 
-    CreateDeviceCommandQueue();
+    D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+    commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    LogIfFailedF(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&queue)));
+
+    // This fence is used to synchronize between CPU Host and GPU Device.
+    LogIfFailedF(device->CreateFence(currentFence, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 }
 
-DX12Device::~DX12Device()
+void DX12Device::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
-    DestroyDeviceCommandQueue();
+    description = {};
+    device.Reset();
+    queue.Reset();
+
+    currentFence = 0;
+    fence.Reset();
+
+    swapchains.resize(0);
+    commandAllocators.resize(0);
 }
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
-    swapchains.emplace_back(std::make_unique<DX12Swapchain>(dxgi, device, queue));
-    swapchains.back()->Setup(description);
-    return swapchains.back().get();
+    return CreateInstance<Swapchain>(swapchains, description, dxgi, device, queue);
 }
 
 bool DX12Device::DestroySwapchain(Swapchain* swapchain)
 {
-    for (auto iter = swapchains.begin(); iter != swapchains.end(); iter++) {
-        if (swapchain == iter->get()) {
-            swapchains.erase(iter);
-            return true;
-        }
-    }
-    return false;
+    return DestroyInstance(swapchains, swapchain);
 }
 
-void DX12Device::FlushAndWaitIdle()
+CommandAllocator* DX12Device::CreateCommandAllocator(CommandAllocator::Description description)
+{
+    return CreateInstance<CommandAllocator>(commandAllocators, description, device);
+}
+
+bool DX12Device::DestroyCommandAllocator(CommandAllocator* commandAllocator)
+{
+    return DestroyInstance(commandAllocators, commandAllocator);
+}
+
+void DX12Device::WaitIdle()
 {
     // Advance the fence value to mark commands up to this fence point.
     currentFence++;
@@ -138,24 +164,6 @@ void DX12Device::EnumAdapters()
 
     for (auto adapter : adapters) {
         ReleaseCOM(adapter);
-    }
-}
-
-void DX12Device::CreateDeviceCommandQueue()
-{
-    TI_LOG_I(TAG, "Create device command queue.");
-    D3D12_COMMAND_QUEUE_DESC desc{};
-    desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    LogIfFailedF(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&queue)));
-}
-
-void DX12Device::DestroyDeviceCommandQueue()
-{
-    TI_LOG_I(TAG, "Destroy device command queue.");
-    if (queue.Reset() > 0) {
-        // If run here, there must be a resource leak!
-        TI_LOG_W(TAG, "There are still instances that refer to command queue.");
     }
 }
 }

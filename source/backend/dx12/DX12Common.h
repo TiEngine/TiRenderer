@@ -41,9 +41,32 @@ do {                    \
 } while(0)
 
 namespace ti::backend {
-
 LOG_TAG(DX12Backend)
 
 std::string FormatResult(HRESULT hr);
 
+template <typename Interface, typename Implement, class ...Arguments>
+Interface* CreateInstance(std::vector<std::unique_ptr<Implement>>& container,
+    typename Interface::Description description, const Arguments& ...arguments)
+{
+    static_assert(std::is_base_of<Interface, Implement>::value,
+        "CreateInstance: Implement should inherit from Interface!");
+    container.emplace_back(std::make_unique<Implement>(arguments...));
+    container.back()->Setup(description);
+    return container.back().get();
+}
+
+template <typename Interface, typename Implement>
+bool DestroyInstance(std::vector<std::unique_ptr<Implement>>& container, Interface* instance)
+{
+    static_assert(std::is_base_of<Interface, Implement>::value,
+        "DestroyInstance: Implement should inherit from Interface!");
+    for (auto iter = container.begin(); iter != container.end(); iter++) {
+        if (instance == iter->get()) {
+            container.erase(iter);
+            return true;
+        }
+    }
+    return false;
+}
 }
