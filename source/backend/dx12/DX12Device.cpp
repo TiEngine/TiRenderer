@@ -58,6 +58,16 @@ void DX12Device::Shutdown()
     commandAllocators.resize(0);
 }
 
+Shader* DX12Device::CreateShader(Shader::Description description)
+{
+    return CreateInstance<Shader>(shaders, description);
+}
+
+bool DX12Device::DestroyShader(Shader* shader)
+{
+    return DestroyInstance(shaders, shader);
+}
+
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
     return CreateInstance<Swapchain>(swapchains, description, dxgi, device, queue);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "backend/Device.h"
+#include "DX12Shader.h"
 #include "DX12Swapchain.h"
 #include "DX12CommandAllocator.h"
 
@@ -14,6 +15,9 @@ public:
 
     void Setup(Description description);
     void Shutdown();
+
+    Shader* CreateShader(Shader::Description description) override;
+    bool DestroyShader(Shader* shader) override;
 
     Swapchain* CreateSwapchain(Swapchain::Description description) override;
     bool DestroySwapchain(Swapchain* swapchain) override;
@@ -40,6 +44,7 @@ private:
     UINT64 currentFence = 0;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 
+    std::vector<std::unique_ptr<DX12Shader>> shaders;
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
     std::vector<std::unique_ptr<DX12CommandAllocator>> commandAllocators;
 };

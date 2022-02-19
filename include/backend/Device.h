@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Shader.h"
 #include "Swapchain.h"
 #include "CommandAllocator.h"
 
@@ -9,6 +10,9 @@ class Device {
 public:
     struct Description {
     };
+
+    virtual Shader* CreateShader(Shader::Description description) = 0;
+    virtual bool DestroyShader(Shader* shader) = 0;
 
     virtual Swapchain* CreateSwapchain(Swapchain::Description description) = 0;
     virtual bool DestroySwapchain(Swapchain* swapchain) = 0;
