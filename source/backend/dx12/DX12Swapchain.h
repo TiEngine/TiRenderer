@@ -19,6 +19,8 @@ public:
 
     void Resize(unsigned int width, unsigned int height) override;
 
+    void Present() override;
+
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
     Microsoft::WRL::ComPtr<ID3D12Device> device;

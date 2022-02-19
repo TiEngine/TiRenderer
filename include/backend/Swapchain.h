@@ -19,6 +19,8 @@ public:
 
     virtual void Resize(unsigned int width, unsigned int height) = 0;
 
+    virtual void Present() = 0;
+
 protected:
     Swapchain() = default;
     virtual ~Swapchain() = default;

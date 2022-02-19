@@ -146,4 +146,11 @@ void DX12Swapchain::Resize(unsigned int width, unsigned int height)
         }
     }
 }
+
+void DX12Swapchain::Present()
+{
+    // Swap the back and front buffers.
+    LogIfFailedF(swapchain->Present(0, 0));
+    currentBufferIndex = (currentBufferIndex + 1) % description.bufferCount;
+}
 }
