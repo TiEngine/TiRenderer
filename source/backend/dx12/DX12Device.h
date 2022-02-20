@@ -4,6 +4,7 @@
 #include "DX12Shader.h"
 #include "DX12Swapchain.h"
 #include "DX12CommandAllocator.h"
+#include "DX12InputVertexAttributes.h"
 
 namespace ti::backend {
 
@@ -24,6 +25,9 @@ public:
 
     CommandAllocator* CreateCommandAllocator(CommandAllocator::Description description) override;
     bool DestroyCommandAllocator(CommandAllocator* commandAllocator) override;
+
+    InputVertexAttributes* CreateInputVertexAttributes(InputVertexAttributes::Description description) override;
+    bool DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes) override;
 
     void WaitIdle() override;
 
@@ -47,6 +51,7 @@ private:
     std::vector<std::unique_ptr<DX12Shader>> shaders;
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
     std::vector<std::unique_ptr<DX12CommandAllocator>> commandAllocators;
+    std::vector<std::unique_ptr<DX12InputVertexAttributes>> inputVertexLayouts;
 };
 
 }

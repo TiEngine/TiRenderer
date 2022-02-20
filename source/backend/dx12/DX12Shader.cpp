@@ -26,7 +26,6 @@ void DX12Shader::Setup(Description description)
 void DX12Shader::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 shader: %p", this);
-    description = {};
     bytecode.Reset();
 }
 
@@ -66,8 +65,9 @@ void DX12Shader::ProcessSource()
     }
 
     Microsoft::WRL::ComPtr<ID3DBlob> errors;
-    LogIfFailedW(D3DCompile(description.source.c_str(), description.source.size(), NULL, NULL,
-        D3D_COMPILE_STANDARD_FILE_INCLUDE, "Main", "vs_5_1", compileFlags, 0, &bytecode, &errors));
+    LogIfFailedW(D3DCompile(description.source.c_str(), description.source.size(),
+        NULL, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "Main", target.c_str(),
+        compileFlags, 0, &bytecode, &errors));
 
     if (errors != nullptr) {
         TI_LOG_W(TAG, "Compile HLSL shader source failed!\nsource:\n%s\nerror:\n%s",

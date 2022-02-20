@@ -40,5 +40,10 @@ private:
     ti::backend::CommandAllocator* commandAllocator = nullptr;
     ti::backend::CommandList* commandList = nullptr;
 
+    ti::backend::Shader* vertexShader = nullptr;
+    ti::backend::Shader* pixelShader = nullptr;
+
+    ti::backend::InputVertexAttributes* inputVertexAttributes = nullptr;
+
     ti::backend::Swapchain* swapchain = nullptr;
 };

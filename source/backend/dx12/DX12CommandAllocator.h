@@ -8,7 +8,8 @@ namespace ti::backend {
 class DX12CommandAllocator : public CommandAllocator {
 public:
     explicit DX12CommandAllocator(
-        Microsoft::WRL::ComPtr<ID3D12Device> device);
+        Microsoft::WRL::ComPtr<ID3D12Device> device,
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue);
     ~DX12CommandAllocator() override;
 
     void Setup(Description description);
@@ -19,6 +20,7 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
 
     Description description;

@@ -6,6 +6,8 @@ namespace ti::backend {
 
 enum class Format {
     R8G8B8A8_UNORM,
+    R32G32B32_FLOAT,
+    R32G32B32A32_FLOAT,
     D24_UNORM_S8_UINT
 };
 
@@ -34,7 +36,6 @@ enum class Stage : uint32_t {
 };
 
 enum class ShaderStage : uint32_t {
-    None     = 0, // default none stage
     Vertex   = static_cast<uint32_t>(Stage::VertexShader),
     Hull     = static_cast<uint32_t>(Stage::HullShader),
     Domain   = static_cast<uint32_t>(Stage::DomainShader),

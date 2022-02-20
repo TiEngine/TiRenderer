@@ -6,6 +6,7 @@ namespace ti::backend {
 class CommandAllocator {
 public:
     struct Description {
+        Description() {}
     };
 
     virtual CommandList* CreateCommandList(CommandList::Description description) = 0;

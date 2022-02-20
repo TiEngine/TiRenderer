@@ -3,12 +3,14 @@
 #include "Shader.h"
 #include "Swapchain.h"
 #include "CommandAllocator.h"
+#include "InputVertexAttributes.h"
 
 namespace ti::backend {
 
 class Device {
 public:
     struct Description {
+        Description() {}
     };
 
     virtual Shader* CreateShader(Shader::Description description) = 0;
@@ -19,6 +21,9 @@ public:
 
     virtual CommandAllocator* CreateCommandAllocator(CommandAllocator::Description description) = 0;
     virtual bool DestroyCommandAllocator(CommandAllocator* commandAllocator) = 0;
+
+    virtual InputVertexAttributes* CreateInputVertexAttributes(InputVertexAttributes::Description description) = 0;
+    virtual bool DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes) = 0;
 
     virtual void WaitIdle() = 0;
 

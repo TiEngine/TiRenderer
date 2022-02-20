@@ -62,7 +62,6 @@ void DX12Swapchain::Setup(Description description)
 void DX12Swapchain::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 swapchain: %p", this);
-    description = {};
     swapchain.Reset();
 
     rtvHeap.Reset();

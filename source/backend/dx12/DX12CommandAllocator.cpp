@@ -3,8 +3,9 @@
 
 namespace ti::backend {
 DX12CommandAllocator::DX12CommandAllocator(
-    Microsoft::WRL::ComPtr<ID3D12Device> device)
-    : device(device)
+    Microsoft::WRL::ComPtr<ID3D12Device> device,
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue)
+    : device(device), queue(queue)
 {
 }
 
@@ -25,7 +26,6 @@ void DX12CommandAllocator::Setup(Description description)
 void DX12CommandAllocator::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 command allocator: %p", this);
-    description = {};
     allocator.Reset();
 
     commandLists.resize(0);
@@ -33,7 +33,7 @@ void DX12CommandAllocator::Shutdown()
 
 CommandList* DX12CommandAllocator::CreateCommandList(CommandList::Description description)
 {
-    return CreateInstance<CommandList>(commandLists, description, device, allocator);
+    return CreateInstance<CommandList>(commandLists, description, device, queue, allocator);
 }
 
 bool DX12CommandAllocator::DestroyCommandList(CommandList* commandList)

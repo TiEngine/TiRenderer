@@ -7,14 +7,28 @@ namespace ti::backend {
 class Swapchain {
 public:
     struct Description {
-        unsigned int width = 0;
-        unsigned int height = 0;
+        void* window;
+        unsigned int width;
+        unsigned int height;
         unsigned int refreshRate = 60;
         unsigned int bufferCount = 3;
-        void* window = nullptr;
         bool fullScreen = false;
         Format colorFormat = Format::R8G8B8A8_UNORM;
         Format depthStencilFormat = Format::D24_UNORM_S8_UINT;
+
+        Description(
+            void* window, unsigned int width, unsigned int height,
+            unsigned int refreshRate = 60, unsigned int bufferCount = 3,
+            bool fullScreen = false,
+            Format colorFormat = Format::R8G8B8A8_UNORM,
+            Format depthStencilFormat = Format::D24_UNORM_S8_UINT)
+            : window(window), width(width), height(height)
+            , refreshRate(refreshRate), bufferCount(bufferCount)
+            , fullScreen(fullScreen)
+            , colorFormat(colorFormat)
+            , depthStencilFormat(depthStencilFormat) {}
+
+        Description() : window(nullptr), width(0), height(0) {}
     };
 
     virtual void Resize(unsigned int width, unsigned int height) = 0;

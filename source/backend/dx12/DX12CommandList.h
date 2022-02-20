@@ -8,14 +8,20 @@ class DX12CommandList : public CommandList {
 public:
     explicit DX12CommandList(
         Microsoft::WRL::ComPtr<ID3D12Device> device,
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue,
         Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator);
     ~DX12CommandList() override;
 
     void Setup(Description description);
     void Shutdown();
 
+    void Reset(const PipelineState& pipelineState) override;
+
+    void Flush() override;
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
 
     Description description;

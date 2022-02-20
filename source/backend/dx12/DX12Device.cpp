@@ -47,7 +47,6 @@ void DX12Device::Setup(Description description)
 void DX12Device::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
-    description = {};
     device.Reset();
     queue.Reset();
 
@@ -80,12 +79,22 @@ bool DX12Device::DestroySwapchain(Swapchain* swapchain)
 
 CommandAllocator* DX12Device::CreateCommandAllocator(CommandAllocator::Description description)
 {
-    return CreateInstance<CommandAllocator>(commandAllocators, description, device);
+    return CreateInstance<CommandAllocator>(commandAllocators, description, device, queue);
 }
 
 bool DX12Device::DestroyCommandAllocator(CommandAllocator* commandAllocator)
 {
     return DestroyInstance(commandAllocators, commandAllocator);
+}
+
+InputVertexAttributes* DX12Device::CreateInputVertexAttributes(InputVertexAttributes::Description description)
+{
+    return CreateInstance<InputVertexAttributes>(inputVertexLayouts, description);
+}
+
+bool DX12Device::DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes)
+{
+    return DestroyInstance(inputVertexLayouts, inputVertexAttributes);
 }
 
 void DX12Device::WaitIdle()
