@@ -18,7 +18,7 @@ DX12CommandRecorder::~DX12CommandRecorder()
 
 void DX12CommandRecorder::Setup(Description description)
 {
-    TI_LOG_I(TAG, "Create DX12 command list: %p", this);
+    TI_LOG_I(TAG, "Create DX12 command recorder: %p", this);
     this->description = description;
 
     LogIfFailedF(device->CreateCommandList(0,
@@ -39,19 +39,44 @@ void DX12CommandRecorder::Setup(Description description)
 
 void DX12CommandRecorder::Shutdown()
 {
-    TI_LOG_I(TAG, "Destroy DX12 command list: %p", this);
+    TI_LOG_I(TAG, "Destroy DX12 command recorder: %p", this);
     recorder.Reset();
 }
 
-void DX12CommandRecorder::Reset(const PipelineState& pipelineState)
+void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
 {
+    if (pipelineState) {
+    } else {
+        recorder->Reset(allocator.Get(), NULL);
+    }
     //ID3D12PipelineState* native = down_cast<DX12PipelineState*>(&pipelineState)->;
 }
 
-void DX12CommandRecorder::Flush()
+void DX12CommandRecorder::Submit()
 {
     LogIfFailedF(recorder->Close());
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };
     queue->ExecuteCommandLists(_countof(pCommandLists), pCommandLists);
+}
+
+void DX12CommandRecorder::Wait(std::function<void()> coroutine)
+{
+    currentFence++;
+    LogIfFailedF(queue->Signal(fence.Get(), currentFence));
+
+    if (coroutine) {
+        coroutine();
+    }
+
+    if (fence->GetCompletedValue() < currentFence) {
+        HANDLE eventHandle = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+        if (eventHandle != NULL) {
+            LogIfFailedF(fence->SetEventOnCompletion(currentFence, eventHandle));
+            WaitForSingleObject(eventHandle, INFINITE);
+            CloseHandle(eventHandle);
+        } else {
+            TI_LOG_F(TAG, "Command recorder wait failed, can not create event!");
+        }
+    }
 }
 }

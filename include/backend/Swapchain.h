@@ -16,8 +16,7 @@ public:
         Format colorFormat = Format::R8G8B8A8_UNORM;
         Format depthStencilFormat = Format::D24_UNORM_S8_UINT;
 
-        Description(
-            void* window, unsigned int width, unsigned int height,
+        Description(void* window, unsigned int width, unsigned int height,
             unsigned int refreshRate = 60, unsigned int bufferCount = 3,
             bool fullScreen = false,
             Format colorFormat = Format::R8G8B8A8_UNORM,

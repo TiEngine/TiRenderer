@@ -15,9 +15,10 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void Reset(const PipelineState& pipelineState) override;
+    void Reset(const PipelineState* pipelineState = nullptr) override;
 
-    void Flush() override;
+    void Submit() override;
+    void Wait(std::function<void()> coroutine = {}) override;
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
@@ -26,5 +27,8 @@ private:
 
     Description description;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> recorder;
+
+    UINT64 currentFence = 0;
+    Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 };
 }
