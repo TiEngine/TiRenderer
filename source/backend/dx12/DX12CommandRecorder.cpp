@@ -1,9 +1,9 @@
-#include "DX12CommandList.h"
+#include "DX12CommandRecorder.h"
 #include "DX12Common.h"
 #include "common/TypeCast.hpp"
 
 namespace ti::backend {
-DX12CommandList::DX12CommandList(
+DX12CommandRecorder::DX12CommandRecorder(
     Microsoft::WRL::ComPtr<ID3D12Device> device,
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue,
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator)
@@ -11,12 +11,12 @@ DX12CommandList::DX12CommandList(
 {
 }
 
-DX12CommandList::~DX12CommandList()
+DX12CommandRecorder::~DX12CommandRecorder()
 {
     Shutdown();
 }
 
-void DX12CommandList::Setup(Description description)
+void DX12CommandRecorder::Setup(Description description)
 {
     TI_LOG_I(TAG, "Create DX12 command list: %p", this);
     this->description = description;
@@ -37,18 +37,18 @@ void DX12CommandList::Setup(Description description)
     recorder->Close();
 }
 
-void DX12CommandList::Shutdown()
+void DX12CommandRecorder::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 command list: %p", this);
     recorder.Reset();
 }
 
-void DX12CommandList::Reset(const PipelineState& pipelineState)
+void DX12CommandRecorder::Reset(const PipelineState& pipelineState)
 {
     //ID3D12PipelineState* native = down_cast<DX12PipelineState*>(&pipelineState)->;
 }
 
-void DX12CommandList::Flush()
+void DX12CommandRecorder::Flush()
 {
     LogIfFailedF(recorder->Close());
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };

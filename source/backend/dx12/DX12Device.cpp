@@ -39,6 +39,7 @@ void DX12Device::Setup(Description description)
     commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     LogIfFailedF(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&queue)));
+    LogIfFailedF(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)));
 
     // This fence is used to synchronize between CPU Host and GPU Device.
     LogIfFailedF(device->CreateFence(currentFence, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
@@ -49,12 +50,13 @@ void DX12Device::Shutdown()
     TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
     device.Reset();
     queue.Reset();
+    allocator.Reset();
 
     currentFence = 0;
     fence.Reset();
 
     swapchains.resize(0);
-    commandAllocators.resize(0);
+    commandRecorders.resize(0);
 }
 
 Shader* DX12Device::CreateShader(Shader::Description description)
@@ -77,14 +79,14 @@ bool DX12Device::DestroySwapchain(Swapchain* swapchain)
     return DestroyInstance(swapchains, swapchain);
 }
 
-CommandAllocator* DX12Device::CreateCommandAllocator(CommandAllocator::Description description)
+CommandRecorder* DX12Device::CreateCommandRecorder(CommandRecorder::Description description)
 {
-    return CreateInstance<CommandAllocator>(commandAllocators, description, device, queue);
+    return CreateInstance<CommandRecorder>(commandRecorders, description, device, queue, allocator);
 }
 
-bool DX12Device::DestroyCommandAllocator(CommandAllocator* commandAllocator)
+bool DX12Device::DestroyCommandRecorder(CommandRecorder* commandRecorder)
 {
-    return DestroyInstance(commandAllocators, commandAllocator);
+    return DestroyInstance(commandRecorders, commandRecorder);
 }
 
 InputVertexAttributes* DX12Device::CreateInputVertexAttributes(InputVertexAttributes::Description description)
@@ -118,9 +120,37 @@ void DX12Device::WaitIdle()
             WaitForSingleObject(eventHandle, INFINITE);
             CloseHandle(eventHandle);
         } else {
-            TI_LOG_F(TAG, "Flush command queue and wait idle failed, can not create event!");
+            TI_LOG_F(TAG, "Device wait idle failed, can not create event!");
         }
     }
+}
+
+Microsoft::WRL::ComPtr<IDXGIFactory4> DX12Device::DXGIFactory()
+{
+    return dxgi;
+}
+
+Microsoft::WRL::ComPtr<ID3D12Device> DX12Device::NativeDevice()
+{
+    return device;
+}
+
+Microsoft::WRL::ComPtr<ID3D12CommandQueue> DX12Device::CommandQueue(CommandType type)
+{
+    return queue;
+}
+
+Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DX12Device::CommandAllocator(CommandType type)
+{
+    return allocator;
+}
+
+void DX12Device::ResetCommandAllocator()
+{
+    // Reuse the all memory associated with command recording.
+    // It will call all CommandList->Reset in this command allocator.
+    // Only can be reset when the associated command lists have finished execution on the GPU.
+    LogIfFailedF(allocator->Reset());
 }
 
 void DX12Device::EnumAdapters()

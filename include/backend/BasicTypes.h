@@ -49,4 +49,10 @@ enum class MSAA : uint8_t {
     MSAAx4 = 4
 };
 
+enum class CommandType {
+    Graphics,
+    Transfer,
+    Compute
+};
+
 }

@@ -21,7 +21,7 @@ protected:
     void ProcessBytecode();
 
 private:
-    Description description;
+    Description description{ ShaderStage::Vertex, "" };
     Microsoft::WRL::ComPtr<ID3DBlob> bytecode;
 };
 }

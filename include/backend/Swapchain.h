@@ -27,8 +27,6 @@ public:
             , fullScreen(fullScreen)
             , colorFormat(colorFormat)
             , depthStencilFormat(depthStencilFormat) {}
-
-        Description() : window(nullptr), width(0), height(0) {}
     };
 
     virtual void Resize(unsigned int width, unsigned int height) = 0;

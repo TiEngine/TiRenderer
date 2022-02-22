@@ -18,8 +18,6 @@ public:
             SourceType sourceType = SourceType::Source)
             : stage(stage), source(source)
             , sourceType(sourceType) {}
-
-        Description() : stage(ShaderStage::Vertex) {}
     };
 
     virtual std::string DumpBytecode() const = 0;

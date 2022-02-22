@@ -1,16 +1,16 @@
 #pragma once
 
-#include "backend/CommandList.h"
+#include "backend/CommandRecorder.h"
 #include "DX12BackendHeaders.h"
 
 namespace ti::backend {
-class DX12CommandList : public CommandList {
+class DX12CommandRecorder : public CommandRecorder {
 public:
-    explicit DX12CommandList(
+    explicit DX12CommandRecorder(
         Microsoft::WRL::ComPtr<ID3D12Device> device,
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue,
         Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator);
-    ~DX12CommandList() override;
+    ~DX12CommandRecorder() override;
 
     void Setup(Description description);
     void Shutdown();

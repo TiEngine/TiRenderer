@@ -3,10 +3,9 @@
 #include "PipelineState.h"
 
 namespace ti::backend {
-class CommandList {
+class CommandRecorder {
 public:
     struct Description {
-        Description() {}
     };
 
     virtual void Reset(const PipelineState& pipelineState) = 0;
@@ -14,7 +13,7 @@ public:
     virtual void Flush() = 0;
 
 protected:
-    CommandList() = default;
-    virtual ~CommandList() = default;
+    CommandRecorder() = default;
+    virtual ~CommandRecorder() = default;
 };
 }

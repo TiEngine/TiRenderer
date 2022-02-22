@@ -5,7 +5,6 @@
 #include "DX12BackendHeaders.h"
 
 namespace ti::backend {
-
 class DX12Swapchain : public Swapchain {
 public:
     explicit DX12Swapchain(
@@ -31,7 +30,7 @@ private:
     UINT descriptorSizeOfRtv = 0;
     UINT descriptorSizeOfDsv = 0;
 
-    Description description;
+    Description description{ nullptr, 0u, 0u };
     Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
@@ -43,5 +42,4 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetBuffer; // render target
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthStencilBuffer; // depth stencil
 };
-
 }

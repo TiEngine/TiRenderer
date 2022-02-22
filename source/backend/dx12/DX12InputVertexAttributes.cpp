@@ -25,6 +25,7 @@ void DX12InputVertexAttributes::Shutdown()
 
 void DX12InputVertexAttributes::AddAttribute(Attribute attribute)
 {
+    // NB: Make sure the semantic name is unique and the slot+location is unique.
     semanticNames.emplace_back(attribute.semantic);
     D3D12_INPUT_ELEMENT_DESC elementDesc{};
     elementDesc.SemanticName = semanticNames.back().c_str();
@@ -38,8 +39,11 @@ void DX12InputVertexAttributes::AddAttribute(Attribute attribute)
     } else {
         elementDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
     }
-    // FIXME: semanticNames c_str()
     inputLayout.emplace_back(elementDesc);
+    // NB: The change of the semanticNames container will invalidate the result of c_str()!
+    for (size_t n = 0; n < semanticNames.size(); n++) {
+        inputLayout[n].SemanticName = semanticNames[n].c_str();
+    }
 }
 
 const std::vector<D3D12_INPUT_ELEMENT_DESC>& DX12InputVertexAttributes::GetInputLayout() const

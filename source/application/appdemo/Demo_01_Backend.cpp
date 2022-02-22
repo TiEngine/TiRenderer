@@ -55,8 +55,7 @@ void Demo_01_Backend::Begin()
     backend = ti::backend::BackendContext::CreateBackend(ti::backend::BackendContext::Backend::DX12);
     device = backend->CreateDevice({});
 
-    commandAllocator = device->CreateCommandAllocator({});
-    commandList = commandAllocator->CreateCommandList({});
+    commandRecorder = device->CreateCommandRecorder({});
 
     vertexShader = device->CreateShader({ ti::backend::ShaderStage::Vertex, VertexShaderString });
     pixelShader = device->CreateShader({ ti::backend::ShaderStage::Pixel, FragmentShaderString });
@@ -72,8 +71,7 @@ void Demo_01_Backend::Finish()
         device->DestroySwapchain(swapchain);
     }
 
-    commandAllocator->DestroyCommandList(commandList);
-    device->DestroyCommandAllocator(commandAllocator);
+    device->DestroyCommandRecorder(commandRecorder);
 
     backend->DestroyDevice(device);
     ti::backend::BackendContext::DestroyBackend(ti::backend::BackendContext::Backend::DX12);

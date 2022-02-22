@@ -78,7 +78,6 @@ void DX12Shader::ProcessSource()
 void DX12Shader::ProcessBytecode()
 {
     LogIfFailedW(D3DCreateBlob(description.source.size(), &bytecode));
-    memcpy_s(bytecode->GetBufferPointer(), description.source.size(),
-        description.source.data(), description.source.size());
+    CopyMemory(bytecode->GetBufferPointer(), description.source.data(), description.source.size());
 }
 }
