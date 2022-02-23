@@ -1,14 +1,11 @@
 #include "DX12CommandRecorder.h"
 #include "DX12Common.h"
-#include "common/TypeCast.hpp"
+#include "DX12Device.h"
 
 namespace ti::backend {
-DX12CommandRecorder::DX12CommandRecorder(
-    Microsoft::WRL::ComPtr<ID3D12Device> device,
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue,
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator)
-    : device(device), queue(queue), allocator(allocator)
+DX12CommandRecorder::DX12CommandRecorder(DX12Device& internal) : internal(internal)
 {
+    device = internal.NativeDevice();
 }
 
 DX12CommandRecorder::~DX12CommandRecorder()
@@ -20,6 +17,9 @@ void DX12CommandRecorder::Setup(Description description)
 {
     TI_LOG_I(TAG, "Create DX12 command recorder: %p", this);
     this->description = description;
+
+    queue = internal.CommandQueue(description.type);
+    allocator = internal.CommandAllocator(description.type);
 
     LogIfFailedF(device->CreateCommandList(0,
         D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -40,7 +40,11 @@ void DX12CommandRecorder::Setup(Description description)
 void DX12CommandRecorder::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 command recorder: %p", this);
+    queue.Reset();
+    allocator.Reset();
     recorder.Reset();
+    currentFence = 0;
+    fence.Reset();
 }
 
 void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
@@ -52,6 +56,14 @@ void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
     //ID3D12PipelineState* native = down_cast<DX12PipelineState*>(&pipelineState)->;
 }
 
+void DX12CommandRecorder::BeginRecord()
+{
+}
+
+void DX12CommandRecorder::EndRecord()
+{
+}
+
 void DX12CommandRecorder::Submit()
 {
     LogIfFailedF(recorder->Close());
@@ -61,13 +73,15 @@ void DX12CommandRecorder::Submit()
 
 void DX12CommandRecorder::Wait(std::function<void()> coroutine)
 {
-    currentFence++;
+    currentFence++; // This fence is held by CommandRecorder.
     LogIfFailedF(queue->Signal(fence.Get(), currentFence));
 
-    if (coroutine) {
+    if (coroutine) { // Process coroutine.
         coroutine();
     }
 
+    // DX12Device::WaitIdle() will wait until all commands on all command queues have been executed.
+    // The current Wait only waits until the command on the current command queue is executed.
     if (fence->GetCompletedValue() < currentFence) {
         HANDLE eventHandle = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
         if (eventHandle != NULL) {

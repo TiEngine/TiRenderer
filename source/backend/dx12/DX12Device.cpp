@@ -71,7 +71,7 @@ bool DX12Device::DestroyShader(Shader* shader)
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
 {
-    return CreateInstance<Swapchain>(swapchains, description, dxgi, device, queue);
+    return CreateInstance<Swapchain>(swapchains, description, *this);
 }
 
 bool DX12Device::DestroySwapchain(Swapchain* swapchain)
@@ -81,7 +81,7 @@ bool DX12Device::DestroySwapchain(Swapchain* swapchain)
 
 CommandRecorder* DX12Device::CreateCommandRecorder(CommandRecorder::Description description)
 {
-    return CreateInstance<CommandRecorder>(commandRecorders, description, device, queue, allocator);
+    return CreateInstance<CommandRecorder>(commandRecorders, description, *this);
 }
 
 bool DX12Device::DestroyCommandRecorder(CommandRecorder* commandRecorder)

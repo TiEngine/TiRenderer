@@ -32,8 +32,8 @@ public:
 
     Microsoft::WRL::ComPtr<IDXGIFactory4> DXGIFactory();
     Microsoft::WRL::ComPtr<ID3D12Device> NativeDevice();
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue(CommandType type = CommandType::Graphics);
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator(CommandType type = CommandType::Graphics);
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue(CommandType type);
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator(CommandType type);
     void ResetCommandAllocator();
 
 protected:

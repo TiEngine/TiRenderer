@@ -5,12 +5,10 @@
 #include "DX12BackendHeaders.h"
 
 namespace ti::backend {
+class DX12Device;
 class DX12Swapchain : public Swapchain {
 public:
-    explicit DX12Swapchain(
-        Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
-        Microsoft::WRL::ComPtr<ID3D12Device> device,
-        Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue);
+    explicit DX12Swapchain(DX12Device& device);
     ~DX12Swapchain() override;
 
     void Setup(Description description);
@@ -21,7 +19,7 @@ public:
     void Present() override;
 
 private:
-    Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi;
+    DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
 

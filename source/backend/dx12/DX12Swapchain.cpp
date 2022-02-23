@@ -1,14 +1,13 @@
 #include "DX12Swapchain.h"
 #include "DX12BasicTypes.h"
 #include "DX12Common.h"
+#include "DX12Device.h"
 
 namespace ti::backend {
-DX12Swapchain::DX12Swapchain(
-    Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi,
-    Microsoft::WRL::ComPtr<ID3D12Device> device,
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue)
-    : dxgi(dxgi), device(device), queue(queue)
+DX12Swapchain::DX12Swapchain(DX12Device& internal) : internal(internal)
 {
+    device = internal.NativeDevice();
+    queue = internal.CommandQueue(CommandType::Graphics);
     descriptorSizeOfRtv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     descriptorSizeOfDsv = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
@@ -40,7 +39,7 @@ void DX12Swapchain::Setup(Description description)
     swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     // NB: Swapchain uses the queue to perform flush.
-    LogIfFailedF(dxgi->CreateSwapChain(queue.Get(), &swapchainDesc, &swapchain));
+    LogIfFailedF(internal.DXGIFactory()->CreateSwapChain(queue.Get(), &swapchainDesc, &swapchain));
 
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
     rtvHeapDesc.NumDescriptors = description.bufferCount;
@@ -76,9 +75,11 @@ void DX12Swapchain::Shutdown()
 
 void DX12Swapchain::Resize(unsigned int width, unsigned int height)
 {
-    // If call Resize when during rendering, you need to call Device::FlushAndWaitIdle first
-    // to make sure that all command in the command queue have been executed, because Resize
+    // If call Resize when during rendering, call DX12Device::WaitIdle() first to make
+    // sure that all command in the command queue have been executed, because Resize
     // will rebuild swaphain resources(render target or depth stencil resources/views).
+    internal.WaitIdle();
+
     TI_LOG_I(TAG, "Swapchain resize: width * height = %d * %d", width, height);
     description.width = width;
     description.height = height;

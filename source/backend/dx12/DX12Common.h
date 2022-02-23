@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/TypeCast.hpp"
 #include "common/Logger.hpp"
 
 #define LogOutIfFailed(level, expression, success)             \
@@ -47,7 +48,7 @@ std::string FormatResult(HRESULT hr);
 
 template <typename Interface, typename Implement, class ...Arguments>
 Interface* CreateInstance(std::vector<std::unique_ptr<Implement>>& container,
-    typename Interface::Description description, const Arguments& ...arguments)
+    typename Interface::Description description, typename Arguments& ...arguments)
 {
     static_assert(std::is_base_of<Interface, Implement>::value,
         "CreateInstance: Implement should inherit from Interface!");
