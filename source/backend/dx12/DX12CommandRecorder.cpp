@@ -38,6 +38,8 @@ void DX12CommandRecorder::Setup(Description description)
     //   commandList.Xxx... // Commands
     //   commandList.Flush();
     recorder->Close();
+
+    fence
 }
 
 void DX12CommandRecorder::Shutdown()
@@ -53,10 +55,10 @@ void DX12CommandRecorder::Shutdown()
 void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
 {
     if (pipelineState) {
+        //ID3D12PipelineState* pso = down_cast<DX12PipelineState*>(&pipelineState)->;
     } else {
         recorder->Reset(allocator.Get(), NULL);
     }
-    //ID3D12PipelineState* native = down_cast<DX12PipelineState*>(&pipelineState)->;
 }
 
 void DX12CommandRecorder::BeginRecord()

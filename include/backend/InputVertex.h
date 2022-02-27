@@ -17,7 +17,7 @@ public:
             , memoryType(memoryType) {}
     };
 
-    virtual void Upload(const std::vector<uint8_t>& data) = 0;
+    virtual void Upload(const std::vector<uint8_t>& data, bool sync = true) = 0;
     virtual void Readback(std::vector<uint8_t>& data) = 0;
 
     ResourceState GetState() const
@@ -35,6 +35,6 @@ protected:
     }
 
 private:
-    ResourceState state;
+    ResourceState state = ResourceState::UNDEFINED;
 };
 }

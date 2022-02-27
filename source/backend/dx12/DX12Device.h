@@ -5,6 +5,8 @@
 #include "DX12Swapchain.h"
 #include "DX12CommandRecorder.h"
 #include "DX12InputVertexAttributes.h"
+#include "DX12InputVertex.h"
+#include "DX12InputIndex.h"
 
 namespace ti::backend {
 class DX12Device : public Device {
@@ -26,6 +28,9 @@ public:
 
     InputVertexAttributes* CreateInputVertexAttributes(InputVertexAttributes::Description description) override;
     bool DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes) override;
+
+    InputVertex* CreateInputVertex(InputVertex::Description description) override;
+    bool DestroyInputVertex(InputVertex* inputVertex) override;
 
     void WaitIdle() override;
 
@@ -57,5 +62,7 @@ private:
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
     std::vector<std::unique_ptr<DX12CommandRecorder>> commandRecorders;
     std::vector<std::unique_ptr<DX12InputVertexAttributes>> inputVertexLayouts;
+    std::vector<std::unique_ptr<DX12InputVertex>> inputVertices;
+    std::vector<std::unique_ptr<DX12InputIndex>> inputIndices;
 };
 }

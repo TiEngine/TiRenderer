@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include "math/Math.hpp"
 #include "application/Application.h"
 #include "backend/BackendContext.h"
 #include "backend/Device.h"
@@ -43,6 +44,9 @@ private:
     ti::backend::Shader* pixelShader = nullptr;
 
     ti::backend::InputVertexAttributes* inputVertexAttributes = nullptr;
+
+    ti::backend::InputVertex* vertexInput = nullptr;
+    ti::backend::InputIndex* indexInput = nullptr;
 
     ti::backend::Swapchain* swapchain = nullptr;
 };

@@ -24,6 +24,10 @@ public:
     virtual InputVertexAttributes* CreateInputVertexAttributes(InputVertexAttributes::Description description) = 0;
     virtual bool DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes) = 0;
 
+    virtual InputVertex* CreateInputVertex(InputVertex::Description description) = 0;
+    virtual bool DestroyInputVertex(InputVertex* inputVertex) = 0;
+
+
     virtual void WaitIdle() = 0;
 
 protected:

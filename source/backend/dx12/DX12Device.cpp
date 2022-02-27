@@ -99,6 +99,16 @@ bool DX12Device::DestroyInputVertexAttributes(InputVertexAttributes* inputVertex
     return DestroyInstance(inputVertexLayouts, inputVertexAttributes);
 }
 
+InputVertex* DX12Device::CreateInputVertex(InputVertex::Description description)
+{
+    return CreateInstance<InputVertex>(inputVertices, description, *this);
+}
+
+bool DX12Device::DestroyInputVertex(InputVertex* inputVertex)
+{
+    return DestroyInstance(inputVertices, inputVertex);
+}
+
 void DX12Device::WaitIdle()
 {
     // Advance the fence value to mark commands up to this fence point.

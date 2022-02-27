@@ -13,19 +13,20 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void Upload(const std::vector<uint8_t>& data) override;
+    void Upload(const std::vector<uint8_t>& data, bool sync = true) override;
     void Readback(std::vector<uint8_t>& data) override;
 
     void SetState(ResourceState state);
 
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
     Microsoft::WRL::ComPtr<ID3D12Resource> Uploader();
+    Microsoft::WRL::ComPtr<ID3D12Resource> Downloader();
 
 protected:
-    void UploadGpuOnly(const std::vector<uint8_t>& data);
-    void UploadCpuToGpu(const std::vector<uint8_t>& data);
-    void DownloadGpuOnly(std::vector<uint8_t>& data);
-    void DownloadGpuToCpu(std::vector<uint8_t>& data);
+    ResourceState SelectInitialResourceState(TransferDirection memoryType);
+
+    void UploadGpuOnly(const std::vector<uint8_t>& data, bool sync);
+    void UploadCpuToGpu(const std::vector<uint8_t>& data, bool sync);
 
 private:
     DX12Device& internal;
@@ -34,6 +35,7 @@ private:
     Description description{ 0u, 0u };
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
     Microsoft::WRL::ComPtr<ID3D12Resource> uploader;
+    Microsoft::WRL::ComPtr<ID3D12Resource> downloader;
 
     DX12CommandRecorder* transfer = nullptr;
 };

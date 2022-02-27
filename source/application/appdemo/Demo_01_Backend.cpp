@@ -50,6 +50,22 @@ PixelOut Main(VertexOut pin)
 }
 )";
 
+struct VertexData {
+    ti::math::XMFLOAT3 position;
+    ti::math::XMFLOAT4 color;
+};
+
+const std::vector<VertexData> vertices = {
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+};
+
 void Demo_01_Backend::Begin()
 {
     backend = ti::backend::BackendContext::CreateBackend(ti::backend::BackendContext::Backend::DX12);
@@ -63,6 +79,15 @@ void Demo_01_Backend::Begin()
     inputVertexAttributes = device->CreateInputVertexAttributes({});
     inputVertexAttributes->AddAttribute({ ti::backend::Format::R32G32B32_FLOAT,    "POSITION", 0,  0 });
     inputVertexAttributes->AddAttribute({ ti::backend::Format::R32G32B32A32_FLOAT, "COLOR",    1, 12 });
+
+    std::vector<uint8_t> vertexUploadBuffer;
+    vertexUploadBuffer.resize(vertices.size() * sizeof(VertexData));
+    for (size_t n = 0; n < vertices.size(); n++) {
+        new (&(vertexUploadBuffer[n * sizeof(VertexData)])) VertexData(vertices[n]);
+    }
+    vertexInput = device->CreateInputVertex({
+        static_cast<unsigned int>(vertices.size()), sizeof(VertexData) });
+    vertexInput->Upload(vertexUploadBuffer);
 }
 
 void Demo_01_Backend::Finish()
