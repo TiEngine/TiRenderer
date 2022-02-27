@@ -7,7 +7,6 @@
 #include <codecvt>
 
 namespace std {
-
 #if defined(UNICODE) || defined(_UNICODE)
 using tstring = wstring;
 #else
@@ -47,5 +46,4 @@ inline string to_string(const string& str)
 {
     return str;
 }
-
 }

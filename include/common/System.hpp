@@ -3,7 +3,6 @@
 #include "Registry.hpp"
 
 namespace ti::common {
-
 class System {
 public:
     virtual void OnCreate() {}
@@ -17,5 +16,4 @@ public:
 
     virtual void OnTick(Registry& registry, float delta) = 0;
 };
-
 }

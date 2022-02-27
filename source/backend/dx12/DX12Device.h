@@ -9,8 +9,7 @@
 namespace ti::backend {
 class DX12Device : public Device {
 public:
-    explicit DX12Device(
-        Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
+    explicit DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
     ~DX12Device() override;
 
     void Setup(Description description);

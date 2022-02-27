@@ -16,6 +16,9 @@ public:
 
     const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetInputLayout() const;
 
+protected:
+    D3D12_INPUT_CLASSIFICATION SelectSlotClass(Attribute::SlotClass type) const;
+
 private:
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout;
     std::vector<std::string> semanticNames;

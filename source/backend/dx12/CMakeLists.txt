@@ -3,7 +3,7 @@ project(backend_dx12)
 
 file(GLOB_RECURSE SRC *.h *.cpp)
 add_library(backend_dx12 SHARED ${SRC} ${INC})
-target_link_libraries(backend_dx12 d3dcompiler d3d12 dxgi)
+target_link_libraries(backend_dx12 d3dcompiler d3d12 dxgi dxguid)
 
 add_custom_target(unzip_directx_headers ALL)
 add_custom_command(TARGET unzip_directx_headers PRE_BUILD

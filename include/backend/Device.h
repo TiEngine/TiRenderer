@@ -9,6 +9,7 @@ namespace ti::backend {
 class Device {
 public:
     struct Description {
+        std::string device; // Selected adapter device name.
     };
 
     virtual Shader* CreateShader(Shader::Description description) = 0;

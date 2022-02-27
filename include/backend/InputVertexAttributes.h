@@ -7,6 +7,7 @@ namespace ti::backend {
 class InputVertexAttributes {
 public:
     struct Description {
+        unsigned int reservedAttributesCount = 8;
     };
 
     struct Attribute {

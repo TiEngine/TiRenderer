@@ -10,8 +10,9 @@ namespace ti::backend {
 BackendContext* BackendContext::CreateBackend(Backend type)
 {
     static const std::unordered_map<Backend, std::string> libraries = {
-        { Backend::DX12,   "backend_dx12"   },
-        { Backend::Vulkan, "backend_vulkan" }
+        { Backend::DX12,       "backend_dx12"   },
+        { Backend::Vulkan,     "backend_vulkan" },
+        { Backend::SoftRaster, "backend_cpu"    }
     };
 
     if (storage.find(type) != storage.end()) {

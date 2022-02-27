@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdint>
+#include "common/TypeCast.hpp"
 
 namespace ti::backend {
-
 enum class Format {
     R8G8B8A8_UNORM,
     R32G32B32_FLOAT,
@@ -13,8 +12,8 @@ enum class Format {
 
 enum class Stage : uint32_t {
     // Sort them by their order in the graphics pipeline:
-    InputAssembler = (1 <<  0), // Standard stage: input vertex and index
-    VertexShader   = (1 <<  2), // Standard stage: vertex process
+    InputAssembler = (1 <<  0), // Standard stage: input vertex and index.
+    VertexShader   = (1 <<  2), // Standard stage: vertex process.
     HullShader     = (1 <<  4), // Extra stage: hull process, determining how much an input control
                                 // patch should be tessellated by the tessellation stage.
     Tessellation   = (1 <<  8), // Extra stage: tessellation, which converts low-detail subdivision
@@ -27,21 +26,21 @@ enum class Stage : uint32_t {
     StreamOutput   = (1 << 14), // Extra stage: output vertex data from the geometry-shader stage (or
                                 // the vertex-shader stage if the geometry-shader stage is inactive)
                                 // to one or more buffers in memory.
-    Rasterizer     = (1 << 16), // Standard stage: rasterize
-    PixelShader    = (1 << 18), // Standard stage: pixel/fragment process
-    OutputMerger   = (1 << 20), // Standard stage: merge and output
-    ComputeShader  = (1 << 24), // Advance stage: compute pipeline process
+    Rasterizer     = (1 << 16), // Standard stage: rasterize.
+    PixelShader    = (1 << 18), // Standard stage: pixel/fragment process.
+    OutputMerger   = (1 << 20), // Standard stage: merge and output.
+    ComputeShader  = (1 << 24), // Advance stage: compute pipeline process.
     // Programmable shader stage mask:
     ShaderStageMask = VertexShader | HullShader | DomainShader | GeometryShader | PixelShader | ComputeShader
 };
 
 enum class ShaderStage : uint32_t {
-    Vertex   = static_cast<uint32_t>(Stage::VertexShader),
-    Hull     = static_cast<uint32_t>(Stage::HullShader),
-    Domain   = static_cast<uint32_t>(Stage::DomainShader),
-    Geometry = static_cast<uint32_t>(Stage::GeometryShader),
-    Pixel    = static_cast<uint32_t>(Stage::PixelShader),
-    Compute  = static_cast<uint32_t>(Stage::ComputeShader)
+    Vertex   = common::EnumCast(Stage::VertexShader),
+    Hull     = common::EnumCast(Stage::HullShader),
+    Domain   = common::EnumCast(Stage::DomainShader),
+    Geometry = common::EnumCast(Stage::GeometryShader),
+    Pixel    = common::EnumCast(Stage::PixelShader),
+    Compute  = common::EnumCast(Stage::ComputeShader)
 };
 
 enum class MSAA : uint8_t {
@@ -49,10 +48,52 @@ enum class MSAA : uint8_t {
     MSAAx4 = 4
 };
 
-enum class CommandType {
-    Graphics,
-    Transfer,
-    Compute
+enum class CommandType : uint8_t {
+    Graphics = 0x1,
+    Transfer = 0x2,
+    Compute  = 0x4,
+    Generic  = Graphics | Transfer | Compute
 };
 
+enum class TransferDirection {
+    GPU_ONLY,
+    CPU_TO_GPU,
+    GPU_TO_CPU
+};
+
+enum class ResourceState {
+    UNDEFINED,
+    PRESENT,
+    GENERAL_READ,
+    DEPTH_STENCIL_READ,
+    DEPTH_STENCIL_WRITE,
+    COPY_SOURCE,
+    COPY_DESTINATION,
+    RESOLVE_SOURCE,
+    RESOLVE_DESTINATION
+};
+
+struct ColorValue {
+    float r = 0.0f;
+    float g = 0.0f;
+    float b = 0.0f;
+    float a = 1.0f;
+};
+
+struct ClearValue {
+    Format format = Format::R32G32B32A32_FLOAT;
+    float color[4]{};
+    float depth = 1.0f;
+    uint8_t stencil = 0;
+};
+
+struct ScreenPoint {
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
+struct ScreenRectangle {
+    ScreenPoint leftTop;
+    ScreenPoint rightBottom;
+};
 }

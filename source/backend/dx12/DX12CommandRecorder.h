@@ -18,6 +18,11 @@ public:
     void BeginRecord() override;
     void EndRecord() override;
 
+    void RcBarrier(InputVertex& input, ResourceState before, ResourceState after) override;
+
+    void RcUpload(InputVertex& input, const std::vector<uint8_t>& data) override;
+    void RcUpload(InputIndex& input, const std::vector<uint8_t>& data) override;
+
     void Submit() override;
     void Wait(std::function<void()> coroutine = {}) override;
 

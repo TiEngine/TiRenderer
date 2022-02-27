@@ -15,6 +15,8 @@ DX12InputVertexAttributes::~DX12InputVertexAttributes()
 
 void DX12InputVertexAttributes::Setup(Description description)
 {
+    inputLayout.reserve(description.reservedAttributesCount);
+    semanticNames.reserve(description.reservedAttributesCount);
 }
 
 void DX12InputVertexAttributes::Shutdown()
@@ -32,13 +34,9 @@ void DX12InputVertexAttributes::AddAttribute(Attribute attribute)
     elementDesc.SemanticIndex = 0;
     elementDesc.Format = ConvertFormat(attribute.format);
     elementDesc.InputSlot = attribute.slot;
+    elementDesc.InputSlotClass = SelectSlotClass(attribute.slotClass);
     elementDesc.AlignedByteOffset = attribute.stride;
     elementDesc.InstanceDataStepRate = 0;
-    if (attribute.slotClass == Attribute::SlotClass::PerVertexData) {
-        elementDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-    } else {
-        elementDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    }
     inputLayout.emplace_back(elementDesc);
     // NB: The change of the semanticNames container will invalidate the result of c_str()!
     for (size_t n = 0; n < semanticNames.size(); n++) {
@@ -49,5 +47,16 @@ void DX12InputVertexAttributes::AddAttribute(Attribute attribute)
 const std::vector<D3D12_INPUT_ELEMENT_DESC>& DX12InputVertexAttributes::GetInputLayout() const
 {
     return inputLayout;
+}
+
+D3D12_INPUT_CLASSIFICATION DX12InputVertexAttributes::SelectSlotClass(Attribute::SlotClass type) const
+{
+    switch (type) {
+    case Attribute::SlotClass::PerVertexData:
+        return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+    case Attribute::SlotClass::PerInstanceData:
+        return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+    }
+    return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 }
 }

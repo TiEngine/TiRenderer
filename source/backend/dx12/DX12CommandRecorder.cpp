@@ -1,6 +1,9 @@
 #include "DX12CommandRecorder.h"
+#include "DX12BasicTypes.h"
 #include "DX12Common.h"
 #include "DX12Device.h"
+#include "DX12InputVertex.h"
+#include "DX12InputIndex.h"
 
 namespace ti::backend {
 DX12CommandRecorder::DX12CommandRecorder(DX12Device& internal) : internal(internal)
@@ -62,6 +65,41 @@ void DX12CommandRecorder::BeginRecord()
 
 void DX12CommandRecorder::EndRecord()
 {
+}
+
+void DX12CommandRecorder::RcBarrier(InputVertex& input, ResourceState before, ResourceState after)
+{
+    DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
+    if (vertex.GetState() != before) {
+        TI_LOG_E(TAG, "Current resource state is not same with the before state!");
+    }
+
+    recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertex.Buffer().Get(),
+        ConvertResourceState(vertex.GetState()), ConvertResourceState(after)));
+    vertex.SetState(after);
+}
+
+void DX12CommandRecorder::RcUpload(InputVertex& input, const std::vector<uint8_t>& data)
+{
+    if (description.type != CommandType::Transfer) {
+        TI_LOG_W(TAG, "<RcUpload> <InputVertex> Current command type is not Transfer.");
+    }
+
+    D3D12_SUBRESOURCE_DATA subResourceData{};
+    subResourceData.pData = data.data();
+    subResourceData.RowPitch = data.size();
+    subResourceData.SlicePitch = subResourceData.RowPitch;
+
+    DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
+    RcBarrier(vertex, vertex.GetState(), ResourceState::COPY_DESTINATION);
+    UpdateSubresources<1>(recorder.Get(),
+        vertex.Buffer().Get(), vertex.Uploader().Get(), 0, 0, 1, &subResourceData);
+    RcBarrier(vertex, ResourceState::COPY_DESTINATION, ResourceState::GENERAL_READ);
+}
+
+void DX12CommandRecorder::RcUpload(InputIndex& input, const std::vector<uint8_t>& data)
+{
+    // TODO
 }
 
 void DX12CommandRecorder::Submit()

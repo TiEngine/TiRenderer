@@ -3,9 +3,7 @@
 #include "DX12Common.h"
 
 namespace ti::backend {
-DX12Device::DX12Device(
-    Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi)
-    : dxgi(dxgi)
+DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
 {
     EnumAdapters();
 }
@@ -18,6 +16,8 @@ DX12Device::~DX12Device()
 void DX12Device::Setup(Description description)
 {
     TI_LOG_I(TAG, "Create DX12 device: %p", this);
+    this->description = description;
+
     bool createHardwareDeviceSuccess = false;
     LogOutIfFailedI(D3D12CreateDevice(
         NULL, // use default adapter
@@ -148,7 +148,7 @@ Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DX12Device::CommandAllocator(Comm
 void DX12Device::ResetCommandAllocator()
 {
     // Reuse the all memory associated with command recording.
-    // It will call all CommandList->Reset in this command allocator.
+    // It will call all CommandList->Reset in this command allocator and release all memory.
     // Only can be reset when the associated command lists have finished execution on the GPU.
     LogIfFailedF(allocator->Reset());
 }
