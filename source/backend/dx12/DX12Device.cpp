@@ -21,7 +21,7 @@ void DX12Device::Setup(Description description)
     bool createHardwareDeviceSuccess = false;
     LogOutIfFailedI(D3D12CreateDevice(
         NULL, // use default adapter
-        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_12_0,
         IID_PPV_ARGS(&device))
         , createHardwareDeviceSuccess);
 
@@ -32,7 +32,7 @@ void DX12Device::Setup(Description description)
         Microsoft::WRL::ComPtr<IDXGIAdapter> softWarpAdapter;
         LogIfFailedF(dxgi->EnumWarpAdapter(IID_PPV_ARGS(&softWarpAdapter)));
         LogIfFailedF(D3D12CreateDevice(softWarpAdapter.Get(),
-            D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
+            D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device)));
     }
 
     D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};

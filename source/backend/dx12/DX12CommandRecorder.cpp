@@ -5,6 +5,15 @@
 #include "DX12InputVertex.h"
 #include "DX12InputIndex.h"
 
+#define CHECK_RECORD(check, standard, information)                 \
+do {                                                               \
+    if (!(common::EnumCast(check) & common::EnumCast(standard))) { \
+        TI_LOG_W(TAG, "CheckRecordFailed: <line:%d><info:%s> "     \
+            "The current command type is not suitable for %s.",    \
+                __LINE__, #information, #standard);                \
+    }                                                              \
+} while(0)
+
 namespace ti::backend {
 DX12CommandRecorder::DX12CommandRecorder(DX12Device& internal) : internal(internal)
 {
@@ -36,10 +45,14 @@ void DX12CommandRecorder::Setup(Description description)
     // The process of recording command lists is:
     //   commandList.Reset(pipelineState);
     //   commandList.Xxx... // Commands
-    //   commandList.Flush();
-    recorder->Close();
+    //   commandList.Close();
+    //   ExecuteCommandLists...
+    LogIfFailedF(recorder->Close());
 
-    fence
+    // This Fence is used to synchronize and wait until this
+    // CommandRecord recorded commands is executed.
+    LogIfFailedF(device->CreateFence(currentFence,
+        D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 }
 
 void DX12CommandRecorder::Shutdown()
@@ -52,7 +65,7 @@ void DX12CommandRecorder::Shutdown()
     fence.Reset();
 }
 
-void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
+void DX12CommandRecorder::BeginRecord(const PipelineState* pipelineState)
 {
     if (pipelineState) {
         //ID3D12PipelineState* pso = down_cast<DX12PipelineState*>(&pipelineState)->;
@@ -61,12 +74,9 @@ void DX12CommandRecorder::Reset(const PipelineState* pipelineState)
     }
 }
 
-void DX12CommandRecorder::BeginRecord()
-{
-}
-
 void DX12CommandRecorder::EndRecord()
 {
+    LogIfFailedF(recorder->Close());
 }
 
 void DX12CommandRecorder::RcBarrier(InputVertex& input, ResourceState before, ResourceState after)
@@ -83,9 +93,7 @@ void DX12CommandRecorder::RcBarrier(InputVertex& input, ResourceState before, Re
 
 void DX12CommandRecorder::RcUpload(InputVertex& input, const std::vector<uint8_t>& data)
 {
-    if (description.type != CommandType::Transfer) {
-        TI_LOG_W(TAG, "<RcUpload> <InputVertex> Current command type is not Transfer.");
-    }
+    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
 
     D3D12_SUBRESOURCE_DATA subResourceData{};
     subResourceData.pData = data.data();
@@ -109,17 +117,13 @@ void DX12CommandRecorder::Submit()
     LogIfFailedF(recorder->Close());
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };
     queue->ExecuteCommandLists(_countof(pCommandLists), pCommandLists);
-}
 
-void DX12CommandRecorder::Wait(std::function<void()> coroutine)
-{
     currentFence++; // This fence is held by CommandRecorder.
     LogIfFailedF(queue->Signal(fence.Get(), currentFence));
+}
 
-    if (coroutine) { // Process coroutine.
-        coroutine();
-    }
-
+void DX12CommandRecorder::Wait()
+{
     // DX12Device::WaitIdle() will wait until all commands on all command queues have been executed.
     // The current Wait only waits until the command on the current command queue is executed.
     if (fence->GetCompletedValue() < currentFence) {

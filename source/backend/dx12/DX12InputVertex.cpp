@@ -104,22 +104,21 @@ ResourceState DX12InputVertex::SelectInitialResourceState(TransferDirection memo
     return ResourceState::UNDEFINED;
 }
 
-void DX12InputVertex::UploadGpuOnly(const std::vector<uint8_t>& data, bool sync)
+void DX12InputVertex::UploadGpuOnly(const std::vector<uint8_t>& data, bool forceSync)
 {
-    transfer->Reset();
     transfer->BeginRecord();
     transfer->RcUpload(*this, data);
     transfer->EndRecord();
     transfer->Submit();
-    if (sync) {
+    if (forceSync) {
         transfer->Wait();
     }
 }
 
-void DX12InputVertex::UploadCpuToGpu(const std::vector<uint8_t>& data, bool sync)
+void DX12InputVertex::UploadCpuToGpu(const std::vector<uint8_t>& data, bool forceSync)
 {
-    if (sync) {
-        transfer->Wait();
+    if (forceSync) {
+        internal.WaitIdle();
     }
     uint8_t* mappedData = nullptr;
     LogIfFailedF(buffer->Map(0, nullptr, reinterpret_cast<void**>(&mappedData)));

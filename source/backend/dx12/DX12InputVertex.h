@@ -25,8 +25,8 @@ public:
 protected:
     ResourceState SelectInitialResourceState(TransferDirection memoryType);
 
-    void UploadGpuOnly(const std::vector<uint8_t>& data, bool sync);
-    void UploadCpuToGpu(const std::vector<uint8_t>& data, bool sync);
+    void UploadGpuOnly(const std::vector<uint8_t>& data, bool forceSync);
+    void UploadCpuToGpu(const std::vector<uint8_t>& data, bool forceSync);
 
 private:
     DX12Device& internal;

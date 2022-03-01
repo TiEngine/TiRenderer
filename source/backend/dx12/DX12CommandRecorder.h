@@ -13,9 +13,7 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void Reset(const PipelineState* pipelineState = nullptr) override;
-
-    void BeginRecord() override;
+    void BeginRecord(const PipelineState* pipelineState = nullptr) override;
     void EndRecord() override;
 
     void RcBarrier(InputVertex& input, ResourceState before, ResourceState after) override;
@@ -24,7 +22,7 @@ public:
     void RcUpload(InputIndex& input, const std::vector<uint8_t>& data) override;
 
     void Submit() override;
-    void Wait(std::function<void()> coroutine = {}) override;
+    void Wait() override;
 
 private:
     DX12Device& internal;
