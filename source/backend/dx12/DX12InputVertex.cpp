@@ -24,18 +24,18 @@ void DX12InputVertex::Setup(Description description)
         TI_LOG_RET_F(TAG, "Create vertex buffer failed, buffer size is zero!");
     }
 
-    ResourceState initial= SelectInitialResourceState(description.memoryType);
     LogIfFailedF(device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(ConvertHeap(description.memoryType)),
         D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bytesSize),
-        ConvertResourceState(initial), NULL, IID_PPV_ARGS(&buffer)));
-    SetState(initial);
+        ConvertResourceState(ResourceState::GENERAL_READ),
+        NULL, IID_PPV_ARGS(&buffer)));
 
     if (description.memoryType == TransferDirection::GPU_ONLY) {
         LogIfFailedF(device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
             D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bytesSize),
-            D3D12_RESOURCE_STATE_GENERIC_READ, NULL, IID_PPV_ARGS(&uploader)));
+            ConvertResourceState(ResourceState::GENERAL_READ),
+            NULL, IID_PPV_ARGS(&uploader)));
     }
 
     transfer = down_cast<DX12CommandRecorder*>(
@@ -71,11 +71,6 @@ void DX12InputVertex::Readback(std::vector<uint8_t>& data)
     // TODO
 }
 
-void DX12InputVertex::SetState(ResourceState state)
-{
-    InputVertex::SetState(state);
-}
-
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12InputVertex::Buffer()
 {
     return buffer;
@@ -91,23 +86,12 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DX12InputVertex::Downloader()
     return downloader;
 }
 
-ResourceState DX12InputVertex::SelectInitialResourceState(TransferDirection memoryType)
-{
-    switch (memoryType) {
-    case TransferDirection::GPU_ONLY:
-        return ResourceState::UNDEFINED;
-    case ti::backend::TransferDirection::CPU_TO_GPU:
-        return ResourceState::GENERAL_READ;
-    case ti::backend::TransferDirection::GPU_TO_CPU:
-        return ResourceState::UNDEFINED; // FIXME
-    }
-    return ResourceState::UNDEFINED;
-}
-
 void DX12InputVertex::UploadGpuOnly(const std::vector<uint8_t>& data, bool forceSync)
 {
     transfer->BeginRecord();
+    transfer->RcBarrier(*this, ResourceState::GENERAL_READ, ResourceState::COPY_DESTINATION);
     transfer->RcUpload(*this, data);
+    transfer->RcBarrier(*this, ResourceState::COPY_DESTINATION, ResourceState::GENERAL_READ);
     transfer->EndRecord();
     transfer->Submit();
     if (forceSync) {

@@ -17,6 +17,7 @@ public:
     virtual void EndRecord() = 0;
 
     virtual void RcBarrier(InputVertex& vertex, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(InputIndex& index, ResourceState before, ResourceState after) = 0;
 
     virtual void RcUpload(InputVertex& vertex, const std::vector<uint8_t>& data) = 0;
     virtual void RcUpload(InputIndex& index, const std::vector<uint8_t>& data) = 0;

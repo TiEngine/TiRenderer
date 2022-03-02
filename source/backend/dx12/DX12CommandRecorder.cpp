@@ -82,34 +82,39 @@ void DX12CommandRecorder::EndRecord()
 void DX12CommandRecorder::RcBarrier(InputVertex& input, ResourceState before, ResourceState after)
 {
     DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
-    if (vertex.GetState() != before) {
-        TI_LOG_E(TAG, "Current resource state is not same with the before state!");
-    }
-
     recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertex.Buffer().Get(),
-        ConvertResourceState(vertex.GetState()), ConvertResourceState(after)));
-    vertex.SetState(after);
+        ConvertResourceState(before), ConvertResourceState(after)));
+}
+
+void DX12CommandRecorder::RcBarrier(InputIndex& input, ResourceState before, ResourceState after)
+{
+    DX12InputIndex& index = down_cast<DX12InputIndex&>(input);
+    recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(index.Buffer().Get(),
+        ConvertResourceState(before), ConvertResourceState(after)));
 }
 
 void DX12CommandRecorder::RcUpload(InputVertex& input, const std::vector<uint8_t>& data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
-
     D3D12_SUBRESOURCE_DATA subResourceData{};
     subResourceData.pData = data.data();
     subResourceData.RowPitch = data.size();
     subResourceData.SlicePitch = subResourceData.RowPitch;
-
     DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
-    RcBarrier(vertex, vertex.GetState(), ResourceState::COPY_DESTINATION);
-    UpdateSubresources<1>(recorder.Get(),
-        vertex.Buffer().Get(), vertex.Uploader().Get(), 0, 0, 1, &subResourceData);
-    RcBarrier(vertex, ResourceState::COPY_DESTINATION, ResourceState::GENERAL_READ);
+    UpdateSubresources<1>(recorder.Get(), vertex.Buffer().Get(), vertex.Uploader().Get(),
+        0, 0, 1, &subResourceData);
 }
 
 void DX12CommandRecorder::RcUpload(InputIndex& input, const std::vector<uint8_t>& data)
 {
-    // TODO
+    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputIndex);
+    D3D12_SUBRESOURCE_DATA subResourceData{};
+    subResourceData.pData = data.data();
+    subResourceData.RowPitch = data.size();
+    subResourceData.SlicePitch = subResourceData.RowPitch;
+    DX12InputIndex& index = down_cast<DX12InputIndex&>(input);
+    UpdateSubresources<1>(recorder.Get(), index.Buffer().Get(), index.Uploader().Get(),
+        0, 0, 1, &subResourceData);
 }
 
 void DX12CommandRecorder::Submit()
