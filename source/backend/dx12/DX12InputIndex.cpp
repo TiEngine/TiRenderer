@@ -36,11 +36,9 @@ void DX12InputIndex::Setup(Description description)
             D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bytesSize),
             ConvertResourceState(ResourceState::GENERAL_READ),
             NULL, IID_PPV_ARGS(&uploader)));
+        transfer = down_cast<DX12CommandRecorder*>(
+            internal.CreateCommandRecorder({ CommandType::Transfer }));
     }
-
-    transfer = down_cast<DX12CommandRecorder*>(
-        internal.CreateCommandRecorder({ CommandType::Transfer }));
-
 }
 
 void DX12InputIndex::Shutdown()
@@ -50,8 +48,10 @@ void DX12InputIndex::Shutdown()
     buffer.Reset();
     uploader.Reset();
     downloader.Reset();
-    internal.DestroyCommandRecorder(transfer);
-    transfer = nullptr;
+    if (transfer) {
+        internal.DestroyCommandRecorder(transfer);
+        transfer = nullptr;
+    }
 }
 
 void DX12InputIndex::Upload(const std::vector<uint8_t>& data, bool sync)
@@ -65,10 +65,6 @@ void DX12InputIndex::Upload(const std::vector<uint8_t>& data, bool sync)
         return;
     }
     TI_LOG_RET_F(TAG, "Upload index buffer failed, memory type mismatch.");
-}
-
-void DX12InputIndex::Readback(std::vector<uint8_t>& data)
-{
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12InputIndex::Buffer()

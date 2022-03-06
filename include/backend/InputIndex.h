@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "BasicTypes.h"
 
 namespace ti::backend {
@@ -17,7 +18,6 @@ public:
     };
 
     virtual void Upload(const std::vector<uint8_t>& data, bool sync = true) = 0;
-    virtual void Readback(std::vector<uint8_t>& data) = 0;
 
 protected:
     InputIndex() = default;

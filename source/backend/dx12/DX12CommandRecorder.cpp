@@ -4,6 +4,7 @@
 #include "DX12Device.h"
 #include "DX12InputVertex.h"
 #include "DX12InputIndex.h"
+#include "DX12ResourceBuffer.h"
 
 #define CHECK_RECORD(check, standard, information)                 \
 do {                                                               \
@@ -13,6 +14,36 @@ do {                                                               \
                 __LINE__, #information, #standard);                \
     }                                                              \
 } while(0)
+
+namespace {
+using namespace ti::backend;
+
+template <typename Implement, typename Interface>
+inline void RcBarrierTemplate(DX12CommandRecorder& recorder,
+    Interface& input, ResourceState before, ResourceState after)
+{
+    static_assert(std::is_base_of<Interface, Implement>::value,
+        "RcBarrierTemplate: Implement should inherit from Interface!");
+    Implement& impl = down_cast<Implement&>(input);
+    recorder.CommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        impl.Buffer().Get(), ConvertResourceState(before), ConvertResourceState(after)));
+}
+
+template <typename Implement, typename Interface>
+inline void RcUploadTemplate(DX12CommandRecorder& recorder,
+    Interface& input, const std::vector<uint8_t>& pendingData)
+{
+    static_assert(std::is_base_of<Interface, Implement>::value,
+        "RcUploadTemplate: Implement should inherit from Interface!");
+    Implement& impl = down_cast<Implement&>(input);
+    D3D12_SUBRESOURCE_DATA subResourceData{};
+    subResourceData.pData = pendingData.data();
+    subResourceData.RowPitch = pendingData.size();
+    subResourceData.SlicePitch = subResourceData.RowPitch;
+    UpdateSubresources<1>(recorder.CommandList().Get(),
+        impl.Buffer().Get(), impl.Uploader().Get(), 0, 0, 1, &subResourceData);
+}
+}
 
 namespace ti::backend {
 DX12CommandRecorder::DX12CommandRecorder(DX12Device& internal) : internal(internal)
@@ -70,7 +101,7 @@ void DX12CommandRecorder::BeginRecord(const PipelineState* pipelineState)
     if (pipelineState) {
         //ID3D12PipelineState* pso = down_cast<DX12PipelineState*>(&pipelineState)->;
     } else {
-        recorder->Reset(allocator.Get(), NULL);
+        LogIfFailedF(recorder->Reset(allocator.Get(), NULL));
     }
 }
 
@@ -81,48 +112,41 @@ void DX12CommandRecorder::EndRecord()
 
 void DX12CommandRecorder::RcBarrier(InputVertex& input, ResourceState before, ResourceState after)
 {
-    DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
-    recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertex.Buffer().Get(),
-        ConvertResourceState(before), ConvertResourceState(after)));
+    RcBarrierTemplate<DX12InputVertex>(*this, input, before, after);
 }
 
 void DX12CommandRecorder::RcBarrier(InputIndex& input, ResourceState before, ResourceState after)
 {
-    DX12InputIndex& index = down_cast<DX12InputIndex&>(input);
-    recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(index.Buffer().Get(),
-        ConvertResourceState(before), ConvertResourceState(after)));
+    RcBarrierTemplate<DX12InputIndex>(*this, input, before, after);
+}
+
+void DX12CommandRecorder::RcBarrier(ResourceBuffer& buffer, ResourceState before, ResourceState after)
+{
+    RcBarrierTemplate<DX12ResourceBuffer>(*this, buffer, before, after);
 }
 
 void DX12CommandRecorder::RcUpload(InputVertex& input, const std::vector<uint8_t>& data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
-    D3D12_SUBRESOURCE_DATA subResourceData{};
-    subResourceData.pData = data.data();
-    subResourceData.RowPitch = data.size();
-    subResourceData.SlicePitch = subResourceData.RowPitch;
-    DX12InputVertex& vertex = down_cast<DX12InputVertex&>(input);
-    UpdateSubresources<1>(recorder.Get(), vertex.Buffer().Get(), vertex.Uploader().Get(),
-        0, 0, 1, &subResourceData);
+    RcUploadTemplate<DX12InputVertex>(*this, input, data);
 }
 
 void DX12CommandRecorder::RcUpload(InputIndex& input, const std::vector<uint8_t>& data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputIndex);
-    D3D12_SUBRESOURCE_DATA subResourceData{};
-    subResourceData.pData = data.data();
-    subResourceData.RowPitch = data.size();
-    subResourceData.SlicePitch = subResourceData.RowPitch;
-    DX12InputIndex& index = down_cast<DX12InputIndex&>(input);
-    UpdateSubresources<1>(recorder.Get(), index.Buffer().Get(), index.Uploader().Get(),
-        0, 0, 1, &subResourceData);
+    RcUploadTemplate<DX12InputIndex>(*this, input, data);
+}
+
+void DX12CommandRecorder::RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data)
+{
+    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceBuffer);
+    RcUploadTemplate<DX12ResourceBuffer>(*this, buffer, data);
 }
 
 void DX12CommandRecorder::Submit()
 {
-    LogIfFailedF(recorder->Close());
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };
     queue->ExecuteCommandLists(_countof(pCommandLists), pCommandLists);
-
     currentFence++; // This fence is held by CommandRecorder.
     LogIfFailedF(queue->Signal(fence.Get(), currentFence));
 }
@@ -141,5 +165,10 @@ void DX12CommandRecorder::Wait()
             TI_LOG_F(TAG, "Command recorder wait failed, can not create event!");
         }
     }
+}
+
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DX12CommandRecorder::CommandList()
+{
+    return recorder;
 }
 }

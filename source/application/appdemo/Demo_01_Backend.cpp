@@ -56,14 +56,52 @@ struct VertexData {
 };
 
 const std::vector<VertexData> vertices = {
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {}
+    { ti::math::XMFLOAT3(-1.0f, -1.0f, -1.0f),
+      ti::math::XMFLOAT4(1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f) }, // White
+    { ti::math::XMFLOAT3(-1.0f, +1.0f, -1.0f),
+      ti::math::XMFLOAT4(0.000000000f, 0.000000000f, 0.000000000f, 1.000000000f) }, // Black
+    { ti::math::XMFLOAT3(+1.0f, +1.0f, -1.0f),
+      ti::math::XMFLOAT4(1.000000000f, 0.000000000f, 0.000000000f, 1.000000000f) }, // Red
+    { ti::math::XMFLOAT3(+1.0f, -1.0f, -1.0f),
+      ti::math::XMFLOAT4(0.000000000f, 0.501960814f, 0.000000000f, 1.000000000f) }, // Green
+    { ti::math::XMFLOAT3(-1.0f, -1.0f, +1.0f),
+      ti::math::XMFLOAT4(0.000000000f, 0.000000000f, 1.000000000f, 1.000000000f) }, // Blue
+    { ti::math::XMFLOAT3(-1.0f, +1.0f, +1.0f),
+      ti::math::XMFLOAT4(1.000000000f, 1.000000000f, 0.000000000f, 1.000000000f) }, // Yellow
+    { ti::math::XMFLOAT3(+1.0f, +1.0f, +1.0f),
+      ti::math::XMFLOAT4(0.000000000f, 1.000000000f, 1.000000000f, 1.000000000f) }, // Cyan
+    { ti::math::XMFLOAT3(+1.0f, -1.0f, +1.0f),
+      ti::math::XMFLOAT4(1.000000000f, 0.000000000f, 1.000000000f, 1.000000000f) }  // Magenta
+};
+
+const std::vector<uint16_t> indices = {
+    // front face
+    0, 1, 2,
+    0, 2, 3,
+    // back face
+    4, 6, 5,
+    4, 7, 6,
+    // left face
+    4, 5, 1,
+    4, 1, 0,
+    // right face
+    3, 2, 6,
+    3, 6, 7,
+    // top face
+    1, 5, 6,
+    1, 6, 2,
+    // bottom face
+    4, 0, 3,
+    4, 3, 7
+};
+
+struct ObjectMVP {
+    ti::math::XMFLOAT4X4 mvp =
+        ti::math::XMFLOAT4X4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
 };
 
 void Demo_01_Backend::Begin()
@@ -88,17 +126,19 @@ void Demo_01_Backend::Begin()
     vertexInput = device->CreateInputVertex({
         static_cast<unsigned int>(vertices.size()), sizeof(VertexData) });
     vertexInput->Upload(vertexUploadBuffer);
+
+    std::vector<uint8_t> indexUploadBuffer;
+    indexUploadBuffer.resize(indices.size() * sizeof(uint16_t));
+    for (size_t n = 0; n < indices.size(); n++) {
+        new (&(indexUploadBuffer[n * sizeof(uint16_t)])) uint16_t(indices[n]);
+    }
+    indexInput = device->CreateInputIndex({
+        static_cast<unsigned int>(indices.size()), sizeof(uint16_t) });
+    indexInput->Upload(indexUploadBuffer);
 }
 
 void Demo_01_Backend::Finish()
 {
-    if (swapchain) {
-        device->DestroySwapchain(swapchain);
-    }
-
-    device->DestroyCommandRecorder(commandRecorder);
-
-    backend->DestroyDevice(device);
     ti::backend::BackendContext::DestroyBackend(ti::backend::BackendContext::Backend::DX12);
 }
 

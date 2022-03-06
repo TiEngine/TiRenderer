@@ -14,7 +14,6 @@ public:
     void Shutdown();
 
     void Upload(const std::vector<uint8_t>& data, bool sync) override;
-    void Readback(std::vector<uint8_t>& data) override;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
     Microsoft::WRL::ComPtr<ID3D12Resource> Uploader();
@@ -32,7 +31,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
     Microsoft::WRL::ComPtr<ID3D12Resource> uploader;
     Microsoft::WRL::ComPtr<ID3D12Resource> downloader;
-
     DX12CommandRecorder* transfer = nullptr;
 };
 }

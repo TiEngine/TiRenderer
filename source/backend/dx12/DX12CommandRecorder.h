@@ -18,12 +18,16 @@ public:
 
     void RcBarrier(InputVertex& input, ResourceState before, ResourceState after) override;
     void RcBarrier(InputIndex& input, ResourceState before, ResourceState after) override;
+    void RcBarrier(ResourceBuffer& buffer, ResourceState before, ResourceState after) override;
 
     void RcUpload(InputVertex& input, const std::vector<uint8_t>& data) override;
     void RcUpload(InputIndex& input, const std::vector<uint8_t>& data) override;
+    void RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data) override;
 
     void Submit() override;
     void Wait() override;
+
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList();
 
 private:
     DX12Device& internal;

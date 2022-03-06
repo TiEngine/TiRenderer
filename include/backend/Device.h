@@ -27,6 +27,8 @@ public:
     virtual InputVertex* CreateInputVertex(InputVertex::Description description) = 0;
     virtual bool DestroyInputVertex(InputVertex* inputVertex) = 0;
 
+    virtual InputIndex* CreateInputIndex(InputIndex::Description description) = 0;
+    virtual bool DestroyInputIndex(InputIndex* inputIndex) = 0;
 
     virtual void WaitIdle() = 0;
 

@@ -32,6 +32,9 @@ public:
     InputVertex* CreateInputVertex(InputVertex::Description description) override;
     bool DestroyInputVertex(InputVertex* inputVertex) override;
 
+    InputIndex* CreateInputIndex(InputIndex::Description description) override;
+    bool DestroyInputIndex(InputIndex* inputIndex) override;
+
     void WaitIdle() override;
 
     Microsoft::WRL::ComPtr<IDXGIFactory4> DXGIFactory();
