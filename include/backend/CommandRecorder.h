@@ -26,6 +26,9 @@ public:
     virtual void RcUpload(InputIndex& index, const std::vector<uint8_t>& data) = 0;
     virtual void RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data) = 0;
 
+    virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
+    virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
+
     virtual void Submit() = 0;
     virtual void Wait() = 0;
 

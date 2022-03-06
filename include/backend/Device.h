@@ -30,6 +30,9 @@ public:
     virtual InputIndex* CreateInputIndex(InputIndex::Description description) = 0;
     virtual bool DestroyInputIndex(InputIndex* inputIndex) = 0;
 
+    virtual ResourceBuffer* CreateResourceBuffer(ResourceBuffer::Description description) = 0;
+    virtual bool DestroyResourceBuffer(ResourceBuffer* resourceBuffer) = 0;
+
     virtual void WaitIdle() = 0;
 
 protected:

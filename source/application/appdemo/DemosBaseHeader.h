@@ -48,5 +48,7 @@ private:
     ti::backend::InputVertex* vertexInput = nullptr;
     ti::backend::InputIndex* indexInput = nullptr;
 
+    ti::backend::ResourceBuffer* cbObjectMVP = nullptr;
+
     ti::backend::Swapchain* swapchain = nullptr;
 };

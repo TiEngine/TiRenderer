@@ -24,6 +24,9 @@ public:
     void RcUpload(InputIndex& input, const std::vector<uint8_t>& data) override;
     void RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data) override;
 
+    void RcSetViewports(const std::vector<Viewport>& viewports) override;
+    void RcSetScissors(const std::vector<Scissor>& scissors) override;
+
     void Submit() override;
     void Wait() override;
 

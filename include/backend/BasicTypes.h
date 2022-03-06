@@ -87,13 +87,19 @@ struct ClearValue {
     uint8_t stencil = 0;
 };
 
-struct ScreenPoint {
-    float x = 0.0f;
-    float y = 0.0f;
+struct Viewport {
+    float x        = 0.0f; // left top x
+    float y        = 0.0f; // left top y
+    float width    = 0.0f; // right bottom x = x + width
+    float height   = 0.0f; // right bottom y = y + height
+    float minDepth = 0.0f; // depth mapping to:
+    float maxDepth = 1.0f; // [minDepth, maxDepth]
 };
 
-struct ScreenRectangle {
-    ScreenPoint leftTop;
-    ScreenPoint rightBottom;
+struct Scissor {
+    long left   = 0;
+    long top    = 0;
+    long right  = 0;
+    long bottom = 0;
 };
 }

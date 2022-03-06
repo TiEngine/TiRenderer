@@ -7,6 +7,7 @@
 #include "DX12InputVertexAttributes.h"
 #include "DX12InputVertex.h"
 #include "DX12InputIndex.h"
+#include "DX12ResourceBuffer.h"
 
 namespace ti::backend {
 class DX12Device : public Device {
@@ -34,6 +35,9 @@ public:
 
     InputIndex* CreateInputIndex(InputIndex::Description description) override;
     bool DestroyInputIndex(InputIndex* inputIndex) override;
+
+    ResourceBuffer* CreateResourceBuffer(ResourceBuffer::Description description) override;
+    bool DestroyResourceBuffer(ResourceBuffer* resourceBuffer) override;
 
     void WaitIdle() override;
 
@@ -67,5 +71,7 @@ private:
     std::vector<std::unique_ptr<DX12InputVertexAttributes>> inputVertexLayouts;
     std::vector<std::unique_ptr<DX12InputVertex>> inputVertices;
     std::vector<std::unique_ptr<DX12InputIndex>> inputIndices;
+    std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
+    //std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
 };
 }

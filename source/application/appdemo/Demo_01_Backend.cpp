@@ -102,7 +102,7 @@ struct ObjectMVP {
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f);
-};
+} objectMVP;
 
 void Demo_01_Backend::Begin()
 {
@@ -135,6 +135,8 @@ void Demo_01_Backend::Begin()
     indexInput = device->CreateInputIndex({
         static_cast<unsigned int>(indices.size()), sizeof(uint16_t) });
     indexInput->Upload(indexUploadBuffer);
+
+    cbObjectMVP = device->CreateResourceBuffer({ sizeof(ObjectMVP) });
 }
 
 void Demo_01_Backend::Finish()
@@ -144,6 +146,10 @@ void Demo_01_Backend::Finish()
 
 void Demo_01_Backend::Update()
 {
+    std::vector<uint8_t> mvpBuffer;
+    mvpBuffer.resize(sizeof(ObjectMVP));
+    new (mvpBuffer.data()) ObjectMVP(objectMVP);
+    cbObjectMVP->Upload(mvpBuffer);
 }
 
 void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int height)

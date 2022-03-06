@@ -143,6 +143,29 @@ void DX12CommandRecorder::RcUpload(ResourceBuffer& buffer, const std::vector<uin
     RcUploadTemplate<DX12ResourceBuffer>(*this, buffer, data);
 }
 
+void DX12CommandRecorder::RcSetViewports(const std::vector<Viewport>& viewports)
+{
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetViewports);
+    std::vector<D3D12_VIEWPORT> dxViewports;
+    dxViewports.reserve(viewports.size());
+    for (const auto& viewport : viewports) {
+        dxViewports.emplace_back(viewport.x, viewport.y, // left top position
+            viewport.width, viewport.height, viewport.minDepth, viewport.maxDepth);
+    }
+    recorder->RSSetViewports(dxViewports.size(), dxViewports.data());
+}
+
+void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
+{
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetScissors);
+    std::vector<D3D12_RECT> dxScissors;
+    dxScissors.reserve(scissors.size());
+    for (const auto& scissor : scissors) {
+        dxScissors.emplace_back(scissor.left, scissor.top, scissor.right, scissor.bottom);
+    }
+    recorder->RSSetScissorRects(dxScissors.size(), dxScissors.data());
+}
+
 void DX12CommandRecorder::Submit()
 {
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };

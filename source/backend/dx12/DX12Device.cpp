@@ -119,6 +119,16 @@ bool DX12Device::DestroyInputIndex(InputIndex* inputIndex)
     return DestroyInstance(inputIndices, inputIndex);
 }
 
+ResourceBuffer* DX12Device::CreateResourceBuffer(ResourceBuffer::Description description)
+{
+    return CreateInstance<ResourceBuffer>(resourceBuffers, description, *this);
+}
+
+bool DX12Device::DestroyResourceBuffer(ResourceBuffer* resourceBuffer)
+{
+    return DestroyInstance(resourceBuffers, resourceBuffer);
+}
+
 void DX12Device::WaitIdle()
 {
     // Advance the fence value to mark commands up to this fence point.
