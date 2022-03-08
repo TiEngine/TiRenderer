@@ -13,6 +13,8 @@ D3D12_HEAP_TYPE ConvertHeap(TransferDirection type);
 
 D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state);
 
-D3D12_CLEAR_VALUE ConvertClearValue(ClearValue value);
+D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type);
+
+D3D12_CLEAR_VALUE ConvertClearValue(Format format, ClearValue value);
 
 }

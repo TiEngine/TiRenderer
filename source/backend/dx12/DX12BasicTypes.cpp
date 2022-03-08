@@ -44,10 +44,22 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
     return mapper.at(state);
 }
 
-D3D12_CLEAR_VALUE ConvertClearValue(ClearValue value)
+D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type)
+{
+    static const std::unordered_map<ImageType, D3D12_RESOURCE_FLAGS> mapper = {
+        { ImageType::Color,          D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET },
+        { ImageType::Depth,          D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
+        { ImageType::Stencil,        D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
+        { ImageType::DepthStencil,   D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
+        { ImageType::ShaderResource, D3D12_RESOURCE_FLAG_NONE                }
+    };
+    return mapper.at(type);
+}
+
+D3D12_CLEAR_VALUE ConvertClearValue(Format format, ClearValue value)
 {
     D3D12_CLEAR_VALUE clearValue{};
-    clearValue.Format = ConvertFormat(value.format);
+    clearValue.Format = ConvertFormat(format);
     clearValue.Color[0] = value.color[0];
     clearValue.Color[1] = value.color[1];
     clearValue.Color[2] = value.color[2];

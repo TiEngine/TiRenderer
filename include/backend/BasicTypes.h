@@ -73,6 +73,14 @@ enum class ResourceState {
     RESOLVE_DESTINATION
 };
 
+enum class ImageType : uint8_t {
+    Color   = 0x1,                  // render target / color attachment
+    Depth   = 0x2,                  // depth, a part of depth stencil attachment
+    Stencil = 0x4,                  // stencil, a part of depth stencil attachment
+    DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
+    ShaderResource = 0x8            // generic image
+};
+
 struct ColorValue {
     float r = 0.0f;
     float g = 0.0f;
@@ -81,7 +89,6 @@ struct ColorValue {
 };
 
 struct ClearValue {
-    Format format = Format::R32G32B32A32_FLOAT;
     float color[4]{};
     float depth = 1.0f;
     uint8_t stencil = 0;

@@ -29,6 +29,19 @@ public:
     virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
 
+    virtual void RcClearColorAttachment(Swapchain& swapchain) = 0;
+    virtual void RcClearColorAttachment(ResourceImage& attachment) = 0;
+    virtual void RcClearDepthStencilAttachment(ResourceImage& attachment) = 0;
+
+    virtual void RcSetRenderAttachments(
+        const std::vector<Swapchain*>& swapchains,
+        const std::vector<ResourceImage*>& colorAttachments,
+        const std::vector<ResourceImage*>& depthStencilAttachments,
+        bool descriptorsContinuous) = 0;
+
+    virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
+    virtual void RcSetIndex(InputIndex* index) = 0;
+
     virtual void Submit() = 0;
     virtual void Wait() = 0;
 
