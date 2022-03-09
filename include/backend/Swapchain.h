@@ -10,22 +10,27 @@ public:
         void* window;
         unsigned int width;
         unsigned int height;
-        unsigned int refreshRate = 60;
-        unsigned int bufferCount = 3;
-        bool fullScreen = false;
-        Format colorFormat = Format::R8G8B8A8_UNORM;
-        Format depthStencilFormat = Format::D24_UNORM_S8_UINT;
+        unsigned int refreshRate;
+        unsigned int bufferCount;
+        BasicFormat colorFormat;
+        bool fullScreen;
 
-        Description(void* window, unsigned int width, unsigned int height,
-            unsigned int refreshRate = 60, unsigned int bufferCount = 3,
-            bool fullScreen = false,
-            Format colorFormat = Format::R8G8B8A8_UNORM,
-            Format depthStencilFormat = Format::D24_UNORM_S8_UINT)
-            : window(window), width(width), height(height)
-            , refreshRate(refreshRate), bufferCount(bufferCount)
-            , fullScreen(fullScreen)
+        Description(
+            void* window,
+            unsigned int width,
+            unsigned int height,
+            unsigned int refreshRate = 60,
+            unsigned int bufferCount = 3,
+            BasicFormat colorFormat = BasicFormat::R8G8B8A8_UNORM,
+            bool fullScreen = false)
+            : window(window)
+            , width(width)
+            , height(height)
+            , refreshRate(refreshRate)
+            , bufferCount(bufferCount)
             , colorFormat(colorFormat)
-            , depthStencilFormat(depthStencilFormat) {}
+            , fullScreen(fullScreen)
+        {}
     };
 
     virtual void Resize(unsigned int width, unsigned int height) = 0;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "BasicTypes.h"
 
 namespace ti::backend {
@@ -9,15 +8,20 @@ public:
     struct Description {
         unsigned int indicesCount;
         unsigned int indexByteSize;
-        TransferDirection memoryType = TransferDirection::GPU_ONLY;
+        TransferDirection memoryType;
 
-        Description(unsigned int indicesCount, unsigned int indexByteSize,
+        Description(
+            unsigned int indicesCount,
+            unsigned int indexByteSize,
             TransferDirection memoryType = TransferDirection::GPU_ONLY)
-            : indicesCount(indicesCount), indexByteSize(indexByteSize)
-            , memoryType(memoryType) {}
+            : indicesCount(indicesCount)
+            , indexByteSize(indexByteSize)
+            , memoryType(memoryType)
+        {}
     };
 
-    virtual void Upload(const std::vector<uint8_t>& data, bool sync = true) = 0;
+    virtual void* Map() = 0;
+    virtual void Unmap() = 0;
 
 protected:
     InputIndex() = default;

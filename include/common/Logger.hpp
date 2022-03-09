@@ -1,6 +1,7 @@
 #pragma once
 
-#ifndef TI_OPT_SINGLE_THREAD
+#ifdef TI_OPT_MULTI_THREADS
+#include <atomic>
 #include <thread>
 #endif
 #include "GlobalSingleton.hpp"

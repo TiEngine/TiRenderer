@@ -2,13 +2,13 @@
 #include <unordered_map>
 
 namespace ti::backend {
-DXGI_FORMAT ConvertFormat(Format format)
+DXGI_FORMAT ConvertBasicFormat(BasicFormat format)
 {
-    static const std::unordered_map<Format, DXGI_FORMAT> mapper = {
-        { Format::R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM     },
-        { Format::R32G32B32_FLOAT,    DXGI_FORMAT_R32G32B32_FLOAT    },
-        { Format::R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT },
-        { Format::D24_UNORM_S8_UINT,  DXGI_FORMAT_D24_UNORM_S8_UINT  }
+    static const std::unordered_map<BasicFormat, DXGI_FORMAT> mapper = {
+        { BasicFormat::R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM     },
+        { BasicFormat::R32G32B32_FLOAT,    DXGI_FORMAT_R32G32B32_FLOAT    },
+        { BasicFormat::R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT },
+        { BasicFormat::D24_UNORM_S8_UINT,  DXGI_FORMAT_D24_UNORM_S8_UINT  }
     };
     return mapper.at(format);
 }
@@ -56,10 +56,10 @@ D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type)
     return mapper.at(type);
 }
 
-D3D12_CLEAR_VALUE ConvertClearValue(Format format, ClearValue value)
+D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
 {
     D3D12_CLEAR_VALUE clearValue{};
-    clearValue.Format = ConvertFormat(format);
+    clearValue.Format = ConvertBasicFormat(format);
     clearValue.Color[0] = value.color[0];
     clearValue.Color[1] = value.color[1];
     clearValue.Color[2] = value.color[2];

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "BasicTypes.h"
 
 namespace ti::backend {
@@ -16,7 +15,8 @@ public:
             , memoryType(memoryType) {}
     };
 
-    virtual void Upload(const std::vector<uint8_t>& data, bool sync = false) = 0;
+    virtual void* Map() = 0;
+    virtual void Unmap() = 0;
 
 protected:
     ResourceBuffer() = default;

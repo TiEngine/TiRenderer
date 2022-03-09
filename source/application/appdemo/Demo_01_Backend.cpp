@@ -115,8 +115,8 @@ void Demo_01_Backend::Begin()
     pixelShader = device->CreateShader({ ti::backend::ShaderStage::Pixel, FragmentShaderString });
 
     inputVertexAttributes = device->CreateInputVertexAttributes({});
-    inputVertexAttributes->AddAttribute({ ti::backend::Format::R32G32B32_FLOAT,    "POSITION", 0,  0 });
-    inputVertexAttributes->AddAttribute({ ti::backend::Format::R32G32B32A32_FLOAT, "COLOR",    1, 12 });
+    inputVertexAttributes->AddAttribute({ ti::backend::BasicFormat::R32G32B32_FLOAT,    "POSITION", 0,  0 });
+    inputVertexAttributes->AddAttribute({ ti::backend::BasicFormat::R32G32B32A32_FLOAT, "COLOR",    1, 12 });
 
     std::vector<uint8_t> vertexUploadBuffer;
     vertexUploadBuffer.resize(vertices.size() * sizeof(VertexData));

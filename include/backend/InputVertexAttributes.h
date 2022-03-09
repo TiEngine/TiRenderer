@@ -6,29 +6,32 @@
 namespace ti::backend {
 class InputVertexAttributes {
 public:
-    struct Description {
-        unsigned int reservedAttributesCount = 8;
-    };
-
     struct Attribute {
-        Format format;
+        VertexFormat format;
         std::string semantic;
         unsigned int location;
         unsigned int stride;
-        unsigned int slot = 0;
-        enum class SlotClass {
-            PerVertexData,
-            PerInstanceData
-        } slotClass = SlotClass::PerVertexData;
+        unsigned int slot;
+        VertexInputRate slotClass;
 
         Attribute(
-            Format format, std::string semantic, unsigned int location, unsigned int stride,
-            unsigned int slot = 0, SlotClass slotClass = SlotClass::PerVertexData)
-            : format(format), semantic(semantic), location(location), stride(stride)
-            , slot(slot), slotClass(slotClass) {}
+            VertexFormat format,
+            std::string semantic,
+            unsigned int location,
+            unsigned int stride,
+            unsigned int slot = 0,
+            VertexInputRate slotClass = VertexInputRate::PER_VERTEX)
+            : format(format)
+            , semantic(semantic)
+            , location(location)
+            , stride(stride)
+            , slot(slot)
+            , slotClass(slotClass)
+        {}
     };
 
     virtual void AddAttribute(Attribute attribute) = 0;
+    virtual void ClearAttributes() = 0;
 
 protected:
     InputVertexAttributes() = default;

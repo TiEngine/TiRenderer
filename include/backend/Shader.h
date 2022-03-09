@@ -12,12 +12,16 @@ public:
         enum class SourceType {
             Source,  // source code
             Bytecode // shader bytecode
-        } sourceType = SourceType::Source;
+        } sourceType;
 
-        Description(ShaderStage stage, std::string source,
+        Description(
+            ShaderStage stage,
+            std::string source,
             SourceType sourceType = SourceType::Source)
-            : stage(stage), source(source)
-            , sourceType(sourceType) {}
+            : stage(stage)
+            , source(source)
+            , sourceType(sourceType)
+        {}
     };
 
     virtual std::string DumpBytecode() const = 0;

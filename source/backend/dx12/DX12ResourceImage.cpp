@@ -26,7 +26,7 @@ void DX12ResourceImage::Setup(Description description)
     resourceDesc.Height = description.height;
     resourceDesc.DepthOrArraySize = description.arrays;
     resourceDesc.MipLevels = description.mips;
-    resourceDesc.Format = ConvertFormat(description.format);
+    resourceDesc.Format = ConvertBasicFormat(description.format);
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.SampleDesc.Quality = 0;
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -54,7 +54,7 @@ void DX12ResourceImage::Shutdown()
 {
     TI_LOG_I(TAG, "Destroy DX12 image: %p", this);
     description = {
-        Format::R32G32B32A32_FLOAT,
+        BasicFormat::R32G32B32A32_FLOAT,
         ImageType::Color, 0u, 0u };
     buffer.Reset();
     uploader.Reset();
@@ -65,17 +65,17 @@ void DX12ResourceImage::Shutdown()
     }
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceBuffer::Buffer()
+Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceImage::Buffer()
 {
     return buffer;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceBuffer::Uploader()
+Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceImage::Uploader()
 {
     return uploader;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceBuffer::Downloader()
+Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceImage::Downloader()
 {
     return downloader;
 }

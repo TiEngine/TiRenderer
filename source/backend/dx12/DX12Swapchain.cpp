@@ -27,7 +27,7 @@ void DX12Swapchain::Setup(Description description)
     swapchainDesc.BufferDesc.Height = description.height;
     swapchainDesc.BufferDesc.RefreshRate.Numerator = description.refreshRate;
     swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    swapchainDesc.BufferDesc.Format = ConvertFormat(description.colorFormat);
+    swapchainDesc.BufferDesc.Format = ConvertBasicFormat(description.colorFormat);
     swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
     swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -88,7 +88,7 @@ void DX12Swapchain::Resize(unsigned int width, unsigned int height)
     // which from the swapchain, otherwise resize will fail.
     renderTargetBuffer.resize(0);
     LogIfFailedF(swapchain->ResizeBuffers(description.bufferCount, width, height,
-        ConvertFormat(description.colorFormat), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+        ConvertBasicFormat(description.colorFormat), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
     currentBufferIndex = 0;
     renderTargetHandlesInHeap.resize(description.bufferCount);
@@ -114,7 +114,7 @@ void DX12Swapchain::Resize(unsigned int width, unsigned int height)
         depthStencilDesc.Height = description.height;
         depthStencilDesc.DepthOrArraySize = 1;
         depthStencilDesc.MipLevels = 1; // 1 mip levels
-        depthStencilDesc.Format = ConvertFormat(description.depthStencilFormat);
+        depthStencilDesc.Format = ConvertBasicFormat(description.depthStencilFormat);
         depthStencilDesc.SampleDesc.Count = 1;
         depthStencilDesc.SampleDesc.Quality = 0;
         depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;

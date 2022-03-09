@@ -3,11 +3,73 @@
 #include "common/TypeCast.hpp"
 
 namespace ti::backend {
-enum class Format {
+enum class BasicFormat {
     R8G8B8A8_UNORM,
     R32G32B32_FLOAT,
     R32G32B32A32_FLOAT,
     D24_UNORM_S8_UINT
+    // TODO
+};
+
+enum class IndexFormat {
+    UINT16,
+    UINT32
+};
+
+enum class VertexFormat {
+    FLOAT32_X4
+    // TODO
+};
+
+enum class VertexInputRate {
+    PER_VERTEX,
+    PER_INSTANCE
+};
+
+enum class PrimitiveTopology {
+    POINT_LIST,
+    LINE_LIST,
+    LINE_STRIP,
+    TRIANGLE_LIST,
+    TRIANGLE_STRIP
+};
+
+enum class TransferDirection {
+    GPU_ONLY,
+    CPU_TO_GPU,
+    GPU_TO_CPU
+};
+
+enum class ResourceState {
+    UNDEFINED,
+    PRESENT,
+    GENERAL_READ,
+    DEPTH_STENCIL_READ,
+    DEPTH_STENCIL_WRITE,
+    COPY_SOURCE,
+    COPY_DESTINATION,
+    RESOLVE_SOURCE,
+    RESOLVE_DESTINATION
+};
+
+enum class MSAA : uint8_t {
+    MSAAx1 = 1,
+    MSAAx4 = 4
+};
+
+enum class CommandType : uint8_t {
+    Graphics = 0x1,
+    Transfer = 0x2,
+    Compute  = 0x4,
+    Generic  = Graphics | Transfer | Compute
+};
+
+enum class ImageType : uint8_t {
+    Color   = 0x1,                  // render target / color attachment
+    Depth   = 0x2,                  // depth, a part of depth stencil attachment
+    Stencil = 0x4,                  // stencil, a part of depth stencil attachment
+    DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
+    ShaderResource = 0x8            // generic image
 };
 
 enum class Stage : uint32_t {
@@ -41,44 +103,6 @@ enum class ShaderStage : uint32_t {
     Geometry = common::EnumCast(Stage::GeometryShader),
     Pixel    = common::EnumCast(Stage::PixelShader),
     Compute  = common::EnumCast(Stage::ComputeShader)
-};
-
-enum class MSAA : uint8_t {
-    MSAAx1 = 1,
-    MSAAx4 = 4
-};
-
-enum class CommandType : uint8_t {
-    Graphics = 0x1,
-    Transfer = 0x2,
-    Compute  = 0x4,
-    Generic  = Graphics | Transfer | Compute
-};
-
-enum class TransferDirection {
-    GPU_ONLY,
-    CPU_TO_GPU,
-    GPU_TO_CPU
-};
-
-enum class ResourceState {
-    UNDEFINED,
-    PRESENT,
-    GENERAL_READ,
-    DEPTH_STENCIL_READ,
-    DEPTH_STENCIL_WRITE,
-    COPY_SOURCE,
-    COPY_DESTINATION,
-    RESOLVE_SOURCE,
-    RESOLVE_DESTINATION
-};
-
-enum class ImageType : uint8_t {
-    Color   = 0x1,                  // render target / color attachment
-    Depth   = 0x2,                  // depth, a part of depth stencil attachment
-    Stencil = 0x4,                  // stencil, a part of depth stencil attachment
-    DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
-    ShaderResource = 0x8            // generic image
 };
 
 struct ColorValue {

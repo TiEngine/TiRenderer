@@ -5,7 +5,11 @@
 
 namespace ti::backend {
 
-DXGI_FORMAT ConvertFormat(Format format);
+DXGI_FORMAT ConvertBasicFormat(BasicFormat format);
+
+DXGI_FORMAT ConvertIndexFormat(IndexFormat format);
+
+DXGI_FORMAT ConvertVertexFormat(VertexFormat format);
 
 unsigned int ConvertMSAA(MSAA msaa);
 
@@ -15,6 +19,6 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state);
 
 D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type);
 
-D3D12_CLEAR_VALUE ConvertClearValue(Format format, ClearValue value);
+D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value);
 
 }

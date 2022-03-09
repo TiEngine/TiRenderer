@@ -32,7 +32,7 @@ void DX12InputVertexAttributes::AddAttribute(Attribute attribute)
     D3D12_INPUT_ELEMENT_DESC elementDesc{};
     elementDesc.SemanticName = semanticNames.back().c_str();
     elementDesc.SemanticIndex = 0;
-    elementDesc.Format = ConvertFormat(attribute.format);
+    elementDesc.Format = ConvertBasicFormat(attribute.format);
     elementDesc.InputSlot = attribute.slot;
     elementDesc.InputSlotClass = SelectSlotClass(attribute.slotClass);
     elementDesc.AlignedByteOffset = attribute.stride;
