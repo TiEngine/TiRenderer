@@ -4,21 +4,19 @@
 #include "DX12BackendHeaders.h"
 
 namespace ti::backend {
-
 DXGI_FORMAT ConvertBasicFormat(BasicFormat format);
 
 DXGI_FORMAT ConvertIndexFormat(IndexFormat format);
 
 DXGI_FORMAT ConvertVertexFormat(VertexFormat format);
 
-unsigned int ConvertMSAA(MSAA msaa);
-
 D3D12_HEAP_TYPE ConvertHeap(TransferDirection type);
 
 D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state);
 
+unsigned int ConvertMSAA(MSAA msaa);
+
 D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type);
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value);
-
 }

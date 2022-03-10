@@ -4,33 +4,38 @@
 namespace ti::backend {
 DXGI_FORMAT ConvertBasicFormat(BasicFormat format)
 {
-    static const std::unordered_map<BasicFormat, DXGI_FORMAT> mapper = {
+    static const std::unordered_map<BasicFormat, DXGI_FORMAT> map = {
         { BasicFormat::R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM     },
         { BasicFormat::R32G32B32_FLOAT,    DXGI_FORMAT_R32G32B32_FLOAT    },
         { BasicFormat::R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT },
         { BasicFormat::D24_UNORM_S8_UINT,  DXGI_FORMAT_D24_UNORM_S8_UINT  }
     };
-    return mapper.at(format);
+    return map.at(format);
 }
 
-unsigned int ConvertMSAA(MSAA msaa)
+DXGI_FORMAT ConvertIndexFormat(IndexFormat format)
 {
-    return common::EnumCast(msaa);
+    return DXGI_FORMAT();
+}
+
+DXGI_FORMAT ConvertVertexFormat(VertexFormat format)
+{
+    return DXGI_FORMAT();
 }
 
 D3D12_HEAP_TYPE ConvertHeap(TransferDirection type)
 {
-    static const std::unordered_map<TransferDirection, D3D12_HEAP_TYPE> mapper = {
+    static const std::unordered_map<TransferDirection, D3D12_HEAP_TYPE> map = {
         { TransferDirection::GPU_ONLY,   D3D12_HEAP_TYPE_DEFAULT  },
         { TransferDirection::CPU_TO_GPU, D3D12_HEAP_TYPE_UPLOAD   },
         { TransferDirection::GPU_TO_CPU, D3D12_HEAP_TYPE_READBACK }
     };
-    return mapper.at(type);
+    return map.at(type);
 }
 
 D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
 {
-    static const std::unordered_map<ResourceState, D3D12_RESOURCE_STATES> mapper = {
+    static const std::unordered_map<ResourceState, D3D12_RESOURCE_STATES> map = {
         { ResourceState::UNDEFINED,           D3D12_RESOURCE_STATE_COMMON         },
         { ResourceState::PRESENT,             D3D12_RESOURCE_STATE_PRESENT        },
         { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
@@ -41,19 +46,24 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
         { ResourceState::RESOLVE_SOURCE,      D3D12_RESOURCE_STATE_RESOLVE_SOURCE },
         { ResourceState::RESOLVE_DESTINATION, D3D12_RESOURCE_STATE_RESOLVE_DEST   }
     };
-    return mapper.at(state);
+    return map.at(state);
+}
+
+unsigned int ConvertMSAA(MSAA msaa)
+{
+    return common::EnumCast(msaa);
 }
 
 D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type)
 {
-    static const std::unordered_map<ImageType, D3D12_RESOURCE_FLAGS> mapper = {
+    static const std::unordered_map<ImageType, D3D12_RESOURCE_FLAGS> map = {
         { ImageType::Color,          D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET },
         { ImageType::Depth,          D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
         { ImageType::Stencil,        D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
         { ImageType::DepthStencil,   D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL },
         { ImageType::ShaderResource, D3D12_RESOURCE_FLAG_NONE                }
     };
-    return mapper.at(type);
+    return map.at(type);
 }
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
