@@ -13,7 +13,6 @@
 extern "C" {
 BACKEND_API_EXPORT ti::backend::BackendContext* CreateBackend()
 {
-    TI_LOG_I(ti::backend::TAG, "Create DX12 backend.");
     if (ti::backend::DX12ObjectCounter::GetReference().GetObjectCount() > 0) {
         TI_LOG_W(ti::backend::TAG, "Objects count is not zero when initialize!");
     }
@@ -26,6 +25,5 @@ BACKEND_API_EXPORT void DestroyBackend(ti::backend::BackendContext* context)
     if (ti::backend::DX12ObjectCounter::GetReference().GetObjectCount() > 0) {
         TI_LOG_W(ti::backend::TAG, "Objects count is not zero when finalize!");
     }
-    TI_LOG_I(ti::backend::TAG, "Destroy DX12 backend.");
 }
 }

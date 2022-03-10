@@ -1,11 +1,12 @@
 #pragma once
 
 #include "backend/BasicTypes.h"
-#include "PipelineState.h"
 #include "InputVertex.h"
 #include "InputIndex.h"
 #include "ResourceBuffer.h"
 #include "ResourceImage.h"
+#include "PipelineState.h"
+#include "PipelineLayout.h"
 
 namespace ti::backend {
 class CommandRecorder {

@@ -8,7 +8,7 @@ enum class BasicFormat {
     R32G32B32_FLOAT,
     R32G32B32A32_FLOAT,
     D24_UNORM_S8_UINT
-    // TODO
+    // ...
 };
 
 enum class IndexFormat {
@@ -17,8 +17,8 @@ enum class IndexFormat {
 };
 
 enum class VertexFormat {
-    FLOAT32_X4
-    // TODO
+    FLOAT32x4
+    // ...
 };
 
 enum class VertexInputRate {
@@ -69,7 +69,7 @@ enum class ImageType : uint8_t {
     Depth   = 0x2,                  // depth, a part of depth stencil attachment
     Stencil = 0x4,                  // stencil, a part of depth stencil attachment
     DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
-    ShaderResource = 0x8            // generic image
+    ShaderResource = 0x0            // generic image, cannot be used as attachment
 };
 
 enum class Stage : uint32_t {

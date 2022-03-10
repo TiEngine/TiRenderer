@@ -10,8 +10,8 @@ public:
         void* window;
         unsigned int width;
         unsigned int height;
-        unsigned int refreshRate;
         unsigned int bufferCount;
+        unsigned int refreshRate;
         BasicFormat colorFormat;
         bool fullScreen;
 
@@ -19,15 +19,15 @@ public:
             void* window,
             unsigned int width,
             unsigned int height,
-            unsigned int refreshRate = 60,
             unsigned int bufferCount = 3,
+            unsigned int refreshRate = 60,
             BasicFormat colorFormat = BasicFormat::R8G8B8A8_UNORM,
             bool fullScreen = false)
             : window(window)
             , width(width)
             , height(height)
-            , refreshRate(refreshRate)
             , bufferCount(bufferCount)
+            , refreshRate(refreshRate)
             , colorFormat(colorFormat)
             , fullScreen(fullScreen)
         {}

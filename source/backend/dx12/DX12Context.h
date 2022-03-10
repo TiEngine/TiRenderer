@@ -2,11 +2,12 @@
 
 #include "backend/BackendContext.h"
 #include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 #include "DX12Device.h"
 
 namespace ti::backend {
 
-class DX12Context : public BackendContext {
+class DX12Context : public BackendContext, DX12Object<DX12Context> {
 public:
     explicit DX12Context();
     ~DX12Context() override;

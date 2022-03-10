@@ -7,32 +7,32 @@ class ResourceImage {
 public:
     struct Description {
         BasicFormat format;
-        ImageType type;
         uint32_t width;
         uint32_t height;
         uint8_t arrays;
         uint8_t mips;
         uint8_t dimension;
+        ImageType imageType;
         ClearValue clearValue;
         TransferDirection memoryType;
 
         Description(
             BasicFormat format,
-            ImageType type,
             uint32_t width,
             uint32_t height,
             uint8_t arrays = 1,
             uint8_t mips = 1,
             uint8_t dimension = 2,
             ClearValue clearValue = {},
+            ImageType imageType = ImageType::ShaderResource,
             TransferDirection memoryType = TransferDirection::GPU_ONLY)
             : format(format)
-            , type(type)
             , width(width)
             , height(height)
             , arrays(arrays)
             , mips(mips)
             , dimension(dimension)
+            , imageType(imageType)
             , clearValue(clearValue)
             , memoryType(memoryType)
         {}
