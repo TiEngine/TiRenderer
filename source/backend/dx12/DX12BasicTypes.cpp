@@ -15,12 +15,28 @@ DXGI_FORMAT ConvertBasicFormat(BasicFormat format)
 
 DXGI_FORMAT ConvertIndexFormat(IndexFormat format)
 {
-    return DXGI_FORMAT();
+    static const std::unordered_map<IndexFormat, DXGI_FORMAT> map = {
+        { IndexFormat::UINT16, DXGI_FORMAT_R16_UINT },
+        { IndexFormat::UINT32, DXGI_FORMAT_R32_UINT }
+    };
+    return map.at(format);
 }
 
 DXGI_FORMAT ConvertVertexFormat(VertexFormat format)
 {
-    return DXGI_FORMAT();
+    static const std::unordered_map<VertexFormat, DXGI_FORMAT> map = {
+        { VertexFormat::FLOAT32x4, DXGI_FORMAT_R32G32B32A32_FLOAT }
+    };
+    return map.at(format);
+}
+
+D3D12_INPUT_CLASSIFICATION ConvertInputClassification(VertexInputRate rate)
+{
+    static const std::unordered_map<VertexInputRate, D3D12_INPUT_CLASSIFICATION> map = {
+        { VertexInputRate::PER_VERTEX,   D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA   },
+        { VertexInputRate::PER_INSTANCE, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA }
+    };
+    return map.at(rate);
 }
 
 D3D12_HEAP_TYPE ConvertHeap(TransferDirection type)
@@ -64,6 +80,16 @@ D3D12_RESOURCE_FLAGS ConvertImageResourceFlag(ImageType type)
         { ImageType::ShaderResource, D3D12_RESOURCE_FLAG_NONE                }
     };
     return map.at(type);
+}
+
+D3D12_RESOURCE_DIMENSION ConvertImageDimension(ImageDimension dimension)
+{
+    static const std::unordered_map<ImageDimension, D3D12_RESOURCE_DIMENSION> map = {
+        { ImageDimension::Dimension1D, D3D12_RESOURCE_DIMENSION_TEXTURE1D },
+        { ImageDimension::Dimension2D, D3D12_RESOURCE_DIMENSION_TEXTURE2D },
+        { ImageDimension::Dimension3D, D3D12_RESOURCE_DIMENSION_TEXTURE3D }
+    };
+    return map.at(dimension);
 }
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)

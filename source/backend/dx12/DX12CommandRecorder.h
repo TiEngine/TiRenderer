@@ -2,10 +2,12 @@
 
 #include "backend/CommandRecorder.h"
 #include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 
 namespace ti::backend {
 class DX12Device;
-class DX12CommandRecorder : public CommandRecorder {
+class DX12CommandRecorder : public CommandRecorder
+    , DX12Object<DX12CommandRecorder> {
 public:
     explicit DX12CommandRecorder(DX12Device& device);
     ~DX12CommandRecorder() override;
@@ -13,19 +15,35 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void BeginRecord(const PipelineState* pipelineState = nullptr) override;
+    void BeginRecord(PipelineState* pipelineState) override;
     void EndRecord() override;
 
-    void RcBarrier(InputVertex& input, ResourceState before, ResourceState after) override;
-    void RcBarrier(InputIndex& input, ResourceState before, ResourceState after) override;
-    void RcBarrier(ResourceBuffer& buffer, ResourceState before, ResourceState after) override;
+    void RcBarrier(InputVertex& resource, ResourceState before, ResourceState after) override;
+    void RcBarrier(InputIndex& resource, ResourceState before, ResourceState after) override;
+    void RcBarrier(ResourceBuffer& resource, ResourceState before, ResourceState after) override;
+    void RcBarrier(ResourceImage& resource, ResourceState before, ResourceState after) override;
 
-    void RcUpload(InputVertex& input, const std::vector<uint8_t>& data) override;
-    void RcUpload(InputIndex& input, const std::vector<uint8_t>& data) override;
-    void RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data) override;
+    void RcUpload(InputVertex& destination, InputVertex& staging, size_t size, void* data) override;
+    void RcUpload(InputIndex& destination, InputIndex& staging, size_t size, void* data) override;
+    void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging, size_t size, void* data) override;
+    void RcUpload(ResourceImage& destination, ResourceImage& staging, size_t size, void* data) override;
 
     void RcSetViewports(const std::vector<Viewport>& viewports) override;
     void RcSetScissors(const std::vector<Scissor>& scissors) override;
+
+    void RcClearColorAttachment(Swapchain& swapchain) override;
+    void RcClearColorAttachment(ResourceImage& attachment) override;
+    void RcClearDepthStencilAttachment(Swapchain& swapchain) override;
+    void RcClearDepthStencilAttachment(ResourceImage& attachment) override;
+
+    void RcSetRenderAttachments(
+        const std::vector<Swapchain*>& swapchains,
+        const std::vector<ResourceImage*>& colorAttachments,
+        const std::vector<ResourceImage*>& depthStencilAttachments,
+        bool descriptorsContinuous) override;
+
+    void RcSetVertex(const std::vector<InputVertex*>& vertices) override;
+    void RcSetIndex(InputIndex* index) override;
 
     void Submit() override;
     void Wait() override;

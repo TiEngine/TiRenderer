@@ -1,11 +1,13 @@
 #pragma once
 
 #include "backend/InputVertex.h"
-#include "DX12CommandRecorder.h"
+#include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 
 namespace ti::backend {
 class DX12Device;
-class DX12InputVertex : public InputVertex {
+class DX12InputVertex : public InputVertex
+    , DX12Object<DX12InputVertex> {
 public:
     explicit DX12InputVertex(DX12Device& device);
     ~DX12InputVertex() override;
@@ -13,15 +15,10 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void Upload(const std::vector<uint8_t>& data, bool sync) override;
+    void* Map() override;
+    void Unmap() override;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
-    Microsoft::WRL::ComPtr<ID3D12Resource> Uploader();
-    Microsoft::WRL::ComPtr<ID3D12Resource> Downloader();
-
-protected:
-    void UploadGpuOnly(const std::vector<uint8_t>& data, bool forceSync);
-    void UploadCpuToGpu(const std::vector<uint8_t>& data, bool forceSync);
 
 private:
     DX12Device& internal;
@@ -29,8 +26,5 @@ private:
 
     Description description{ 0u, 0u };
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
-    Microsoft::WRL::ComPtr<ID3D12Resource> uploader;
-    Microsoft::WRL::ComPtr<ID3D12Resource> downloader;
-    DX12CommandRecorder* transfer = nullptr;
 };
 }

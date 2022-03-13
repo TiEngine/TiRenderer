@@ -72,6 +72,12 @@ enum class ImageType : uint8_t {
     ShaderResource = 0x0            // generic image, cannot be used as attachment
 };
 
+enum class ImageDimension : uint8_t {
+    Dimension1D = 1, // Texture 1D
+    Dimension2D = 2, // Texture 2D
+    Dimension3D = 3  // Texture 3D
+};
+
 enum class Stage : uint32_t {
     // Sort them by their order in the graphics pipeline:
     InputAssembler = (1 <<  0), // Standard stage: input vertex and index.

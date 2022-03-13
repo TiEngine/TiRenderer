@@ -2,9 +2,11 @@
 
 #include "backend/Shader.h"
 #include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 
 namespace ti::backend {
-class DX12Shader : public Shader {
+class DX12Shader : public Shader
+    , DX12Object<DX12Shader> {
 public:
     explicit DX12Shader();
     ~DX12Shader() override;

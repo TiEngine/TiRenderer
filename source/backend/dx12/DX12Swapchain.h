@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vector>
 #include "backend/Swapchain.h"
 #include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 
 namespace ti::backend {
 class DX12Device;
-class DX12Swapchain : public Swapchain {
+class DX12Swapchain : public Swapchain
+    , DX12Object<DX12Swapchain> {
 public:
     explicit DX12Swapchain(DX12Device& device);
     ~DX12Swapchain() override;
@@ -15,7 +16,6 @@ public:
     void Shutdown();
 
     void Resize(unsigned int width, unsigned int height) override;
-
     void Present() override;
 
 private:

@@ -1,6 +1,5 @@
 #include "common/TString.hpp"
-#include "DX12Context.h"
-#include "DX12Common.h"
+#include "DX12Device.h"
 
 namespace ti::backend {
 DX12Device::DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi) : dxgi(dxgi)
@@ -15,7 +14,6 @@ DX12Device::~DX12Device()
 
 void DX12Device::Setup(Description description)
 {
-    TI_LOG_I(TAG, "Create DX12 device: %p", this);
     this->description = description;
 
     bool createHardwareDeviceSuccess = false;
@@ -47,16 +45,20 @@ void DX12Device::Setup(Description description)
 
 void DX12Device::Shutdown()
 {
-    TI_LOG_I(TAG, "Destroy DX12 device: %p", this);
     device.Reset();
     queue.Reset();
     allocator.Reset();
-
     currentFence = 0;
     fence.Reset();
-
+    shaders.resize(0);
     swapchains.resize(0);
     commandRecorders.resize(0);
+    inputVertices.resize(0);
+    inputVertexAttributes.resize(0);
+    inputIndices.resize(0);
+    inputIndexAttributes.resize(0);
+    resourceBuffers.resize(0);
+    resourceImages.resize(0);
 }
 
 Shader* DX12Device::CreateShader(Shader::Description description)
@@ -64,9 +66,9 @@ Shader* DX12Device::CreateShader(Shader::Description description)
     return CreateInstance<Shader>(shaders, description);
 }
 
-bool DX12Device::DestroyShader(Shader* shader)
+bool DX12Device::DestroyShader(Shader* instance)
 {
-    return DestroyInstance(shaders, shader);
+    return DestroyInstance(shaders, instance);
 }
 
 Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
@@ -74,9 +76,9 @@ Swapchain* DX12Device::CreateSwapchain(Swapchain::Description description)
     return CreateInstance<Swapchain>(swapchains, description, *this);
 }
 
-bool DX12Device::DestroySwapchain(Swapchain* swapchain)
+bool DX12Device::DestroySwapchain(Swapchain* instance)
 {
-    return DestroyInstance(swapchains, swapchain);
+    return DestroyInstance(swapchains, instance);
 }
 
 CommandRecorder* DX12Device::CreateCommandRecorder(CommandRecorder::Description description)
@@ -84,19 +86,9 @@ CommandRecorder* DX12Device::CreateCommandRecorder(CommandRecorder::Description 
     return CreateInstance<CommandRecorder>(commandRecorders, description, *this);
 }
 
-bool DX12Device::DestroyCommandRecorder(CommandRecorder* commandRecorder)
+bool DX12Device::DestroyCommandRecorder(CommandRecorder* instance)
 {
-    return DestroyInstance(commandRecorders, commandRecorder);
-}
-
-InputVertexAttributes* DX12Device::CreateInputVertexAttributes(InputVertexAttributes::Description description)
-{
-    return CreateInstance<InputVertexAttributes>(inputVertexLayouts, description);
-}
-
-bool DX12Device::DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes)
-{
-    return DestroyInstance(inputVertexLayouts, inputVertexAttributes);
+    return DestroyInstance(commandRecorders, instance);
 }
 
 InputVertex* DX12Device::CreateInputVertex(InputVertex::Description description)
@@ -104,9 +96,19 @@ InputVertex* DX12Device::CreateInputVertex(InputVertex::Description description)
     return CreateInstance<InputVertex>(inputVertices, description, *this);
 }
 
-bool DX12Device::DestroyInputVertex(InputVertex* inputVertex)
+bool DX12Device::DestroyInputVertex(InputVertex* instance)
 {
-    return DestroyInstance(inputVertices, inputVertex);
+    return DestroyInstance(inputVertices, instance);
+}
+
+InputVertexAttributes* DX12Device::CreateInputVertexAttributes()
+{
+    return CreateInstance<InputVertexAttributes>(inputVertexAttributes, {});
+}
+
+bool DX12Device::DestroyInputVertexAttributes(InputVertexAttributes* instance)
+{
+    return DestroyInstance(inputVertexAttributes, instance);
 }
 
 InputIndex* DX12Device::CreateInputIndex(InputIndex::Description description)
@@ -114,9 +116,19 @@ InputIndex* DX12Device::CreateInputIndex(InputIndex::Description description)
     return CreateInstance<InputIndex>(inputIndices, description, *this);
 }
 
-bool DX12Device::DestroyInputIndex(InputIndex* inputIndex)
+bool DX12Device::DestroyInputIndex(InputIndex* instance)
 {
-    return DestroyInstance(inputIndices, inputIndex);
+    return DestroyInstance(inputIndices, instance);
+}
+
+InputIndexAttribute* DX12Device::CreateInputIndexAttribute()
+{
+    return CreateInstance<InputIndexAttribute>(inputIndexAttributes, {});
+}
+
+bool DX12Device::DestroyInputIndexAttribute(InputIndexAttribute* instance)
+{
+    return DestroyInstance(inputIndexAttributes, instance);
 }
 
 ResourceBuffer* DX12Device::CreateResourceBuffer(ResourceBuffer::Description description)
@@ -124,9 +136,19 @@ ResourceBuffer* DX12Device::CreateResourceBuffer(ResourceBuffer::Description des
     return CreateInstance<ResourceBuffer>(resourceBuffers, description, *this);
 }
 
-bool DX12Device::DestroyResourceBuffer(ResourceBuffer* resourceBuffer)
+bool DX12Device::DestroyResourceBuffer(ResourceBuffer* instance)
 {
-    return DestroyInstance(resourceBuffers, resourceBuffer);
+    return DestroyInstance(resourceBuffers, instance);
+}
+
+ResourceImage* DX12Device::CreateResourceImage(ResourceImage::Description description)
+{
+    return CreateInstance<ResourceImage>(resourceImages, description, *this);
+}
+
+bool DX12Device::DestroyResourceImage(ResourceImage* instance)
+{
+    return DestroyInstance(resourceImages, instance);
 }
 
 void DX12Device::WaitIdle()
@@ -211,11 +233,12 @@ void DX12Device::EnumAdapters()
 
             TI_LOG_D(TAG, "  - OutputDisplayModes");
             {
-                constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM; // default back buffer format
+                // Using default back buffer format to get display mode list.
+                constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
                 constexpr UINT flags = 0;
 
                 UINT count = 0;
-                output->GetDisplayModeList(format, flags, &count, nullptr);
+                output->GetDisplayModeList(format, flags, &count, NULL);
 
                 std::vector<DXGI_MODE_DESC> modes(count);
                 output->GetDisplayModeList(format, flags, &count, &modes[0]);

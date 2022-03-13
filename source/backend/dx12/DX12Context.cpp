@@ -28,13 +28,15 @@ DX12Context::DX12Context()
     }
     #endif
 
-    TI_LOG_I(TAG, "Create DX12 context (and DXGIFactory): %p", this);
     LogIfFailedF(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgi)));
 }
 
 DX12Context::~DX12Context()
 {
-    TI_LOG_I(TAG, "Destroy DX12 context: %p", this);
+    devices.resize(0);
+    if (dxgi.Reset() > 0) {
+        TI_LOG_E(TAG, "dxgi leak!");
+    }
 }
 
 Device* DX12Context::CreateDevice(Device::Description description)

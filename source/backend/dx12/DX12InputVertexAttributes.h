@@ -2,9 +2,11 @@
 
 #include "backend/InputVertexAttributes.h"
 #include "DX12BackendHeaders.h"
+#include "DX12BaseObject.h"
 
 namespace ti::backend {
-class DX12InputVertexAttributes : public InputVertexAttributes {
+class DX12InputVertexAttributes : public InputVertexAttributes
+    , DX12Object<DX12InputVertexAttributes> {
 public:
     explicit DX12InputVertexAttributes();
     ~DX12InputVertexAttributes() override;
@@ -13,14 +15,12 @@ public:
     void Shutdown();
 
     void AddAttribute(Attribute attribute) override;
+    void ClearAttributes() override;
 
-    const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetInputLayout() const;
-
-protected:
-    D3D12_INPUT_CLASSIFICATION SelectSlotClass(Attribute::SlotClass type) const;
+    const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetInputElements() const;
 
 private:
-    std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout;
-    std::vector<std::string> semanticNames;
+    std::vector<std::string> semantics;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> elements;
 };
 }

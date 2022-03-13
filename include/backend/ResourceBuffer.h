@@ -12,7 +12,8 @@ public:
         Description(unsigned int bufferBytesSize,
             TransferDirection memoryType = TransferDirection::CPU_TO_GPU)
             : bufferBytesSize(bufferBytesSize)
-            , memoryType(memoryType) {}
+            , memoryType(memoryType)
+        {}
     };
 
     virtual void* Map() = 0;

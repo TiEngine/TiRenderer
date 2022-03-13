@@ -19,7 +19,6 @@ DX12Swapchain::~DX12Swapchain()
 
 void DX12Swapchain::Setup(Description description)
 {
-    TI_LOG_I(TAG, "Create DX12 swapchain: %p", this);
     this->description = description;
 
     DXGI_SWAP_CHAIN_DESC swapchainDesc{};
@@ -60,12 +59,9 @@ void DX12Swapchain::Setup(Description description)
 
 void DX12Swapchain::Shutdown()
 {
-    TI_LOG_I(TAG, "Destroy DX12 swapchain: %p", this);
     swapchain.Reset();
-
     rtvHeap.Reset();
     dsvHeap.Reset();
-
     currentBufferIndex = 0;
     renderTargetHandlesInHeap.resize(0);
     depthStencilHandlesInHeap.resize(0);

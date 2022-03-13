@@ -14,7 +14,6 @@ DX12Shader::~DX12Shader()
 
 void DX12Shader::Setup(Description description)
 {
-    TI_LOG_I(TAG, "Create DX12 shader: %p", this);
     this->description = description;
 
     switch (description.sourceType) {
@@ -25,7 +24,7 @@ void DX12Shader::Setup(Description description)
 
 void DX12Shader::Shutdown()
 {
-    TI_LOG_I(TAG, "Destroy DX12 shader: %p", this);
+    description = { ShaderStage::Vertex, "" };
     bytecode.Reset();
 }
 

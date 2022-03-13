@@ -4,13 +4,16 @@
 #include "DX12Shader.h"
 #include "DX12Swapchain.h"
 #include "DX12CommandRecorder.h"
-#include "DX12InputVertexAttributes.h"
 #include "DX12InputVertex.h"
+#include "DX12InputVertexAttributes.h"
 #include "DX12InputIndex.h"
+#include "DX12InputIndexAttribute.h"
 #include "DX12ResourceBuffer.h"
+#include "DX12ResourceImage.h"
 
 namespace ti::backend {
-class DX12Device : public Device {
+class DX12Device : public Device
+    , DX12Object<DX12Device> {
 public:
     explicit DX12Device(Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi);
     ~DX12Device() override;
@@ -19,25 +22,31 @@ public:
     void Shutdown();
 
     Shader* CreateShader(Shader::Description description) override;
-    bool DestroyShader(Shader* shader) override;
+    bool DestroyShader(Shader* instance) override;
 
     Swapchain* CreateSwapchain(Swapchain::Description description) override;
-    bool DestroySwapchain(Swapchain* swapchain) override;
+    bool DestroySwapchain(Swapchain* instance) override;
 
     CommandRecorder* CreateCommandRecorder(CommandRecorder::Description description) override;
-    bool DestroyCommandRecorder(CommandRecorder* commandRecorder) override;
-
-    InputVertexAttributes* CreateInputVertexAttributes(InputVertexAttributes::Description description) override;
-    bool DestroyInputVertexAttributes(InputVertexAttributes* inputVertexAttributes) override;
+    bool DestroyCommandRecorder(CommandRecorder* instance) override;
 
     InputVertex* CreateInputVertex(InputVertex::Description description) override;
-    bool DestroyInputVertex(InputVertex* inputVertex) override;
+    bool DestroyInputVertex(InputVertex* instance) override;
+
+    InputVertexAttributes* CreateInputVertexAttributes() override;
+    bool DestroyInputVertexAttributes(InputVertexAttributes* instance) override;
 
     InputIndex* CreateInputIndex(InputIndex::Description description) override;
-    bool DestroyInputIndex(InputIndex* inputIndex) override;
+    bool DestroyInputIndex(InputIndex* instance) override;
+
+    InputIndexAttribute* CreateInputIndexAttribute() override;
+    bool DestroyInputIndexAttribute(InputIndexAttribute* instance) override;
 
     ResourceBuffer* CreateResourceBuffer(ResourceBuffer::Description description) override;
-    bool DestroyResourceBuffer(ResourceBuffer* resourceBuffer) override;
+    bool DestroyResourceBuffer(ResourceBuffer* instance) override;
+
+    ResourceImage* CreateResourceImage(ResourceImage::Description description) override;
+    bool DestroyResourceImage(ResourceImage* instance) override;
 
     void WaitIdle() override;
 
@@ -68,10 +77,11 @@ private:
     std::vector<std::unique_ptr<DX12Shader>> shaders;
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;
     std::vector<std::unique_ptr<DX12CommandRecorder>> commandRecorders;
-    std::vector<std::unique_ptr<DX12InputVertexAttributes>> inputVertexLayouts;
     std::vector<std::unique_ptr<DX12InputVertex>> inputVertices;
+    std::vector<std::unique_ptr<DX12InputVertexAttributes>> inputVertexAttributes;
     std::vector<std::unique_ptr<DX12InputIndex>> inputIndices;
+    std::vector<std::unique_ptr<DX12InputIndexAttribute>> inputIndexAttributes;
     std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
-    //std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
+    std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
 };
 }

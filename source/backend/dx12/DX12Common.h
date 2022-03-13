@@ -52,6 +52,8 @@ Interface* CreateInstance(std::vector<std::unique_ptr<Implement>>& container,
 {
     static_assert(std::is_base_of<Interface, Implement>::value,
         "CreateInstance: Implement should inherit from Interface!");
+    static_assert(std::is_base_of<DX12Object<Implement>, Implement>::value,
+        "CreateInstance: Implement should inherit from DX12Object<Implement>!");
     container.emplace_back(std::make_unique<Implement>(arguments...));
     container.back()->Setup(description);
     return container.back().get();
@@ -61,7 +63,9 @@ template <typename Interface, typename Implement>
 bool DestroyInstance(std::vector<std::unique_ptr<Implement>>& container, Interface* instance)
 {
     static_assert(std::is_base_of<Interface, Implement>::value,
-        "DestroyInstance: Implement should inherit from Interface!");
+        "CreateInstance: Implement should inherit from Interface!");
+    static_assert(std::is_base_of<DX12Object<Implement>, Implement>::value,
+        "CreateInstance: Implement should inherit from DX12Object<Implement>!");
     for (auto iter = container.begin(); iter != container.end(); iter++) {
         if (instance == iter->get()) {
             container.erase(iter);

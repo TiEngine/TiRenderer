@@ -7,12 +7,13 @@ class ResourceImage {
 public:
     struct Description {
         BasicFormat format;
-        uint32_t width;
-        uint32_t height;
-        uint8_t arrays;
-        uint8_t mips;
-        uint8_t dimension;
-        ImageType imageType;
+        MSAA msaa;
+        uint32_t width;  // 1st dimension
+        uint32_t height; // 2nd dimension
+        uint8_t arrays;  // 3rd dimension
+        uint8_t mips;    // mipmap
+        ImageType usage;
+        ImageDimension dimension;
         ClearValue clearValue;
         TransferDirection memoryType;
 
@@ -22,24 +23,26 @@ public:
             uint32_t height,
             uint8_t arrays = 1,
             uint8_t mips = 1,
-            uint8_t dimension = 2,
             ClearValue clearValue = {},
-            ImageType imageType = ImageType::ShaderResource,
-            TransferDirection memoryType = TransferDirection::GPU_ONLY)
+            ImageType usage = ImageType::ShaderResource,
+            ImageDimension dimension = ImageDimension::Dimension2D,
+            TransferDirection memoryType = TransferDirection::GPU_ONLY,
+            MSAA msaa = MSAA::MSAAx1)
             : format(format)
+            , msaa(msaa)
             , width(width)
             , height(height)
             , arrays(arrays)
             , mips(mips)
+            , usage(usage)
             , dimension(dimension)
-            , imageType(imageType)
             , clearValue(clearValue)
             , memoryType(memoryType)
         {}
     };
 
-    virtual void* Map() = 0;
-    virtual void Unmap() = 0;
+    virtual void* Map(unsigned int msaaLayer = 0) = 0;
+    virtual void Unmap(unsigned int msaaLayer = 0) = 0;
 
 protected:
     ResourceImage() = default;

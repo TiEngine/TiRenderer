@@ -5,6 +5,10 @@
 namespace ti::backend {
 class InputIndexAttribute {
 public:
+    struct Description {
+        unsigned int reserved = 1;
+    };
+
     struct Attribute {
         IndexFormat format;
         PrimitiveTopology topology;

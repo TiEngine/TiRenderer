@@ -6,6 +6,10 @@
 namespace ti::backend {
 class InputVertexAttributes {
 public:
+    struct Description {
+        unsigned int reserved = 8;
+    };
+
     struct Attribute {
         VertexFormat format;
         std::string semantic;

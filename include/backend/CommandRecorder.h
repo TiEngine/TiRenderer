@@ -18,30 +18,32 @@ public:
     virtual void BeginRecord(PipelineState* pipelineState = nullptr) = 0;
     virtual void EndRecord() = 0;
 
-    virtual void RcBarrier(InputVertex& vertex, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(InputIndex& index, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceBuffer& buffer, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceImage& image, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(InputVertex& resource, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(InputIndex& resource, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(ResourceBuffer& resource, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(ResourceImage& resource, ResourceState before, ResourceState after) = 0;
 
-    //virtual void RcUpload(InputVertex& vertex, const std::vector<uint8_t>& data) = 0;
-    //virtual void RcUpload(InputIndex& index, const std::vector<uint8_t>& data) = 0;
-    //virtual void RcUpload(ResourceBuffer& buffer, const std::vector<uint8_t>& data) = 0;
+    virtual void RcUpload(InputVertex& destination, InputVertex& staging, size_t size, void* data) = 0;
+    virtual void RcUpload(InputIndex& destination, InputIndex& staging, size_t size, void* data) = 0;
+    virtual void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging, size_t size, void* data) = 0;
+    virtual void RcUpload(ResourceImage& destination, ResourceImage& staging, size_t size, void* data) = 0;
 
     virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
 
-    //virtual void RcClearColorAttachment(Swapchain& swapchain) = 0;
-    //virtual void RcClearColorAttachment(ResourceImage& attachment) = 0;
-    //virtual void RcClearDepthStencilAttachment(ResourceImage& attachment) = 0;
+    virtual void RcClearColorAttachment(Swapchain& swapchain) = 0;
+    virtual void RcClearColorAttachment(ResourceImage& attachment) = 0;
+    virtual void RcClearDepthStencilAttachment(Swapchain& swapchain) = 0;
+    virtual void RcClearDepthStencilAttachment(ResourceImage& attachment) = 0;
 
-    //virtual void RcSetRenderAttachments(
-    //    const std::vector<Swapchain*>& swapchains,
-    //    const std::vector<ResourceImage*>& colorAttachments,
-    //    const std::vector<ResourceImage*>& depthStencilAttachments,
-    //    bool descriptorsContinuous) = 0;
+    virtual void RcSetRenderAttachments(
+        const std::vector<Swapchain*>& swapchains,
+        const std::vector<ResourceImage*>& colorAttachments,
+        const std::vector<ResourceImage*>& depthStencilAttachments,
+        bool descriptorsContinuous = false) = 0;
 
-    //virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
-    //virtual void RcSetIndex(InputIndex* index) = 0;
+    virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
+    virtual void RcSetIndex(InputIndex* index) = 0;
 
     virtual void Submit() = 0;
     virtual void Wait() = 0;
