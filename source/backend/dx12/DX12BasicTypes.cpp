@@ -25,6 +25,7 @@ DXGI_FORMAT ConvertIndexFormat(IndexFormat format)
 DXGI_FORMAT ConvertVertexFormat(VertexFormat format)
 {
     static const std::unordered_map<VertexFormat, DXGI_FORMAT> map = {
+        { VertexFormat::FLOAT32x3, DXGI_FORMAT_R32G32B32_FLOAT    },
         { VertexFormat::FLOAT32x4, DXGI_FORMAT_R32G32B32A32_FLOAT }
     };
     return map.at(format);

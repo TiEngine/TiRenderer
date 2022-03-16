@@ -35,6 +35,26 @@ public:
     void Resize(HWND window, unsigned int width, unsigned int height) override;
 
 private:
+    struct VertexData {
+        ti::math::XMFLOAT3 position;
+        ti::math::XMFLOAT4 color;
+    };
+    static const std::vector<VertexData> vertices;
+    static const std::vector<uint16_t> indices;
+
+    static const std::string vertexShaderString;
+    static const std::string fragmentShaderString;
+
+    struct ObjectMVP {
+        ti::math::XMFLOAT4X4 mvp =
+            ti::math::XMFLOAT4X4(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
+    } objectMVP;
+    bool updateObjectMVP = false;
+
     ti::backend::BackendContext* backend = nullptr;
     ti::backend::Device* device = nullptr;
 

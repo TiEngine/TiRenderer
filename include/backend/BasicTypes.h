@@ -17,6 +17,7 @@ enum class IndexFormat {
 };
 
 enum class VertexFormat {
+    FLOAT32x3,
     FLOAT32x4
     // ...
 };

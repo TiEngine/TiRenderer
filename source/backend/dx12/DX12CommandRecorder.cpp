@@ -106,45 +106,53 @@ void DX12CommandRecorder::EndRecord()
     LogIfFailedF(recorder->Close());
 }
 
-void DX12CommandRecorder::RcBarrier(InputVertex& resource, ResourceState before, ResourceState after)
+void DX12CommandRecorder::RcBarrier(InputVertex& resource,
+    ResourceState before, ResourceState after)
 {
     RcBarrierTemplate<DX12InputVertex>(*this, resource, before, after);
 }
 
-void DX12CommandRecorder::RcBarrier(InputIndex& resource, ResourceState before, ResourceState after)
+void DX12CommandRecorder::RcBarrier(InputIndex& resource,
+    ResourceState before, ResourceState after)
 {
     RcBarrierTemplate<DX12InputIndex>(*this, resource, before, after);
 }
 
-void DX12CommandRecorder::RcBarrier(ResourceBuffer& resource, ResourceState before, ResourceState after)
+void DX12CommandRecorder::RcBarrier(ResourceBuffer& resource,
+    ResourceState before, ResourceState after)
 {
     RcBarrierTemplate<DX12ResourceBuffer>(*this, resource, before, after);
 }
 
-void DX12CommandRecorder::RcBarrier(ResourceImage& resource, ResourceState before, ResourceState after)
+void DX12CommandRecorder::RcBarrier(ResourceImage& resource,
+    ResourceState before, ResourceState after)
 {
     RcBarrierTemplate<DX12ResourceImage>(*this, resource, before, after);
 }
 
-void DX12CommandRecorder::RcUpload(InputVertex& destination, InputVertex& staging, size_t size, void* data)
+void DX12CommandRecorder::RcUpload(InputVertex& destination,
+    InputVertex& staging, size_t size, const void* data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
     RcUploadTemplate<DX12InputVertex>(*this, destination, staging, size, data);
 }
 
-void DX12CommandRecorder::RcUpload(InputIndex& destination, InputIndex& staging, size_t size, void* data)
+void DX12CommandRecorder::RcUpload(InputIndex& destination,
+    InputIndex& staging, size_t size, const void* data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputIndex);
     RcUploadTemplate<DX12InputIndex>(*this, destination, staging, size, data);
 }
 
-void DX12CommandRecorder::RcUpload(ResourceBuffer& destination, ResourceBuffer& staging, size_t size, void* data)
+void DX12CommandRecorder::RcUpload(ResourceBuffer& destination,
+    ResourceBuffer& staging, size_t size, const void* data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceBuffer);
     RcUploadTemplate<DX12ResourceBuffer>(*this, destination, staging, size, data);
 }
 
-void DX12CommandRecorder::RcUpload(ResourceImage& destination, ResourceImage& staging, size_t size, void* data)
+void DX12CommandRecorder::RcUpload(ResourceImage& destination,
+    ResourceImage& staging, size_t size, const void* data)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceImage);
     RcUploadTemplate<DX12ResourceImage>(*this, destination, staging, size, data);
@@ -159,7 +167,7 @@ void DX12CommandRecorder::RcSetViewports(const std::vector<Viewport>& viewports)
         dxViewports.emplace_back(D3D12_VIEWPORT{ viewport.x, viewport.y, // left top
             viewport.width, viewport.height, viewport.minDepth, viewport.maxDepth });
     }
-    recorder->RSSetViewports(dxViewports.size(), dxViewports.data());
+    recorder->RSSetViewports(static_cast<unsigned int>(dxViewports.size()), dxViewports.data());
 }
 
 void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
@@ -168,9 +176,10 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
     std::vector<D3D12_RECT> dxScissors;
     dxScissors.reserve(scissors.size());
     for (const auto& scissor : scissors) {
-        dxScissors.emplace_back(D3D12_RECT{ scissor.left, scissor.top, scissor.right, scissor.bottom });
+        dxScissors.emplace_back(D3D12_RECT{
+            scissor.left, scissor.top, scissor.right, scissor.bottom });
     }
-    recorder->RSSetScissorRects(dxScissors.size(), dxScissors.data());
+    recorder->RSSetScissorRects(static_cast<unsigned int>(dxScissors.size()), dxScissors.data());
 }
 
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
@@ -215,7 +224,7 @@ void DX12CommandRecorder::Submit()
 
 void DX12CommandRecorder::Wait()
 {
-    // DX12Device::WaitIdle() will wait until all commands on all command queues have been executed.
+    // DX12Device::WaitIdle will wait until all commands on all command queues have been executed.
     // The current Wait only waits until the command on the current command queue is executed.
     if (fence->GetCompletedValue() < currentFence) {
         HANDLE eventHandle = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);

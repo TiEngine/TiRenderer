@@ -1,6 +1,7 @@
 #include "DemosBaseHeader.h"
+#include <vector>
 
-const std::string VertexShaderString = R"(
+const std::string Demo_01_Backend::vertexShaderString = R"(
 cbuffer cbPerObject : register(b0)
 {
     float4x4 gModelViewProj;
@@ -30,7 +31,7 @@ VertexOut Main(VertexIn vin)
 }
 )";
 
-const std::string FragmentShaderString = R"(
+const std::string Demo_01_Backend::fragmentShaderString = R"(
 struct VertexOut
 {
     float4 outWorldPos : SV_POSITION;
@@ -50,12 +51,7 @@ PixelOut Main(VertexOut pin)
 }
 )";
 
-struct VertexData {
-    ti::math::XMFLOAT3 position;
-    ti::math::XMFLOAT4 color;
-};
-
-const std::vector<VertexData> vertices = {
+const std::vector<Demo_01_Backend::VertexData> Demo_01_Backend::vertices = {
     { ti::math::XMFLOAT3(-1.0f, -1.0f, -1.0f),
       ti::math::XMFLOAT4(1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f) }, // White
     { ti::math::XMFLOAT3(-1.0f, +1.0f, -1.0f),
@@ -74,7 +70,7 @@ const std::vector<VertexData> vertices = {
       ti::math::XMFLOAT4(1.000000000f, 0.000000000f, 1.000000000f, 1.000000000f) }  // Magenta
 };
 
-const std::vector<uint16_t> indices = {
+const std::vector<uint16_t> Demo_01_Backend::indices = {
     // front face
     0, 1, 2,
     0, 2, 3,
@@ -95,46 +91,66 @@ const std::vector<uint16_t> indices = {
     4, 3, 7
 };
 
-struct ObjectMVP {
-    ti::math::XMFLOAT4X4 mvp =
-        ti::math::XMFLOAT4X4(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f);
-} objectMVP;
-
 void Demo_01_Backend::Begin()
 {
-    backend = ti::backend::BackendContext::CreateBackend(ti::backend::BackendContext::Backend::DX12);
+    backend = ti::backend::BackendContext::CreateBackend(
+        ti::backend::BackendContext::Backend::DX12);
     device = backend->CreateDevice({});
 
     commandRecorder = device->CreateCommandRecorder({});
 
-    vertexShader = device->CreateShader({ ti::backend::ShaderStage::Vertex, VertexShaderString });
-    pixelShader = device->CreateShader({ ti::backend::ShaderStage::Pixel, FragmentShaderString });
+    vertexShader = device->CreateShader({ ti::backend::ShaderStage::Vertex, vertexShaderString });
+    pixelShader = device->CreateShader({ ti::backend::ShaderStage::Pixel, fragmentShaderString });
 
-    inputVertexAttributes = device->CreateInputVertexAttributes({});
-    inputVertexAttributes->AddAttribute({ ti::backend::BasicFormat::R32G32B32_FLOAT,    "POSITION", 0,  0 });
-    inputVertexAttributes->AddAttribute({ ti::backend::BasicFormat::R32G32B32A32_FLOAT, "COLOR",    1, 12 });
+    inputVertexAttributes = device->CreateInputVertexAttributes();
+    inputVertexAttributes->AddAttribute(
+        { ti::backend::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
+    inputVertexAttributes->AddAttribute(
+        { ti::backend::VertexFormat::FLOAT32x4, "COLOR", 1, 12 });
 
-    std::vector<uint8_t> vertexUploadBuffer;
-    vertexUploadBuffer.resize(vertices.size() * sizeof(VertexData));
-    for (size_t n = 0; n < vertices.size(); n++) {
-        new (&(vertexUploadBuffer[n * sizeof(VertexData)])) VertexData(vertices[n]);
-    }
     vertexInput = device->CreateInputVertex({
         static_cast<unsigned int>(vertices.size()), sizeof(VertexData) });
-    vertexInput->Upload(vertexUploadBuffer);
-
-    std::vector<uint8_t> indexUploadBuffer;
-    indexUploadBuffer.resize(indices.size() * sizeof(uint16_t));
-    for (size_t n = 0; n < indices.size(); n++) {
-        new (&(indexUploadBuffer[n * sizeof(uint16_t)])) uint16_t(indices[n]);
+    {   // Upload vertex buffer to GPU_ONLY buffer
+        auto staging = device->CreateInputVertex({
+            static_cast<unsigned int>(vertices.size()), sizeof(VertexData),
+            ti::backend::TransferDirection::CPU_TO_GPU });
+        auto transfer = device->CreateCommandRecorder({
+            ti::backend::CommandType::Transfer });
+        transfer->BeginRecord();
+        transfer->RcBarrier(*vertexInput,
+            ti::backend::ResourceState::GENERAL_READ,
+            ti::backend::ResourceState::COPY_DESTINATION);
+        transfer->RcUpload(*vertexInput, *staging,
+            vertices.size() * sizeof(VertexData), static_cast<const void*>(vertices.data()));
+        transfer->RcBarrier(*vertexInput,
+            ti::backend::ResourceState::COPY_DESTINATION,
+            ti::backend::ResourceState::GENERAL_READ);
+        transfer->EndRecord();
+        transfer->Submit();
+        transfer->Wait();
     }
+
     indexInput = device->CreateInputIndex({
         static_cast<unsigned int>(indices.size()), sizeof(uint16_t) });
-    indexInput->Upload(indexUploadBuffer);
+    {   // Upload index buffer to GPU_ONLY buffer
+        auto staging = device->CreateInputIndex({
+            static_cast<unsigned int>(indices.size()), sizeof(uint16_t),
+            ti::backend::TransferDirection::CPU_TO_GPU });
+        auto transfer = device->CreateCommandRecorder({
+            ti::backend::CommandType::Transfer });
+        transfer->BeginRecord();
+        transfer->RcBarrier(*indexInput,
+            ti::backend::ResourceState::GENERAL_READ,
+            ti::backend::ResourceState::COPY_DESTINATION);
+        transfer->RcUpload(*indexInput, *staging,
+            indices.size() * sizeof(uint16_t), static_cast<const void*>(indices.data()));
+        transfer->RcBarrier(*indexInput,
+            ti::backend::ResourceState::COPY_DESTINATION,
+            ti::backend::ResourceState::GENERAL_READ);
+        transfer->EndRecord();
+        transfer->Submit();
+        transfer->Wait();
+    }
 
     cbObjectMVP = device->CreateResourceBuffer({ sizeof(ObjectMVP) });
 }
@@ -146,10 +162,11 @@ void Demo_01_Backend::Finish()
 
 void Demo_01_Backend::Update()
 {
-    std::vector<uint8_t> mvpBuffer;
-    mvpBuffer.resize(sizeof(ObjectMVP));
-    new (mvpBuffer.data()) ObjectMVP(objectMVP);
-    cbObjectMVP->Upload(mvpBuffer);
+    if (updateObjectMVP) {
+        device->WaitIdle();
+        memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
+        cbObjectMVP->Unmap();
+    }
 }
 
 void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int height)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "backend/BasicTypes.h"
 #include "InputVertex.h"
 #include "InputIndex.h"
@@ -7,6 +8,7 @@
 #include "ResourceImage.h"
 #include "PipelineState.h"
 #include "PipelineLayout.h"
+#include "Swapchain.h"
 
 namespace ti::backend {
 class CommandRecorder {
@@ -18,15 +20,23 @@ public:
     virtual void BeginRecord(PipelineState* pipelineState = nullptr) = 0;
     virtual void EndRecord() = 0;
 
-    virtual void RcBarrier(InputVertex& resource, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(InputIndex& resource, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceBuffer& resource, ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceImage& resource, ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(InputVertex& resource,
+        ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(InputIndex& resource,
+        ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(ResourceBuffer& resource,
+        ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(ResourceImage& resource,
+        ResourceState before, ResourceState after) = 0;
 
-    virtual void RcUpload(InputVertex& destination, InputVertex& staging, size_t size, void* data) = 0;
-    virtual void RcUpload(InputIndex& destination, InputIndex& staging, size_t size, void* data) = 0;
-    virtual void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging, size_t size, void* data) = 0;
-    virtual void RcUpload(ResourceImage& destination, ResourceImage& staging, size_t size, void* data) = 0;
+    virtual void RcUpload(InputVertex& destination, InputVertex& staging,
+        size_t size, const void* data) = 0;
+    virtual void RcUpload(InputIndex& destination, InputIndex& staging,
+        size_t size, const void* data) = 0;
+    virtual void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging,
+        size_t size, const void* data) = 0;
+    virtual void RcUpload(ResourceImage& destination, ResourceImage& staging,
+        size_t size, const void* data) = 0;
 
     virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;

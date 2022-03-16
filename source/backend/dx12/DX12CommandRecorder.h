@@ -18,15 +18,23 @@ public:
     void BeginRecord(PipelineState* pipelineState) override;
     void EndRecord() override;
 
-    void RcBarrier(InputVertex& resource, ResourceState before, ResourceState after) override;
-    void RcBarrier(InputIndex& resource, ResourceState before, ResourceState after) override;
-    void RcBarrier(ResourceBuffer& resource, ResourceState before, ResourceState after) override;
-    void RcBarrier(ResourceImage& resource, ResourceState before, ResourceState after) override;
+    void RcBarrier(InputVertex& resource,
+        ResourceState before, ResourceState after) override;
+    void RcBarrier(InputIndex& resource,
+        ResourceState before, ResourceState after) override;
+    void RcBarrier(ResourceBuffer& resource,
+        ResourceState before, ResourceState after) override;
+    void RcBarrier(ResourceImage& resource,
+        ResourceState before, ResourceState after) override;
 
-    void RcUpload(InputVertex& destination, InputVertex& staging, size_t size, void* data) override;
-    void RcUpload(InputIndex& destination, InputIndex& staging, size_t size, void* data) override;
-    void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging, size_t size, void* data) override;
-    void RcUpload(ResourceImage& destination, ResourceImage& staging, size_t size, void* data) override;
+    void RcUpload(InputVertex& destination, InputVertex& staging,
+        size_t size, const void* data) override;
+    void RcUpload(InputIndex& destination, InputIndex& staging,
+        size_t size, const void* data) override;
+    void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging,
+        size_t size, const void* data) override;
+    void RcUpload(ResourceImage& destination, ResourceImage& staging,
+        size_t size, const void* data) override;
 
     void RcSetViewports(const std::vector<Viewport>& viewports) override;
     void RcSetScissors(const std::vector<Scissor>& scissors) override;

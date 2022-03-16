@@ -39,22 +39,17 @@ protected:
     DX12BaseObject()
     {
         id = DX12ObjectCounter::GetReference().Create();
-        #if defined(DEBUG) || defined(_DEBUG)
-        TI_LOG_D(TAG, "Construct DX12 object `%s` instance `%d`: %p.",
-            DX12ObjectUniqueName().c_str(), id, this);
-        #endif
     }
 
     virtual ~DX12BaseObject()
     {
         DX12ObjectCounter::GetReference().Destroy();
-        #if defined(DEBUG) || defined(_DEBUG)
-        TI_LOG_D(TAG, "Deconstruct DX12 object `%s` instance `%d`: %p.",
-            DX12ObjectUniqueName().c_str(), id, this);
-        #endif
     }
 
-    virtual std::string DX12ObjectUniqueName() const = 0;
+    DX12ObjectCounter::Object ObjectID() const
+    {
+        return id;
+    }
 
 private:
     DX12ObjectCounter::Object id = 0;
@@ -62,10 +57,24 @@ private:
 
 template <typename Object>
 class DX12Object : public DX12BaseObject {
-private:
-    std::string DX12ObjectUniqueName() const override
+protected:
+    DX12Object()
     {
-        return typeid(Object).name();
+        #if defined(DEBUG) || defined(_DEBUG)
+        TI_LOG_D(TAG, "Construct DX12 object `%s` instance `%d`: %p.",
+            ObjectUniqueName, ObjectID(), this);
+        #endif
     }
+
+    ~DX12Object() override
+    {
+        #if defined(DEBUG) || defined(_DEBUG)
+        TI_LOG_D(TAG, "Deconstruct DX12 object `%s` instance `%d`: %p.",
+            ObjectUniqueName, ObjectID(), this);
+        #endif
+    }
+
+private:
+    const char* ObjectUniqueName = typeid(Object).name();
 };
 }
