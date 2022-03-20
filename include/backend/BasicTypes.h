@@ -79,16 +79,13 @@ enum class ImageDimension : uint8_t {
     Dimension3D = 3  // Texture 3D
 };
 
-enum class DescriptorType {
-    ColorOutput,   // descriptor for render target
-    DepthStencil,  // descriptor for depth stencil
-    ShaderResource // descriptor for buffer or image
-};
-
-enum class ShaderResourceType {
-    ConstantBuffer,
-    StorageBuffer,
-    Image
+enum class DescriptorType : uint8_t {
+    ConstantBuffer = (1 << 0), // descriptor for constant buffer
+    StorageBuffer  = (1 << 1), // descriptor for storage buffer
+    GenericBuffer  = ConstantBuffer | StorageBuffer,
+    ImageSampler   = (1 << 4), // descriptor for image sampler
+    ColorOutput    = (1 << 5), // descriptor for render target
+    DepthStencil   = (1 << 6)  // descriptor for depth stencil
 };
 
 enum class Stage : uint32_t {

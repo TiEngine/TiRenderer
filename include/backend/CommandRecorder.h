@@ -8,6 +8,7 @@
 #include "ResourceImage.h"
 #include "PipelineState.h"
 #include "PipelineLayout.h"
+#include "DescriptorHeap.h"
 #include "Swapchain.h"
 
 namespace ti::backend {
@@ -54,6 +55,8 @@ public:
 
     virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
     virtual void RcSetIndex(InputIndex* index) = 0;
+
+    virtual void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) = 0;
 
     virtual void Submit() = 0;
     virtual void Wait() = 0;

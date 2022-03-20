@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BasicTypes.h"
+#include "Descriptor.h"
 
 namespace ti::backend {
 class DescriptorHeap {
@@ -9,8 +9,8 @@ public:
         unsigned int capacity; // max descriptor count
         DescriptorType type;   // descriptor heap type
 
-        // A draw call in a pass can only set up one heap at a time,
-        // so reserve enough descriptor capacity as possible.
+        // A draw call in a pass can only set up one heap of each type
+        //  at a time, so reserve enough descriptor capacity as possible.
         Description(
             unsigned int capacity,
             DescriptorType heapType)
@@ -18,6 +18,8 @@ public:
             , type(heapType)
         {}
     };
+
+    virtual Descriptor* Allocate(Descriptor::Description description) = 0;
 
 protected:
     DescriptorHeap() = default;

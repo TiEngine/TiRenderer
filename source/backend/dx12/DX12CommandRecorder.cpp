@@ -221,6 +221,40 @@ void DX12CommandRecorder::RcSetIndex(InputIndex* index)
     CHECK_RECORD(description.type, CommandType::Graphics, RcSetIndex);
 }
 
+void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps)
+{
+    std::vector<ID3D12DescriptorHeap*> descriptorHeaps;
+    descriptorHeaps.reserve(2);
+
+    bool isCbvSrcUavHeapSetted = false;
+    bool isSamplerHeapSetted = false;
+
+    for (DescriptorHeap* heap : heaps) {
+        auto dxHeap = down_cast<DX12DescriptorHeap*>(heap);
+        switch (dxHeap->GetHeapType()) {
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            if (!isCbvSrcUavHeapSetted) {
+                descriptorHeaps.emplace_back(dxHeap->Heap().Get());
+                isCbvSrcUavHeapSetted = true;
+            }
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            if (!isSamplerHeapSetted) {
+                descriptorHeaps.emplace_back(dxHeap->Heap().Get());
+                isSamplerHeapSetted = true;
+            }
+            break;
+        }
+        if (isCbvSrcUavHeapSetted && isSamplerHeapSetted) {
+            break;
+        }
+    }
+
+    // The SetDescriptorHeaps interface of DX12CommandList
+    // only allows one CBV_SRV_UAV heap and one SAMPLER heap!
+    recorder->SetDescriptorHeaps(descriptorHeaps.size(), descriptorHeaps.data());
+}
+
 void DX12CommandRecorder::Submit()
 {
     ID3D12CommandList* pCommandLists[] = { recorder.Get() };

@@ -24,7 +24,7 @@ void DX12DescriptorHeap::Setup(Description description)
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
     heapDesc.NumDescriptors = description.capacity;
-    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heapDesc.Type = ConvertDescriptorHeap(description.type);
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     heapDesc.NodeMask = 0;
     LogIfFailedF(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&heap)));
@@ -32,8 +32,20 @@ void DX12DescriptorHeap::Setup(Description description)
 
 void DX12DescriptorHeap::Shutdown()
 {
-    description = { 0u, DescriptorType::ShaderResource };
+    description = { 0u, DescriptorType::GenericBuffer };
     heap.Reset();
+    descriptors.resize(0);
+}
+
+Descriptor* DX12DescriptorHeap::Allocate(Descriptor::Description description)
+{
+    unsigned int index = static_cast<unsigned int>(descriptors.size());
+    return CreateInstance<Descriptor>(descriptors, description, internal, *this, index);
+}
+
+D3D12_DESCRIPTOR_HEAP_TYPE DX12DescriptorHeap::GetHeapType() const
+{
+    return ConvertDescriptorHeap(description.type);
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DX12DescriptorHeap::Heap()

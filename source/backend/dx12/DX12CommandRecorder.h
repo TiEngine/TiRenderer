@@ -53,6 +53,8 @@ public:
     void RcSetVertex(const std::vector<InputVertex*>& vertices) override;
     void RcSetIndex(InputIndex* index) override;
 
+    void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
+
     void Submit() override;
     void Wait() override;
 

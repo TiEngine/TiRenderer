@@ -93,6 +93,21 @@ D3D12_RESOURCE_DIMENSION ConvertImageDimension(ImageDimension dimension)
     return map.at(dimension);
 }
 
+D3D12_DESCRIPTOR_HEAP_TYPE ConvertDescriptorHeap(DescriptorType type)
+{
+    static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_HEAP_TYPE> map = {
+        { DescriptorType::GenericBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV },
+        { DescriptorType::ImageSampler,  D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER     },
+        { DescriptorType::ColorOutput,   D3D12_DESCRIPTOR_HEAP_TYPE_RTV         },
+        { DescriptorType::DepthStencil,  D3D12_DESCRIPTOR_HEAP_TYPE_DSV         }
+    };
+    if (common::EnumCast<DescriptorType>(type) &
+        common::EnumCast<DescriptorType>(DescriptorType::GenericBuffer)) {
+        type = DescriptorType::GenericBuffer;
+    }
+    return map.at(type);
+}
+
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
 {
     D3D12_CLEAR_VALUE clearValue{};

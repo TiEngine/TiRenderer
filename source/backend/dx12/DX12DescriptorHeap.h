@@ -1,8 +1,7 @@
 #pragma once
 
 #include "backend/DescriptorHeap.h"
-#include "DX12BackendHeaders.h"
-#include "DX12BaseObject.h"
+#include "DX12Descriptor.h"
 
 namespace ti::backend {
 class DX12Device;
@@ -15,13 +14,18 @@ public:
     void Setup(Description description);
     void Shutdown();
 
+    Descriptor* Allocate(Descriptor::Description description) override;
+
+    D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Heap();
 
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Description description{ 0u, DescriptorType::ShaderResource };
+    Description description{ 0u, DescriptorType::GenericBuffer };
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+
+    std::vector<std::unique_ptr<DX12Descriptor>> descriptors;
 };
 }
