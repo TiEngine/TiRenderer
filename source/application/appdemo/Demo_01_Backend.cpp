@@ -167,6 +167,7 @@ void Demo_01_Backend::Update()
         memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
         cbObjectMVP->Unmap();
     }
+    //swapchain->Present();
 }
 
 void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int height)

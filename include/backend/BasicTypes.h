@@ -79,6 +79,18 @@ enum class ImageDimension : uint8_t {
     Dimension3D = 3  // Texture 3D
 };
 
+enum class DescriptorType {
+    ColorOutput,   // descriptor for render target
+    DepthStencil,  // descriptor for depth stencil
+    ShaderResource // descriptor for buffer or image
+};
+
+enum class ShaderResourceType {
+    ConstantBuffer,
+    StorageBuffer,
+    Image
+};
+
 enum class Stage : uint32_t {
     // Sort them by their order in the graphics pipeline:
     InputAssembler = (1 <<  0), // Standard stage: input vertex and index.

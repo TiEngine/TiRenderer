@@ -23,4 +23,14 @@ protected:
     ResourceBuffer() = default;
     virtual ~ResourceBuffer() = default;
 };
+
+class ResourceBufferEx {
+public:
+    struct Description {
+    };
+
+protected:
+    ResourceBufferEx() = default;
+    virtual ~ResourceBufferEx() = default;
+};
 }

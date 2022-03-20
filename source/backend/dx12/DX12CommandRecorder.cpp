@@ -184,18 +184,22 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment);
 }
 
 void DX12CommandRecorder::RcClearColorAttachment(ResourceImage& attachment)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain& swapchain)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencilAttachment);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(ResourceImage& attachment)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencilAttachment);
 }
 
 void DX12CommandRecorder::RcSetRenderAttachments(
@@ -204,14 +208,17 @@ void DX12CommandRecorder::RcSetRenderAttachments(
     const std::vector<ResourceImage*>& depthStencilAttachments,
     bool descriptorsContinuous)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetRenderAttachments);
 }
 
 void DX12CommandRecorder::RcSetVertex(const std::vector<InputVertex*>& vertices)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetVertex);
 }
 
 void DX12CommandRecorder::RcSetIndex(InputIndex* index)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetIndex);
 }
 
 void DX12CommandRecorder::Submit()

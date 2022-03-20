@@ -10,6 +10,7 @@
 #include "DX12InputIndexAttribute.h"
 #include "DX12ResourceBuffer.h"
 #include "DX12ResourceImage.h"
+#include "DX12DescriptorHeap.h"
 
 namespace ti::backend {
 class DX12Device : public Device
@@ -45,8 +46,17 @@ public:
     ResourceBuffer* CreateResourceBuffer(ResourceBuffer::Description description) override;
     bool DestroyResourceBuffer(ResourceBuffer* instance) override;
 
+    //ResourceBufferEx* CreateResourceBuffer(ResourceBufferEx::Description description) override;
+    //bool DestroyResourceBuffer(ResourceBufferEx* instance) override;
+
     ResourceImage* CreateResourceImage(ResourceImage::Description description) override;
     bool DestroyResourceImage(ResourceImage* instance) override;
+
+    //ImageSampler* CreateImageSampler(ImageSampler::Description description) override;
+    //bool DestroyImageSampler(ImageSampler* instance) override;
+
+    DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) override;
+    bool DestroyDescriptorHeap(DescriptorHeap* instance) override;
 
     void WaitIdle() override;
 
@@ -83,5 +93,6 @@ private:
     std::vector<std::unique_ptr<DX12InputIndexAttribute>> inputIndexAttributes;
     std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
     std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
+    std::vector<std::unique_ptr<DX12DescriptorHeap>> descriptorHeaps;
 };
 }

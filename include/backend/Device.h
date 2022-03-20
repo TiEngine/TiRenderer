@@ -6,6 +6,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 #include "InputVertexAttributes.h" // FIXME: it will include in PipelineState.h (Remove it)!!!
 #include "InputIndexAttribute.h"   // FIXME: it will include in PipelineState.h (Remove it)!!!
+#include "DescriptorHeap.h"
 
 namespace ti::backend {
 class Device {
@@ -38,8 +39,17 @@ public:
     virtual ResourceBuffer* CreateResourceBuffer(ResourceBuffer::Description description) = 0;
     virtual bool DestroyResourceBuffer(ResourceBuffer* instance) = 0;
 
+    //virtual ResourceBufferEx* CreateResourceBuffer(ResourceBufferEx::Description description) = 0;
+    //virtual bool DestroyResourceBuffer(ResourceBufferEx* instance) = 0;
+
     virtual ResourceImage* CreateResourceImage(ResourceImage::Description description) = 0;
     virtual bool DestroyResourceImage(ResourceImage* instance) = 0;
+
+    //virtual ImageSampler* CreateImageSampler(ImageSampler::Description description) = 0;
+    //virtual bool DestroyImageSampler(ImageSampler* instance) = 0;
+
+    virtual DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) = 0;
+    virtual bool DestroyDescriptorHeap(DescriptorHeap* instance) = 0;
 
     virtual void WaitIdle() = 0;
 

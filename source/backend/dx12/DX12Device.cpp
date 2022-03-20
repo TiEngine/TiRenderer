@@ -151,6 +151,16 @@ bool DX12Device::DestroyResourceImage(ResourceImage* instance)
     return DestroyInstance(resourceImages, instance);
 }
 
+DescriptorHeap* DX12Device::CreateDescriptorHeap(DescriptorHeap::Description description)
+{
+    return CreateInstance<DescriptorHeap>(descriptorHeaps, description, *this);
+}
+
+bool DX12Device::DestroyDescriptorHeap(DescriptorHeap* instance)
+{
+    return DestroyInstance(descriptorHeaps, instance);
+}
+
 void DX12Device::WaitIdle()
 {
     // Advance the fence value to mark commands up to this fence point.
