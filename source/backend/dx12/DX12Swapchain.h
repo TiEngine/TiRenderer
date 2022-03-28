@@ -23,6 +23,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
 
+    // Refer to the DX12Descriptor.h
     // Descriptor handle increment size, i.e.
     // the descriptor size in the descriptor heap.
     UINT descriptorSizeOfRtv = 0;

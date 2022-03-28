@@ -1,6 +1,8 @@
 #pragma once
 
 #include "BasicTypes.h"
+#include "ResourceBuffer.h"
+#include "ResourceImage.h"
 
 namespace ti::backend {
 class Descriptor {
@@ -9,7 +11,8 @@ public:
         DescriptorType type;
     };
 
-    ///virtual void BuildDescriptor() = 0;
+    virtual void BuildDescriptor(ResourceBuffer& resource) = 0;
+    virtual void BuildDescriptor(ResourceImage& resource) = 0;
 
 protected:
     Descriptor() = default;

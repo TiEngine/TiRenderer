@@ -14,7 +14,7 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    Descriptor* Allocate(Descriptor::Description description) override;
+    Descriptor* AllocateDescriptor(Descriptor::Description description) override;
 
     D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Heap();

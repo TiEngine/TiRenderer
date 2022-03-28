@@ -4,8 +4,6 @@
 #include "backend/BasicTypes.h"
 #include "InputVertex.h"
 #include "InputIndex.h"
-#include "ResourceBuffer.h"
-#include "ResourceImage.h"
 #include "PipelineState.h"
 #include "PipelineLayout.h"
 #include "DescriptorHeap.h"

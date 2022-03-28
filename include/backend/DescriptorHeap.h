@@ -19,7 +19,7 @@ public:
         {}
     };
 
-    virtual Descriptor* Allocate(Descriptor::Description description) = 0;
+    virtual Descriptor* AllocateDescriptor(Descriptor::Description description) = 0;
 
 protected:
     DescriptorHeap() = default;

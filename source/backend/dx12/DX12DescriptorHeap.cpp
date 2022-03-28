@@ -37,7 +37,7 @@ void DX12DescriptorHeap::Shutdown()
     descriptors.resize(0);
 }
 
-Descriptor* DX12DescriptorHeap::Allocate(Descriptor::Description description)
+Descriptor* DX12DescriptorHeap::AllocateDescriptor(Descriptor::Description description)
 {
     unsigned int index = static_cast<unsigned int>(descriptors.size());
     return CreateInstance<Descriptor>(descriptors, description, internal, *this, index);
