@@ -1,6 +1,5 @@
 #include "DX12CommandRecorder.h"
 #include "DX12BasicTypes.h"
-#include "DX12Common.h"
 #include "DX12Device.h"
 
 #define CHECK_RECORD(check, standard, information)                 \

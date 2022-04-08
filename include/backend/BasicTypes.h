@@ -96,20 +96,21 @@ enum class Stage : uint32_t {
                                 // patch should be tessellated by the tessellation stage.
     Tessellation   = (1 <<  8), // Extra stage: tessellation, which converts low-detail subdivision
                                 // surfaces into higher-detail primitives on the GPU.
-    DomainShader   = (1 << 10), // Extra stage: domain process, computes the final vertex attributes
+    DomainShader   = (1 << 10), // Extra stage: domain process, compute the final vertex attributes
                                 // based on the output control points from the hull shader and the
                                 // interpolation coordinates from the tessellation stage.
-    GeometryShader = (1 << 12), // Extra stage: geometry process, which runs shader code with vertices
-                                // as input and the ability to generate vertices on output.
-    StreamOutput   = (1 << 14), // Extra stage: output vertex data from the geometry-shader stage (or
-                                // the vertex-shader stage if the geometry-shader stage is inactive)
-                                // to one or more buffers in memory.
+    GeometryShader = (1 << 12), // Extra stage: geometry process, which runs shader code with vert-
+                                // ices as input and the ability to generate vertices on output.
+    StreamOutput   = (1 << 14), // Extra stage: output vertex data from the geometry-shader stage
+                                // (or the vertex-shader stage if the geometry-shader stage is
+                                // inactive) to one or more buffers in memory.
     Rasterizer     = (1 << 16), // Standard stage: rasterize.
     PixelShader    = (1 << 18), // Standard stage: pixel/fragment process.
     OutputMerger   = (1 << 20), // Standard stage: merge and output.
     ComputeShader  = (1 << 24), // Advance stage: compute pipeline process.
     // Programmable shader stage mask:
-    ShaderStageMask = VertexShader | HullShader | DomainShader | GeometryShader | PixelShader | ComputeShader
+    ShaderStageMask = VertexShader | HullShader | DomainShader | GeometryShader |
+                      PixelShader  | ComputeShader
 };
 
 enum class ShaderStage : uint32_t {
@@ -118,7 +119,8 @@ enum class ShaderStage : uint32_t {
     Domain   = common::EnumCast(Stage::DomainShader),
     Geometry = common::EnumCast(Stage::GeometryShader),
     Pixel    = common::EnumCast(Stage::PixelShader),
-    Compute  = common::EnumCast(Stage::ComputeShader)
+    Compute  = common::EnumCast(Stage::ComputeShader),
+    Graphics = Vertex | Hull | Domain | Geometry | Pixel
 };
 
 struct ColorValue {

@@ -1,6 +1,5 @@
 #include "DX12ResourceBuffer.h"
 #include "DX12BasicTypes.h"
-#include "DX12Common.h"
 #include "DX12Device.h"
 
 namespace ti::backend {

@@ -108,6 +108,20 @@ D3D12_DESCRIPTOR_HEAP_TYPE ConvertDescriptorHeap(DescriptorType type)
     return map.at(type);
 }
 
+D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
+{
+    static const std::unordered_map<ShaderStage, D3D12_SHADER_VISIBILITY> map = {
+        { ShaderStage::Vertex,   D3D12_SHADER_VISIBILITY_VERTEX   },
+        { ShaderStage::Hull,     D3D12_SHADER_VISIBILITY_HULL     },
+        { ShaderStage::Domain,   D3D12_SHADER_VISIBILITY_DOMAIN   },
+        { ShaderStage::Geometry, D3D12_SHADER_VISIBILITY_GEOMETRY },
+        { ShaderStage::Pixel,    D3D12_SHADER_VISIBILITY_PIXEL    },
+        { ShaderStage::Compute,  D3D12_SHADER_VISIBILITY_ALL      },
+        { ShaderStage::Graphics, D3D12_SHADER_VISIBILITY_ALL      }
+    };
+    return map.at(visibility);
+}
+
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
 {
     D3D12_CLEAR_VALUE clearValue{};
