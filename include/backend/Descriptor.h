@@ -9,6 +9,11 @@ class Descriptor {
 public:
     struct Description {
         DescriptorType type;
+
+        Description(
+            DescriptorType type)
+            : type(type)
+        {}
     };
 
     virtual void BuildDescriptor(ResourceBuffer& resource) = 0;

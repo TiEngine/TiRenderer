@@ -7,11 +7,19 @@ class PipelineLayout {
 public:
     struct Description {
         unsigned int descriptorGroupCount;
+        std::vector<uint8_t> layoutCache;
 
         Description(
             unsigned int descriptorGroupCount)
             : descriptorGroupCount(descriptorGroupCount)
         {}
+
+        Description(
+            std::vector<uint8_t>&& cache)
+            : descriptorGroupCount(0u) // Set the descriptorGroupCount to zero if use the cache.
+        {
+            layoutCache.swap(cache);
+        }
     };
 
     virtual void AddGroup(DescriptorGroup& group) = 0;

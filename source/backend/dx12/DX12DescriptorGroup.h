@@ -16,16 +16,18 @@ public:
     void Shutdown();
 
     void AddDescriptor(DescriptorType type,
-        unsigned int id, unsigned int space, ShaderStage visibility) override;
-    void AddDescriptors(DescriptorType type, unsigned int beginId, unsigned int endId,
-        unsigned int space, ShaderStage visibility) override;
+        unsigned int id, ShaderStage visibility) override;
+
+    void AddDescriptors(DescriptorType type,
+        std::pair<unsigned int, unsigned int> range, ShaderStage visibility) override;
+
+    const std::vector<CD3DX12_ROOT_PARAMETER>& GetRootParameters() const;
 
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
     Description description{ 0u };
-    unsigned int descriptorCounter = 0;
     // AddDescriptor will add descriptor placeholder to root parameter directly,
     // AddDescriptors will use the descriptor range and add range to root parameter.
     std::vector<CD3DX12_ROOT_PARAMETER> parameters;

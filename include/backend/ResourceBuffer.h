@@ -7,9 +7,10 @@ class ResourceBuffer {
 public:
     struct Description {
         unsigned int bufferBytesSize;
-        TransferDirection memoryType = TransferDirection::CPU_TO_GPU;
+        TransferDirection memoryType;
 
-        Description(unsigned int bufferBytesSize,
+        Description(
+            unsigned int bufferBytesSize,
             TransferDirection memoryType = TransferDirection::CPU_TO_GPU)
             : bufferBytesSize(bufferBytesSize)
             , memoryType(memoryType)

@@ -6,18 +6,19 @@ namespace ti::backend {
 class DescriptorGroup {
 public:
     struct Description {
-        unsigned int descriptorCount;
+        unsigned int space;
 
         Description(
-            unsigned int descriptorCount)
-            : descriptorCount(descriptorCount)
+            unsigned int space)
+            : space(space)
         {}
     };
 
     virtual void AddDescriptor(DescriptorType type,
-        unsigned int id, unsigned int space, ShaderStage visibility) = 0;
+        unsigned int id, ShaderStage visibility) = 0;
+
     virtual void AddDescriptors(DescriptorType type,
-        unsigned int beginId, unsigned int endId, unsigned int space, ShaderStage visibility) = 0;
+        std::pair<unsigned int, unsigned int> range, ShaderStage visibility) = 0;
 
 protected:
     DescriptorGroup() = default;
