@@ -183,22 +183,23 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment:Swapchain);
+    recorder->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
 }
 
 void DX12CommandRecorder::RcClearColorAttachment(ResourceImage& attachment)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment:ResourceImage);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain& swapchain)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencilAttachment);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencil:Swapchain);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(ResourceImage& attachment)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencilAttachment);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencil:ResourceImage);
 }
 
 void DX12CommandRecorder::RcSetRenderAttachments(
@@ -222,6 +223,8 @@ void DX12CommandRecorder::RcSetIndex(InputIndex* index)
 
 void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptorHeap);
+
     std::vector<ID3D12DescriptorHeap*> descriptorHeaps;
     descriptorHeaps.reserve(2);
 
@@ -252,6 +255,12 @@ void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>
     // The SetDescriptorHeaps interface of DX12CommandList
     // only allows one CBV_SRV_UAV heap and one SAMPLER heap!
     recorder->SetDescriptorHeaps(descriptorHeaps.size(), descriptorHeaps.data());
+}
+
+void DX12CommandRecorder::RcSetPipelineLayout(PipelineLayout& layout)
+{
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetPipelineLayout);
+    recorder->SetGraphicsRootSignature(down_cast<DX12PipelineLayout&>(layout).Signature().Get());
 }
 
 void DX12CommandRecorder::Submit()

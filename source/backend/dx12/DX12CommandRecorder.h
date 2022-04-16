@@ -28,13 +28,13 @@ public:
         ResourceState before, ResourceState after) override;
 
     void RcUpload(InputVertex& destination, InputVertex& staging,
-        size_t size, const void* data) override;
+                  size_t size, const void* data) override;
     void RcUpload(InputIndex& destination, InputIndex& staging,
-        size_t size, const void* data) override;
+                  size_t size, const void* data) override;
     void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging,
-        size_t size, const void* data) override;
+                  size_t size, const void* data) override;
     void RcUpload(ResourceImage& destination, ResourceImage& staging,
-        size_t size, const void* data) override;
+                  size_t size, const void* data) override;
 
     void RcSetViewports(const std::vector<Viewport>& viewports) override;
     void RcSetScissors(const std::vector<Scissor>& scissors) override;
@@ -54,6 +54,8 @@ public:
     void RcSetIndex(InputIndex* index) override;
 
     void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
+
+    void RcSetPipelineLayout(PipelineLayout& layout) override;
 
     void Submit() override;
     void Wait() override;

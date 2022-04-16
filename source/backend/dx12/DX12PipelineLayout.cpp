@@ -37,8 +37,8 @@ void DX12PipelineLayout::BuildLayout()
 {
     // A root signature is an array of root parameters.
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
-        parameters.size(), parameters.size() > 0 ? parameters.data() : nullptr,
-        samplers.size(),   samplers.size()   > 0 ? samplers.data()   : nullptr,
+        parameters.size(), (parameters.size() > 0) ? parameters.data() : nullptr,
+        samplers.size(),   (samplers.size()   > 0) ? samplers.data()   : nullptr,
         // Setting this flag means that current application is opting in to using the Input
         // Assembler (requiring an input layout that defines a set of vertex buffer bindings).
         // Omitting this flag can result in one root argument space being saved on some hardware.
@@ -61,5 +61,10 @@ void DX12PipelineLayout::BuildLayout()
         serializedRootSignature->GetBufferPointer(),
         serializedRootSignature->GetBufferSize(),
         IID_PPV_ARGS(&signature)));
+}
+
+Microsoft::WRL::ComPtr<ID3D12RootSignature> DX12PipelineLayout::Signature()
+{
+    return signature;
 }
 }

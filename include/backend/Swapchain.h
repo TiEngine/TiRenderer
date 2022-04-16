@@ -14,6 +14,8 @@ public:
         unsigned int refreshRate;
         BasicFormat colorFormat;
         BasicFormat depthStencilFormat;
+        ClearValue colorClearValue;
+        ClearValue depthStencilClearValue;
         bool isEnabledDepthStencil;
         bool fullScreen;
 
@@ -23,9 +25,11 @@ public:
             unsigned int height,
             unsigned int bufferCount = 3,
             unsigned int refreshRate = 60,
+            bool isEnabledDepthStencil = true,
             BasicFormat colorFormat = BasicFormat::R8G8B8A8_UNORM,
             BasicFormat depthStencilFormat = BasicFormat::D24_UNORM_S8_UINT,
-            bool isEnabledDepthStencil = true,
+            ClearValue colorClearValue = {},
+            ClearValue depthStencilClearValue = {},
             bool fullScreen = false)
             : window(window)
             , width(width)
@@ -33,7 +37,9 @@ public:
             , bufferCount(bufferCount)
             , refreshRate(refreshRate)
             , colorFormat(colorFormat)
+            , colorClearValue(colorClearValue)
             , depthStencilFormat(depthStencilFormat)
+            , depthStencilClearValue(depthStencilClearValue)
             , isEnabledDepthStencil(isEnabledDepthStencil)
             , fullScreen(fullScreen)
         {}

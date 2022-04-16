@@ -148,4 +148,24 @@ void DX12Swapchain::Present()
     LogIfFailedF(swapchain->Present(0, 0));
     currentBufferIndex = (currentBufferIndex + 1) % description.bufferCount;
 }
+
+Microsoft::WRL::ComPtr<ID3D12Resource> DX12Swapchain::CurrentRenderTargetBuffer()
+{
+    return renderTargetBuffer[currentBufferIndex];
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> DX12Swapchain::CurrentDepthStencilBuffer()
+{
+    return depthStencilBuffer[currentBufferIndex];
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DX12Swapchain::CurrentRenderTargetView()
+{
+    return renderTargetHandlesInHeap[currentBufferIndex];
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DX12Swapchain::CurrentDepthStencilView()
+{
+    return depthStencilHandlesInHeap[currentBufferIndex];
+}
 }

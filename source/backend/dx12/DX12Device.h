@@ -11,6 +11,7 @@
 #include "DX12ResourceBuffer.h"
 #include "DX12ResourceImage.h"
 #include "DX12DescriptorHeap.h"
+#include "DX12PipelineLayout.h"
 
 namespace ti::backend {
 class DX12Device : public Device
@@ -57,6 +58,9 @@ public:
 
     DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) override;
     bool DestroyDescriptorHeap(DescriptorHeap* instance) override;
+
+    PipelineLayout CreatePipelineLayout(PipelineLayout::Description description) override;
+    bool DestroyPipelineLayout(PipelineLayout* instance) override;
 
     void WaitIdle() override;
 

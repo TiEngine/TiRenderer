@@ -18,6 +18,8 @@ public:
     void AddGroup(DescriptorGroup& group) override;
     void BuildLayout() override;
 
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> Signature();
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;

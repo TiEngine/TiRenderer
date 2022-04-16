@@ -18,6 +18,11 @@ public:
     void Resize(unsigned int width, unsigned int height) override;
     void Present() override;
 
+    Microsoft::WRL::ComPtr<ID3D12Resource> CurrentRenderTargetBuffer();
+    Microsoft::WRL::ComPtr<ID3D12Resource> CurrentDepthStencilBuffer();
+    D3D12_CPU_DESCRIPTOR_HANDLE CurrentRenderTargetView();
+    D3D12_CPU_DESCRIPTOR_HANDLE CurrentDepthStencilView();
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
