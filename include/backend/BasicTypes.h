@@ -151,4 +151,22 @@ struct Scissor {
     long right  = 0;
     long bottom = 0;
 };
+
+inline bool IsBasicFormatHasDepth(BasicFormat format)
+{
+    switch (format) {
+    case BasicFormat::D24_UNORM_S8_UINT:
+        return true;
+    }
+    return false;
+}
+
+inline bool IsBasicFormatHasStencil(BasicFormat format)
+{
+    switch (format) {
+    case BasicFormat::D24_UNORM_S8_UINT:
+        return true;
+    }
+    return false;
+}
 }

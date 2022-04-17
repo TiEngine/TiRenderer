@@ -184,7 +184,11 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
 {
     CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment:Swapchain);
-    recorder->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+    auto& dxSwapchain = down_cast<DX12Swapchain&>(swapchain);
+    recorder->ClearRenderTargetView(
+        dxSwapchain.CurrentRenderTargetView(),
+        dxSwapchain.RenderTargetClearValue().Color,
+        0, NULL);
 }
 
 void DX12CommandRecorder::RcClearColorAttachment(ResourceImage& attachment)
@@ -195,6 +199,13 @@ void DX12CommandRecorder::RcClearColorAttachment(ResourceImage& attachment)
 void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain& swapchain)
 {
     CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencil:Swapchain);
+    auto& dxSwapchain = down_cast<DX12Swapchain&>(swapchain);
+    recorder->ClearDepthStencilView(
+        dxSwapchain.CurrentDepthStencilView(),
+        dxSwapchain.DepthStencilClearFlags(),
+        dxSwapchain.DepthStencilClearValue().DepthStencil.Depth,
+        dxSwapchain.DepthStencilClearValue().DepthStencil.Stencil,
+        0, NULL);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(ResourceImage& attachment)

@@ -168,4 +168,26 @@ D3D12_CPU_DESCRIPTOR_HANDLE DX12Swapchain::CurrentDepthStencilView()
 {
     return depthStencilHandlesInHeap[currentBufferIndex];
 }
+
+D3D12_CLEAR_VALUE DX12Swapchain::RenderTargetClearValue() const
+{
+    return ConvertClearValue(description.colorFormat, description.colorClearValue);
+}
+
+D3D12_CLEAR_VALUE DX12Swapchain::DepthStencilClearValue() const
+{
+    return ConvertClearValue(description.depthStencilFormat, description.depthStencilClearValue);
+}
+
+D3D12_CLEAR_FLAGS DX12Swapchain::DepthStencilClearFlags() const
+{
+    D3D12_CLEAR_FLAGS flags = static_cast<D3D12_CLEAR_FLAGS>(0);
+    if (IsBasicFormatHasDepth(description.depthStencilFormat)) {
+        flags |= D3D12_CLEAR_FLAG_DEPTH;
+    }
+    if (IsBasicFormatHasStencil(description.depthStencilFormat)) {
+        flags |= D3D12_CLEAR_FLAG_STENCIL;
+    }
+    return flags;
+}
 }
