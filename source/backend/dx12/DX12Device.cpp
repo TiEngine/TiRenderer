@@ -161,6 +161,26 @@ bool DX12Device::DestroyDescriptorHeap(DescriptorHeap* instance)
     return DestroyInstance(descriptorHeaps, instance);
 }
 
+PipelineLayout* DX12Device::CreatePipelineLayout()
+{
+    return CreateInstance<PipelineLayout>(pipelineLayouts, {}, *this);
+}
+
+bool DX12Device::DestroyPipelineLayout(PipelineLayout* instance)
+{
+    return DestroyInstance(pipelineLayouts, instance);
+}
+
+PipelineState* DX12Device::CreatePipelineState()
+{
+    return CreateInstance<PipelineState>(pipelineStates, {}, *this);
+}
+
+bool DX12Device::DestroyPipelineState(PipelineState* instance)
+{
+    return DestroyInstance(pipelineStates, instance);
+}
+
 void DX12Device::WaitIdle()
 {
     // Advance the fence value to mark commands up to this fence point.

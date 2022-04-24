@@ -18,7 +18,6 @@ public:
 private:
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Description description;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
 };
 }

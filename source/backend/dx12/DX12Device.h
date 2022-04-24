@@ -12,6 +12,7 @@
 #include "DX12ResourceImage.h"
 #include "DX12DescriptorHeap.h"
 #include "DX12PipelineLayout.h"
+#include "DX12PipelineState.h"
 
 namespace ti::backend {
 class DX12Device : public Device
@@ -59,8 +60,11 @@ public:
     DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) override;
     bool DestroyDescriptorHeap(DescriptorHeap* instance) override;
 
-    PipelineLayout CreatePipelineLayout(PipelineLayout::Description description) override;
+    PipelineLayout* CreatePipelineLayout() override;
     bool DestroyPipelineLayout(PipelineLayout* instance) override;
+
+    PipelineState* CreatePipelineState() override;
+    bool DestroyPipelineState(PipelineState* instance) override;
 
     void WaitIdle() override;
 
@@ -98,5 +102,7 @@ private:
     std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
     std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
     std::vector<std::unique_ptr<DX12DescriptorHeap>> descriptorHeaps;
+    std::vector<std::unique_ptr<DX12PipelineLayout>> pipelineLayouts;
+    std::vector<std::unique_ptr<DX12PipelineState>> pipelineStates;
 };
 }

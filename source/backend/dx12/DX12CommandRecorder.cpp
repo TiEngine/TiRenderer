@@ -183,7 +183,7 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment:Swapchain);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearOutputColor:Swapchain);
     auto& dxSwapchain = down_cast<DX12Swapchain&>(swapchain);
     recorder->ClearRenderTargetView(
         dxSwapchain.CurrentRenderTargetView(),
@@ -193,7 +193,7 @@ void DX12CommandRecorder::RcClearColorAttachment(Swapchain& swapchain)
 
 void DX12CommandRecorder::RcClearColorAttachment(ResourceImage& attachment)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearColorAttachment:ResourceImage);
+    CHECK_RECORD(description.type, CommandType::Graphics, RcClearOutputColor:ResourceImage);
 }
 
 void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain& swapchain)

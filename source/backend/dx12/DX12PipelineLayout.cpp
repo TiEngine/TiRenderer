@@ -16,12 +16,10 @@ DX12PipelineLayout::~DX12PipelineLayout()
 
 void DX12PipelineLayout::Setup(Description description)
 {
-    this->description = description;
 }
 
 void DX12PipelineLayout::Shutdown()
 {
-    description = { 0u };
     parameters.clear();
     samplers.clear();
     signature.Reset();

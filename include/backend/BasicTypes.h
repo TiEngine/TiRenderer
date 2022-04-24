@@ -152,6 +152,22 @@ struct Scissor {
     long bottom = 0;
 };
 
+enum class FillMode {
+    Solid,
+    Wireframe
+};
+
+enum class CullMode {
+    None,
+    Front,
+    Back
+};
+
+struct RasterizerState {
+    FillMode fillMode;
+    CullMode cullMode;
+};
+
 inline bool IsBasicFormatHasDepth(BasicFormat format)
 {
     switch (format) {
