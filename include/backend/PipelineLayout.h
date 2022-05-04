@@ -6,7 +6,7 @@ namespace ti::backend {
 class PipelineLayout {
 public:
     struct Description {
-        unsigned int reserved = 0;
+        std::string cache; // Unsupported yet
     };
 
     virtual void AddGroup(DescriptorGroup& group) = 0;

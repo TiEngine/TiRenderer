@@ -40,6 +40,40 @@ D3D12_INPUT_CLASSIFICATION ConvertInputClassification(VertexInputRate rate)
     return map.at(rate);
 }
 
+D3D12_INDEX_BUFFER_STRIP_CUT_VALUE ConvertStripValue(IndexStripCutValue value)
+{
+    static const std::unordered_map<IndexStripCutValue, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE> map = {
+        { IndexStripCutValue::NONE_OR_DISABLE,  D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED   },
+        { IndexStripCutValue::UINT16_MAX_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFF     },
+        { IndexStripCutValue::UINT32_MAX_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFFFFFF }
+    };
+    return map.at(value);
+}
+
+D3D12_PRIMITIVE_TOPOLOGY ConvertPrimitiveTopology(PrimitiveTopology topology)
+{
+    static const std::unordered_map<PrimitiveTopology, D3D12_PRIMITIVE_TOPOLOGY> map = {
+        { PrimitiveTopology::POINT_LIST,     D3D_PRIMITIVE_TOPOLOGY_POINTLIST     },
+        { PrimitiveTopology::LINE_LIST,      D3D_PRIMITIVE_TOPOLOGY_LINELIST      },
+        { PrimitiveTopology::LINE_STRIP,     D3D_PRIMITIVE_TOPOLOGY_LINESTRIP     },
+        { PrimitiveTopology::TRIANGLE_LIST,  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST  },
+        { PrimitiveTopology::TRIANGLE_STRIP, D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP }
+    };
+    return map.at(topology);
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ConvertPrimitiveTopologyType(PrimitiveTopology topology)
+{
+    static const std::unordered_map<PrimitiveTopology, D3D12_PRIMITIVE_TOPOLOGY_TYPE> map = {
+        { PrimitiveTopology::POINT_LIST,     D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT    },
+        { PrimitiveTopology::LINE_LIST,      D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE     },
+        { PrimitiveTopology::LINE_STRIP,     D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE     },
+        { PrimitiveTopology::TRIANGLE_LIST,  D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE },
+        { PrimitiveTopology::TRIANGLE_STRIP, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE }
+    };
+    return map.at(topology);
+}
+
 D3D12_HEAP_TYPE ConvertHeap(TransferDirection type)
 {
     static const std::unordered_map<TransferDirection, D3D12_HEAP_TYPE> map = {
@@ -133,5 +167,32 @@ D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
     clearValue.DepthStencil.Depth = value.depth;
     clearValue.DepthStencil.Stencil = value.stencil;
     return clearValue;
+}
+
+D3D12_FILL_MODE ConvertFillMode(FillMode mode)
+{
+    static const std::unordered_map<FillMode, D3D12_FILL_MODE> map = {
+        { FillMode::Solid,     D3D12_FILL_MODE_SOLID     },
+        { FillMode::Wireframe, D3D12_FILL_MODE_WIREFRAME }
+    };
+    return map.at(mode);
+}
+
+D3D12_CULL_MODE ConvertCullMode(CullMode mode)
+{
+    static const std::unordered_map<CullMode, D3D12_CULL_MODE> map = {
+        { CullMode::None,  D3D12_CULL_MODE_NONE  },
+        { CullMode::Front, D3D12_CULL_MODE_FRONT },
+        { CullMode::Back,  D3D12_CULL_MODE_BACK  }
+    };
+    return map.at(mode);
+}
+
+D3D12_RASTERIZER_DESC ConvertRasterizerState(RasterizerState state)
+{
+    CD3DX12_RASTERIZER_DESC rasterizerState(D3D12_DEFAULT);
+    rasterizerState.FillMode = ConvertFillMode(state.fillMode);
+    rasterizerState.CullMode = ConvertCullMode(state.cullMode);
+    return rasterizerState;
 }
 }

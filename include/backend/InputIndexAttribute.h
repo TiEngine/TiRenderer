@@ -6,18 +6,21 @@ namespace ti::backend {
 class InputIndexAttribute {
 public:
     struct Description {
-        unsigned int reserved = 1;
+        unsigned int reserved = 1; // Unused yet
     };
 
     struct Attribute {
         IndexFormat format;
         PrimitiveTopology topology;
+        IndexStripCutValue stripValue;
 
         Attribute(
             IndexFormat format,
-            PrimitiveTopology topology)
+            PrimitiveTopology topology,
+            IndexStripCutValue stripValue = IndexStripCutValue::NONE_OR_DISABLE)
             : format(format)
             , topology(topology)
+            , stripValue(stripValue)
         {}
     };
 

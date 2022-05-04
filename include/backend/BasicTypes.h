@@ -27,6 +27,13 @@ enum class VertexInputRate {
     PER_INSTANCE
 };
 
+enum class IndexStripCutValue {
+    NONE_OR_DISABLE,
+    UINT16_MAX_VALUE,
+    UINT32_MAX_VALUE
+
+};
+
 enum class PrimitiveTopology {
     POINT_LIST,
     LINE_LIST,

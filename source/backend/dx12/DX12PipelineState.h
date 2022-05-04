@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_set>
 #include "backend/PipelineState.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
@@ -15,9 +16,28 @@ public:
     void Setup(Description description);
     void Shutdown();
 
+    void SetPipelineLayout(PipelineLayout* layout) override;
+
+    void SetIndexAssembly(InputIndexAttribute* iia) override;
+    void SetVertexAssembly(InputVertexAttributes* iva) override;
+
+    void SetShader(ShaderStage stage, Shader* shader) override;
+
+    void SetColorAttachment(unsigned int location, BasicFormat format) override;
+    void SetDepthStencilAttachment(BasicFormat format) override;
+
+    void SetRasterizerState(RasterizerState state) override;
+    void SetRasterizerStateFillMode(FillMode mode) override;
+    void SetRasterizerStateCullMode(CullMode mode) override;
+    void SetMSAA(MSAA msaa) override;
+
+    void BuildState() override;
+
 private:
+    DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineState;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateObject; // PSO
 };
 }

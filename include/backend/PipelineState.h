@@ -1,13 +1,18 @@
 #pragma once
 
-#include "InputIndexAttribute.h"
-#include "InputVertexAttributes.h"
+#include "BasicTypes.h"
 
 namespace ti::backend {
+
+class PipelineLayout;
+class InputIndexAttribute;
+class InputVertexAttributes;
+class Shader;
+
 class PipelineState {
 public:
     struct Description {
-        unsigned int reserved = 0;
+        std::string cache; // Unsupported yet
     };
 
     // Resource state
@@ -17,14 +22,14 @@ public:
     virtual void SetIndexAssembly(InputIndexAttribute* iia) = 0;
     virtual void SetVertexAssembly(InputVertexAttributes* iva) = 0;
 
+    // Shader program
+    virtual void SetShader(ShaderStage stage, Shader* shader) = 0;
+
     // Output state
     virtual void SetColorAttachment(unsigned int location, BasicFormat format) = 0;
     virtual void SetDepthStencilAttachment(BasicFormat format) = 0;
 
-    // Shader program
-    virtual void SetShader(std::unordered_map<ShaderStage, Shader*> shaders) = 0;
-
-    // Non-programming state
+    // Non-programming state (optional)
     virtual void SetRasterizerState(RasterizerState state) = 0;
     virtual void SetRasterizerStateFillMode(FillMode mode) = 0;
     virtual void SetRasterizerStateCullMode(CullMode mode) = 0;
@@ -37,4 +42,5 @@ protected:
     PipelineState() = default;
     virtual ~PipelineState() = default;
 };
+
 }
