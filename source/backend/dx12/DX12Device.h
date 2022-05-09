@@ -11,6 +11,7 @@
 #include "DX12ResourceBuffer.h"
 #include "DX12ResourceImage.h"
 #include "DX12DescriptorHeap.h"
+#include "DX12DescriptorGroup.h"
 #include "DX12PipelineLayout.h"
 #include "DX12PipelineState.h"
 
@@ -60,6 +61,9 @@ public:
     DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) override;
     bool DestroyDescriptorHeap(DescriptorHeap* instance) override;
 
+    DescriptorGroup* CreateDescriptorGroup(DescriptorGroup::Description description) override;
+    bool DestroyDescriptorGroup(DescriptorGroup* instance) override;
+
     PipelineLayout* CreatePipelineLayout() override;
     bool DestroyPipelineLayout(PipelineLayout* instance) override;
 
@@ -102,6 +106,7 @@ private:
     std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
     std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
     std::vector<std::unique_ptr<DX12DescriptorHeap>> descriptorHeaps;
+    std::vector<std::unique_ptr<DX12DescriptorGroup>> descriptorGroups;
     std::vector<std::unique_ptr<DX12PipelineLayout>> pipelineLayouts;
     std::vector<std::unique_ptr<DX12PipelineState>> pipelineStates;
 };

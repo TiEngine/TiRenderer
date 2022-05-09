@@ -1,9 +1,9 @@
 #pragma once
 
+#include <string>
 #include "BasicTypes.h"
 
 namespace ti::backend {
-
 class PipelineLayout;
 class InputIndexAttribute;
 class InputVertexAttributes;
@@ -29,7 +29,7 @@ public:
     virtual void SetColorAttachment(unsigned int location, BasicFormat format) = 0;
     virtual void SetDepthStencilAttachment(BasicFormat format) = 0;
 
-    // Non-programming state (optional)
+    // Non-programming state
     virtual void SetRasterizerState(RasterizerState state) = 0;
     virtual void SetRasterizerStateFillMode(FillMode mode) = 0;
     virtual void SetRasterizerStateCullMode(CullMode mode) = 0;
@@ -42,5 +42,4 @@ protected:
     PipelineState() = default;
     virtual ~PipelineState() = default;
 };
-
 }

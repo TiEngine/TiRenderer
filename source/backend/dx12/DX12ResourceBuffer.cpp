@@ -17,19 +17,18 @@ void DX12ResourceBuffer::Setup(Description description)
 {
     this->description = description;
 
-    alignedBytesSize = CalculateConstantBufferBytesSize(description.bufferBytesSize);
-    if (alignedBytesSize == 0) {
-        TI_LOG_RET_F(TAG, "Create constant buffer failed, buffer size is zero!");
-    }
-
-    unsigned int bytesSize = description.bufferBytesSize;
+    alignedBytesSize = CalculateAlignedBytesSize(description.bufferBytesSize);
+    allocatedBytesSize = description.bufferBytesSize;
     if (isAlignedBytesSize) {
-        bytesSize = alignedBytesSize;
+        allocatedBytesSize = alignedBytesSize;
+    }
+    if (allocatedBytesSize == 0) {
+        TI_LOG_RET_F(TAG, "Create constant buffer failed, buffer size is zero!");
     }
 
     LogIfFailedF(device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(ConvertHeap(description.memoryType)),
-        D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bytesSize),
+        D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(allocatedBytesSize),
         ConvertResourceState(ResourceState::GENERAL_READ),
         NULL, IID_PPV_ARGS(&buffer)));
 }
@@ -37,8 +36,8 @@ void DX12ResourceBuffer::Setup(Description description)
 void DX12ResourceBuffer::Shutdown()
 {
     description = { 0u };
-    isAlignedBytesSize = false;
     alignedBytesSize = 0;
+    allocatedBytesSize = 0;
     buffer.Reset();
 }
 
@@ -63,12 +62,27 @@ void DX12ResourceBuffer::SetAligned(bool align)
     isAlignedBytesSize = align;
 }
 
+unsigned int DX12ResourceBuffer::GetBytesSize() const
+{
+    return description.bufferBytesSize;
+}
+
+unsigned int DX12ResourceBuffer::GetAlignedBytesSize() const
+{
+    return alignedBytesSize;
+}
+
+unsigned int DX12ResourceBuffer::GetAllocatedBytesSize() const
+{
+    return allocatedBytesSize;
+}
+
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceBuffer::Buffer()
 {
     return buffer;
 }
 
-unsigned int DX12ResourceBuffer::CalculateConstantBufferBytesSize(unsigned int input)
+unsigned int DX12ResourceBuffer::CalculateAlignedBytesSize(unsigned int input)
 {
     // Constant buffers must be a multiple of the minimum hardware allocation size,
     // it usually 256 bytes. So round up to nearest multiple of 256. We do this by
@@ -82,4 +96,6 @@ unsigned int DX12ResourceBuffer::CalculateConstantBufferBytesSize(unsigned int i
     //   512
     return (input + 255u) & ~255u;
 }
+
+bool DX12ResourceBuffer::isAlignedBytesSize = false;
 }

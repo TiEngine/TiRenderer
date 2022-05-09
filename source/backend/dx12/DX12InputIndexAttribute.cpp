@@ -13,12 +13,12 @@ DX12InputIndexAttribute::~DX12InputIndexAttribute()
 
 void DX12InputIndexAttribute::Setup(Description description)
 {
-    informations.resize(1);
+    informations.resize(1, { DXGI_FORMAT_UNKNOWN });
 }
 
 void DX12InputIndexAttribute::Shutdown()
 {
-    informations.resize(0);
+    informations.resize(0, { DXGI_FORMAT_UNKNOWN });
 }
 
 void DX12InputIndexAttribute::SetAttribute(Attribute attribute)

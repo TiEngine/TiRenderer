@@ -4,11 +4,17 @@
 #include "Swapchain.h"
 #include "CommandRecorder.h"
 
+#include "InputVertexAttributes.h"
+#include "InputIndexAttribute.h"
+
+#include "DescriptorGroup.h"
+
 namespace ti::backend {
 class Device {
 public:
     struct Description {
-        std::string device; // TODO: Selected adapter device name, use default adapter currently.
+        std::string device; // Selected adapter device name.
+                            // Unsupported yet, use default adapter currently.
     };
 
     virtual Shader* CreateShader(Shader::Description description) = 0;
@@ -46,6 +52,9 @@ public:
 
     virtual DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) = 0;
     virtual bool DestroyDescriptorHeap(DescriptorHeap* instance) = 0;
+
+    virtual DescriptorGroup* CreateDescriptorGroup(DescriptorGroup::Description description) = 0;
+    virtual bool DestroyDescriptorGroup(DescriptorGroup* instance) = 0;
 
     virtual PipelineLayout* CreatePipelineLayout() = 0;
     virtual bool DestroyPipelineLayout(PipelineLayout* instance) = 0;

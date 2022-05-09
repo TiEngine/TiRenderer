@@ -16,8 +16,8 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void BuildDescriptor(ResourceBuffer& resource) override;
-    void BuildDescriptor(ResourceImage& resource) override;
+    void BuildDescriptor(ResourceBuffer* resource) override;
+    void BuildDescriptor(ResourceImage* resource) override;
 
 private:
     DX12Device& internal;
@@ -28,13 +28,13 @@ private:
 
     // Descriptor handle increment size, i.e.
     // the descriptor size in the descriptor heap.
-    UINT mResIncrSize = 0; // Resource: CBV/SRV/UAV
-    UINT mSamIncrSize = 0; // Image Sampler
-    UINT mRtvIncrSize = 0; // Render Target
-    UINT mDsvIncrSize = 0; // Depth Stencil
+    UINT mResourceDescriptorHandleIncrementSize = 0;         // CBV/SRV/UAV
+    UINT mImageSamplerDescriptorHandleIncrementSize = 0;     // ImageSampler
+    UINT mRenderTargetViewDescriptorHandleIncrementSize = 0; // RTV
+    UINT mDepthStencilViewDescriptorHandleIncrementSize = 0; // DSV
 
     Description description{ DescriptorType::ConstantBuffer };
-    D3D12_CPU_DESCRIPTOR_HANDLE hCpuDescriptor;
-    D3D12_GPU_DESCRIPTOR_HANDLE hGpuDescriptor;
+    D3D12_CPU_DESCRIPTOR_HANDLE hCpuDescriptor; // Only the CPU descriptor handle needs to be held,
+    D3D12_GPU_DESCRIPTOR_HANDLE hGpuDescriptor; // the GPU descriptor handle is unused.
 };
 }

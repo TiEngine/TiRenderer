@@ -16,47 +16,52 @@ public:
         CommandType type = CommandType::Graphics;
     };
 
-    virtual void BeginRecord(PipelineState* pipelineState = nullptr) = 0;
+    virtual void BeginRecord(PipelineState* const pipelineState = nullptr) = 0;
     virtual void EndRecord() = 0;
 
-    virtual void RcBarrier(InputVertex& resource,
+    virtual void RcBarrier(InputVertex* const resource,
         ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(InputIndex& resource,
+    virtual void RcBarrier(InputIndex* const resource,
         ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceBuffer& resource,
+    virtual void RcBarrier(ResourceBuffer* const resource,
         ResourceState before, ResourceState after) = 0;
-    virtual void RcBarrier(ResourceImage& resource,
+    virtual void RcBarrier(ResourceImage* const resource,
+        ResourceState before, ResourceState after) = 0;
+    virtual void RcBarrier(Swapchain* const swapchain,
         ResourceState before, ResourceState after) = 0;
 
-    virtual void RcUpload(InputVertex& destination, InputVertex& staging,
-                          size_t size, const void* data) = 0;
-    virtual void RcUpload(InputIndex& destination, InputIndex& staging,
-                          size_t size, const void* data) = 0;
-    virtual void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging,
-                          size_t size, const void* data) = 0;
-    virtual void RcUpload(ResourceImage& destination, ResourceImage& staging,
-                          size_t size, const void* data) = 0;
+    virtual void RcUpload(const void* const data, size_t size,
+        InputVertex* const destination, InputVertex* const staging) = 0;
+    virtual void RcUpload(const void* const data, size_t size,
+        InputIndex* const destination, InputIndex* const staging) = 0;
+    virtual void RcUpload(const void* const data, size_t size,
+        ResourceBuffer* const destination, ResourceBuffer* const staging) = 0;
+    virtual void RcUpload(const void* const data, size_t size,
+        ResourceImage* const destination, ResourceImage* const staging) = 0;
 
     virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
 
-    virtual void RcClearColorAttachment(Swapchain& swapchain) = 0;
-    virtual void RcClearColorAttachment(ResourceImage& attachment) = 0;
-    virtual void RcClearDepthStencilAttachment(Swapchain& swapchain) = 0;
-    virtual void RcClearDepthStencilAttachment(ResourceImage& attachment) = 0;
+    virtual void RcClearColorAttachment(Swapchain* const swapchain) = 0;
+    virtual void RcClearColorAttachment(ResourceImage* const attachment) = 0;
+    virtual void RcClearDepthStencilAttachment(Swapchain* const swapchain) = 0;
+    virtual void RcClearDepthStencilAttachment(ResourceImage* const attachment) = 0;
 
     virtual void RcSetRenderAttachments(
-        const std::vector<Swapchain*>& swapchains,
+        Swapchain* const swapchain,
         const std::vector<ResourceImage*>& colorAttachments,
         const std::vector<ResourceImage*>& depthStencilAttachments,
         bool descriptorsContinuous = false) = 0;
 
     virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
-    virtual void RcSetIndex(InputIndex* index) = 0;
+    virtual void RcSetIndex(InputIndex* const index) = 0;
 
     virtual void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) = 0;
+    virtual void RcSetDescriptorGroups(const std::vector<DescriptorGroup*>& groups) = 0;
 
-    virtual void RcSetPipelineLayout(PipelineLayout& layout) = 0;
+    virtual void RcSetPipelineLayout(PipelineLayout* const layout) = 0;
+
+    virtual void RcDrawIndexed(InputIndex* const index) = 0;
 
     virtual void Submit() = 0;
     virtual void Wait() = 0;

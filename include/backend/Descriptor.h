@@ -16,8 +16,8 @@ public:
         {}
     };
 
-    virtual void BuildDescriptor(ResourceBuffer& resource) = 0;
-    virtual void BuildDescriptor(ResourceImage& resource) = 0;
+    virtual void BuildDescriptor(ResourceBuffer* resource) = 0;
+    virtual void BuildDescriptor(ResourceImage* resource) = 0;
 
 protected:
     Descriptor() = default;

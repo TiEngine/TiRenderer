@@ -32,6 +32,7 @@ void BeginProc(HWND hwnd)
 void UpdateProc()
 {
     g_demo->Update();
+    g_demo->Draw();
 }
 
 void EndProc()

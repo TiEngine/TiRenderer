@@ -25,9 +25,9 @@ void DX12PipelineLayout::Shutdown()
     signature.Reset();
 }
 
-void DX12PipelineLayout::AddGroup(DescriptorGroup& group)
+void DX12PipelineLayout::AddGroup(DescriptorGroup* group)
 {
-    const auto& params = down_cast<DX12DescriptorGroup&>(group).GetRootParameters();
+    const auto& params = down_cast<DX12DescriptorGroup*>(group)->GetRootParameters();
     parameters.insert(parameters.end(), params.begin(), params.end());
 }
 
@@ -35,8 +35,10 @@ void DX12PipelineLayout::BuildLayout()
 {
     // A root signature is an array of root parameters.
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(
-        parameters.size(), (parameters.size() > 0) ? parameters.data() : nullptr,
-        samplers.size(),   (samplers.size()   > 0) ? samplers.data()   : nullptr,
+        static_cast<UINT>(parameters.size()),
+        (parameters.size() > 0) ? parameters.data() : nullptr,
+        static_cast<UINT>(samplers.size()),
+        (samplers.size()   > 0) ? samplers.data() : nullptr,
         // Setting this flag means that current application is opting in to using the Input
         // Assembler (requiring an input layout that defines a set of vertex buffer bindings).
         // Omitting this flag can result in one root argument space being saved on some hardware.

@@ -99,16 +99,22 @@ void Demo_01_Backend::Begin()
 
     commandRecorder = device->CreateCommandRecorder({});
 
-    vertexShader = device->CreateShader({ ti::backend::ShaderStage::Vertex, vertexShaderString });
-    pixelShader = device->CreateShader({ ti::backend::ShaderStage::Pixel, fragmentShaderString });
+    vertexShader = device->CreateShader({
+        ti::backend::ShaderStage::Vertex, vertexShaderString });
+    pixelShader = device->CreateShader({
+        ti::backend::ShaderStage::Pixel, fragmentShaderString });
 
     inputVertexAttributes = device->CreateInputVertexAttributes();
-    inputVertexAttributes->AddAttribute(
-        { ti::backend::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
-    inputVertexAttributes->AddAttribute(
-        { ti::backend::VertexFormat::FLOAT32x4, "COLOR", 1, 12 });
+    inputVertexAttributes->AddAttribute({
+        ti::backend::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
+    inputVertexAttributes->AddAttribute({
+        ti::backend::VertexFormat::FLOAT32x4, "COLOR", 1, 12 });
 
-    vertexInput = device->CreateInputVertex({
+    inputIndexAttribute = device->CreateInputIndexAttribute();
+    inputIndexAttribute->SetAttribute({
+        ti::backend::IndexFormat::UINT16, ti::backend::PrimitiveTopology::TRIANGLE_LIST });
+
+    inputVertex = device->CreateInputVertex({
         static_cast<unsigned int>(vertices.size()), sizeof(VertexData) });
     {   // Upload vertex buffer to GPU_ONLY buffer
         auto staging = device->CreateInputVertex({
@@ -117,12 +123,12 @@ void Demo_01_Backend::Begin()
         auto transfer = device->CreateCommandRecorder({
             ti::backend::CommandType::Transfer });
         transfer->BeginRecord();
-        transfer->RcBarrier(*vertexInput,
+        transfer->RcBarrier(*inputVertex,
             ti::backend::ResourceState::GENERAL_READ,
             ti::backend::ResourceState::COPY_DESTINATION);
-        transfer->RcUpload(*vertexInput, *staging,
+        transfer->RcUpload(*inputVertex, *staging,
             vertices.size() * sizeof(VertexData), static_cast<const void*>(vertices.data()));
-        transfer->RcBarrier(*vertexInput,
+        transfer->RcBarrier(*inputVertex,
             ti::backend::ResourceState::COPY_DESTINATION,
             ti::backend::ResourceState::GENERAL_READ);
         transfer->EndRecord();
@@ -130,7 +136,7 @@ void Demo_01_Backend::Begin()
         transfer->Wait();
     }
 
-    indexInput = device->CreateInputIndex({
+    inputIndex = device->CreateInputIndex({
         static_cast<unsigned int>(indices.size()), sizeof(uint16_t) });
     {   // Upload index buffer to GPU_ONLY buffer
         auto staging = device->CreateInputIndex({
@@ -139,12 +145,12 @@ void Demo_01_Backend::Begin()
         auto transfer = device->CreateCommandRecorder({
             ti::backend::CommandType::Transfer });
         transfer->BeginRecord();
-        transfer->RcBarrier(*indexInput,
+        transfer->RcBarrier(*inputIndex,
             ti::backend::ResourceState::GENERAL_READ,
             ti::backend::ResourceState::COPY_DESTINATION);
-        transfer->RcUpload(*indexInput, *staging,
+        transfer->RcUpload(*inputIndex, *staging,
             indices.size() * sizeof(uint16_t), static_cast<const void*>(indices.data()));
-        transfer->RcBarrier(*indexInput,
+        transfer->RcBarrier(*inputIndex,
             ti::backend::ResourceState::COPY_DESTINATION,
             ti::backend::ResourceState::GENERAL_READ);
         transfer->EndRecord();
@@ -152,7 +158,32 @@ void Demo_01_Backend::Begin()
         transfer->Wait();
     }
 
+    descriptorHeap = device->CreateDescriptorHeap({
+        1, ti::backend::DescriptorType::ConstantBuffer });
+
     cbObjectMVP = device->CreateResourceBuffer({ sizeof(ObjectMVP) });
+    descriptorForObjectMVP = descriptorHeap->AllocateDescriptor({
+        ti::backend::DescriptorType::ConstantBuffer });
+    descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
+
+    descriptorGroup = device->CreateDescriptorGroup({ 0 }); // space/binding is 0
+    descriptorGroup->AddDescriptor(
+        ti::backend::DescriptorType::ConstantBuffer,
+        0, ti::backend::ShaderStage::Graphics);             // register/location is 0
+
+    pipelineLayout = device->CreatePipelineLayout();
+    pipelineLayout->AddGroup(descriptorGroup);
+    pipelineLayout->BuildLayout();
+
+    pipelineState = device->CreatePipelineState();
+    pipelineState->SetPipelineLayout(pipelineLayout);
+    pipelineState->SetIndexAssembly(inputIndexAttribute);
+    pipelineState->SetVertexAssembly(inputVertexAttributes);
+    pipelineState->SetShader(ti::backend::ShaderStage::Vertex, vertexShader);
+    pipelineState->SetShader(ti::backend::ShaderStage::Pixel, pixelShader);
+    pipelineState->SetColorAttachment(0, ColorAttachmentFormat);
+    pipelineState->SetDepthStencilAttachment(DepthStencilAttachmentFormat);
+    pipelineState->BuildState();
 }
 
 void Demo_01_Backend::Finish()
@@ -162,12 +193,49 @@ void Demo_01_Backend::Finish()
 
 void Demo_01_Backend::Update()
 {
+    frame++;
+    AutomateRotate();
+
     if (updateObjectMVP) {
         device->WaitIdle();
         memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
         cbObjectMVP->Unmap();
     }
-    //swapchain->Present();
+    updateObjectMVP = false;
+}
+
+void Demo_01_Backend::Draw()
+{
+    commandRecorder->BeginRecord(pipelineState);
+
+    commandRecorder->RcSetViewports({ viewport });
+    commandRecorder->RcSetScissors({ scissor });
+
+    commandRecorder->RcBarrier(swapchain);
+
+    commandRecorder->RcClearColorAttachment(*swapchain);
+    commandRecorder->RcClearDepthStencilAttachment(*swapchain);
+
+    commandRecorder->RcSetRenderAttachments();
+
+    commandRecorder->RcSetDescriptorHeap({ descriptorHeap });
+
+    commandRecorder->RcSetPipelineLayout(pipelineLayout);
+
+    commandRecorder->RcSetVertex({ inputVertex }, { inputVertexAttributes });
+    commandRecorder->RcSetIndex({ inputIndex }, { inputIndexAttribute });
+
+    commandRecorder->RcSetDescriptorGroups({ descriptorGroup });
+
+    commandRecorder->RcDraw();
+
+    commandRecorder->RcBarrier(swapchain);
+
+    commandRecorder->EndRecord();
+
+    commandRecorder->Submit();
+
+    swapchain->Present();
 }
 
 void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int height)
@@ -178,4 +246,47 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
     } else {
         swapchain = device->CreateSwapchain({ window, width, height });
     }
+
+    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+
+    viewport.width = width;
+    viewport.height = height;
+
+    scissor.right = width;
+    scissor.bottom = height;
+}
+
+void Demo_01_Backend::AutomateRotate()
+{
+    if ((frame % 2) > 0) {
+        return;
+    }
+
+    theta += delta;
+
+    // Convert Spherical to Cartesian coordinates.
+    float x = radius * sinf(phi) * cosf(theta);
+    float z = radius * sinf(phi) * sinf(theta);
+    float y = radius * cosf(phi);
+
+    // Build the model matrix.
+    ti::math::XMMATRIX world = ti::math::XMMatrixIdentity();
+
+    // Build the view matrix.
+    ti::math::XMVECTOR position = ti::math::XMVectorSet(x, y, z, 1.0f);
+    ti::math::XMVECTOR target = ti::math::XMVectorZero();
+    ti::math::XMVECTOR up = ti::math::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    ti::math::XMMATRIX view = ti::math::XMMatrixLookAtLH(position, target, up);
+
+    // Build the projection matrix.
+    ti::math::XMMATRIX projection = ti::math::XMMatrixPerspectiveFovLH(
+        0.25f * ti::math::XM_PI, aspectRatio, 0.1f, 100.0f);
+
+    // Build the MVP matrix.
+    ti::math::XMMATRIX mvp = world * view * projection;
+
+    // Update the buffer with the latest MVP matrix.
+    ti::math::XMStoreFloat4x4(&objectMVP.mvp, XMMatrixTranspose(mvp));
+
+    updateObjectMVP = true;
 }

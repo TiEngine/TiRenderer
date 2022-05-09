@@ -15,47 +15,51 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void BeginRecord(PipelineState* pipelineState) override;
+    void BeginRecord(PipelineState* const pipelineState) override;
     void EndRecord() override;
 
-    void RcBarrier(InputVertex& resource,
+    void RcBarrier(InputVertex* const resource,
         ResourceState before, ResourceState after) override;
-    void RcBarrier(InputIndex& resource,
+    void RcBarrier(InputIndex* const resource,
         ResourceState before, ResourceState after) override;
-    void RcBarrier(ResourceBuffer& resource,
+    void RcBarrier(ResourceBuffer* const resource,
         ResourceState before, ResourceState after) override;
-    void RcBarrier(ResourceImage& resource,
+    void RcBarrier(ResourceImage* const resource,
+        ResourceState before, ResourceState after) override;
+    void RcBarrier(Swapchain* const swapchain,
         ResourceState before, ResourceState after) override;
 
-    void RcUpload(InputVertex& destination, InputVertex& staging,
-                  size_t size, const void* data) override;
-    void RcUpload(InputIndex& destination, InputIndex& staging,
-                  size_t size, const void* data) override;
-    void RcUpload(ResourceBuffer& destination, ResourceBuffer& staging,
-                  size_t size, const void* data) override;
-    void RcUpload(ResourceImage& destination, ResourceImage& staging,
-                  size_t size, const void* data) override;
+    void RcUpload(const void* const data, size_t size,
+        InputVertex* const destination, InputVertex* const staging) override;
+    void RcUpload(const void* const data, size_t size,
+        InputIndex* const destination, InputIndex* const staging) override;
+    void RcUpload(const void* const data, size_t size,
+        ResourceBuffer* const destination, ResourceBuffer* const staging) override;
+    void RcUpload(const void* const data, size_t size,
+        ResourceImage* const destination, ResourceImage* const staging) override;
 
     void RcSetViewports(const std::vector<Viewport>& viewports) override;
     void RcSetScissors(const std::vector<Scissor>& scissors) override;
 
-    void RcClearColorAttachment(Swapchain& swapchain) override;
-    void RcClearColorAttachment(ResourceImage& attachment) override;
-    void RcClearDepthStencilAttachment(Swapchain& swapchain) override;
-    void RcClearDepthStencilAttachment(ResourceImage& attachment) override;
+    void RcClearColorAttachment(Swapchain* const swapchain) override;
+    void RcClearColorAttachment(ResourceImage* const attachment) override;
+    void RcClearDepthStencilAttachment(Swapchain* const swapchain) override;
+    void RcClearDepthStencilAttachment(ResourceImage* const attachment) override;
 
-    void RcSetRenderAttachments(
-        const std::vector<Swapchain*>& swapchains,
+    void RcSetRenderAttachments(Swapchain* const swapchain,
         const std::vector<ResourceImage*>& colorAttachments,
         const std::vector<ResourceImage*>& depthStencilAttachments,
         bool descriptorsContinuous) override;
 
     void RcSetVertex(const std::vector<InputVertex*>& vertices) override;
-    void RcSetIndex(InputIndex* index) override;
+    void RcSetIndex(InputIndex* const index) override;
 
     void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
+    void RcSetDescriptorGroups(const std::vector<DescriptorGroup*>& groups) override;
 
-    void RcSetPipelineLayout(PipelineLayout& layout) override;
+    void RcSetPipelineLayout(PipelineLayout* const layout) override;
+
+    void RcDrawIndexed(InputIndex* const index) override;
 
     void Submit() override;
     void Wait() override;

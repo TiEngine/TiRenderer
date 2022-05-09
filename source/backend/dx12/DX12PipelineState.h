@@ -33,6 +33,8 @@ public:
 
     void BuildState() override;
 
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> PSO();
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;

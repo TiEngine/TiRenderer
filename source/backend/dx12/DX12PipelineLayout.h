@@ -15,7 +15,7 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void AddGroup(DescriptorGroup& group) override;
+    void AddGroup(DescriptorGroup* group) override;
     void BuildLayout() override;
 
     Microsoft::WRL::ComPtr<ID3D12RootSignature> Signature();

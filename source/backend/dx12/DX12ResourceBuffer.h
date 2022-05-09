@@ -18,19 +18,25 @@ public:
     void* Map() override;
     void Unmap() override;
 
-    void SetAligned(bool align);
+    static void SetAligned(bool align);
+
+    unsigned int GetBytesSize() const;
+    unsigned int GetAlignedBytesSize() const;
+    unsigned int GetAllocatedBytesSize() const;
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
 
 protected:
-    unsigned int CalculateConstantBufferBytesSize(unsigned int input);
+    static unsigned int CalculateAlignedBytesSize(unsigned int input);
+
+    static bool isAlignedBytesSize;
 
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
     Description description{ 0u };
-    bool isAlignedBytesSize = false;
     unsigned int alignedBytesSize = 0;
+    unsigned int allocatedBytesSize = 0;
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
 }

@@ -139,5 +139,8 @@ void DX12PipelineState::BuildState()
         &pipelineState, IID_PPV_ARGS(&pipelineStateObject)));
 }
 
-
+Microsoft::WRL::ComPtr<ID3D12PipelineState> DX12PipelineState::PSO()
+{
+    return pipelineStateObject;
+}
 }

@@ -161,6 +161,16 @@ bool DX12Device::DestroyDescriptorHeap(DescriptorHeap* instance)
     return DestroyInstance(descriptorHeaps, instance);
 }
 
+DescriptorGroup* DX12Device::CreateDescriptorGroup(DescriptorGroup::Description description)
+{
+    return CreateInstance<DescriptorGroup>(descriptorGroups, description, *this);
+}
+
+bool DX12Device::DestroyDescriptorGroup(DescriptorGroup* instance)
+{
+    return DestroyInstance(descriptorGroups, instance);
+}
+
 PipelineLayout* DX12Device::CreatePipelineLayout()
 {
     return CreateInstance<PipelineLayout>(pipelineLayouts, {}, *this);

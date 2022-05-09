@@ -11,6 +11,7 @@ public:
     virtual void Begin() = 0;
     virtual void Finish() = 0;
     virtual void Update() = 0;
+    virtual void Draw() = 0;
 
     virtual void Resize(HWND window, unsigned int width, unsigned int height) = 0;
 
@@ -31,10 +32,16 @@ public:
     void Begin() override;
     void Finish() override;
     void Update() override;
+    void Draw() override;
 
     void Resize(HWND window, unsigned int width, unsigned int height) override;
 
 private:
+    void AutomateRotate();
+
+    unsigned int frame = 0;
+    float aspectRatio = 0.0f;
+
     struct VertexData {
         ti::math::XMFLOAT3 position;
         ti::math::XMFLOAT4 color;
@@ -55,6 +62,14 @@ private:
     } objectMVP;
     bool updateObjectMVP = false;
 
+    float theta = 1.5f * ti::math::XM_PI;
+    float phi = ti::math::XM_PIDIV4;
+    float radius = 5.0f;
+    float delta = 0.01f;
+
+    ti::backend::Viewport viewport;
+    ti::backend::Scissor scissor;
+
     ti::backend::BackendContext* backend = nullptr;
     ti::backend::Device* device = nullptr;
 
@@ -64,11 +79,25 @@ private:
     ti::backend::Shader* pixelShader = nullptr;
 
     ti::backend::InputVertexAttributes* inputVertexAttributes = nullptr;
+    ti::backend::InputIndexAttribute* inputIndexAttribute = nullptr;
 
-    ti::backend::InputVertex* vertexInput = nullptr;
-    ti::backend::InputIndex* indexInput = nullptr;
+    ti::backend::InputVertex* inputVertex = nullptr;
+    ti::backend::InputIndex* inputIndex= nullptr;
 
     ti::backend::ResourceBuffer* cbObjectMVP = nullptr;
 
+    ti::backend::DescriptorHeap* descriptorHeap = nullptr;
+    ti::backend::Descriptor* descriptorForObjectMVP = nullptr;
+
+    ti::backend::DescriptorGroup* descriptorGroup = nullptr;
+    ti::backend::PipelineLayout* pipelineLayout = nullptr;
+
+    ti::backend::PipelineState* pipelineState = nullptr;
+
     ti::backend::Swapchain* swapchain = nullptr;
+    // Default swapchain format, see Swapchain.h for detail.
+    const ti::backend::BasicFormat ColorAttachmentFormat
+        = ti::backend::BasicFormat::R8G8B8A8_UNORM;
+    const ti::backend::BasicFormat DepthStencilAttachmentFormat
+        = ti::backend::BasicFormat::D24_UNORM_S8_UINT;
 };
