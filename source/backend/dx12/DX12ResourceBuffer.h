@@ -23,6 +23,7 @@ public:
     unsigned int GetBytesSize() const;
     unsigned int GetAlignedBytesSize() const;
     unsigned int GetAllocatedBytesSize() const;
+
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
 
 protected:

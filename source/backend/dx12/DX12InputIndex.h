@@ -6,6 +6,7 @@
 
 namespace ti::backend {
 class DX12Device;
+class DX12InputIndexAttribute;
 class DX12InputIndex : public InputIndex
     , DX12Object<DX12InputIndex> {
 public:
@@ -19,12 +20,16 @@ public:
     void Unmap() override;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
+    D3D12_INDEX_BUFFER_VIEW BufferView(DX12InputIndexAttribute* attribute) const;
+
+    UINT IndicesCount() const;
 
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
     Description description{ 0u, 0u };
+    unsigned int bufferTotalByteSize = 0u;
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
 }

@@ -20,12 +20,15 @@ public:
 
     Microsoft::WRL::ComPtr<ID3D12Resource> CurrentRenderTargetBuffer();
     Microsoft::WRL::ComPtr<ID3D12Resource> CurrentDepthStencilBuffer();
+
     D3D12_CPU_DESCRIPTOR_HANDLE CurrentRenderTargetView();
     D3D12_CPU_DESCRIPTOR_HANDLE CurrentDepthStencilView();
 
     D3D12_CLEAR_VALUE RenderTargetClearValue() const;
     D3D12_CLEAR_VALUE DepthStencilClearValue() const;
     D3D12_CLEAR_FLAGS DepthStencilClearFlags() const;
+
+    bool IsSwapchainEnableDepthStencil() const;
 
 private:
     DX12Device& internal;

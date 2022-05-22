@@ -46,20 +46,27 @@ public:
     void RcClearDepthStencilAttachment(Swapchain* const swapchain) override;
     void RcClearDepthStencilAttachment(ResourceImage* const attachment) override;
 
-    void RcSetRenderAttachments(Swapchain* const swapchain,
-        const std::vector<ResourceImage*>& colorAttachments,
-        const std::vector<ResourceImage*>& depthStencilAttachments,
+    void RcSetRenderAttachments(
+        Swapchain* const swapchain,
+        const std::vector<Descriptor*>& colorAttachments,
+        const std::vector<Descriptor*>& depthStencilAttachments,
         bool descriptorsContinuous) override;
 
-    void RcSetVertex(const std::vector<InputVertex*>& vertices) override;
-    void RcSetIndex(InputIndex* const index) override;
+    void RcSetVertex(const std::vector<InputVertex*>& vertices,
+        InputVertexAttributes* const attributes, unsigned int startSlot) override;
+    void RcSetIndex(InputIndex* const index, InputIndexAttribute* const attribute) override;
 
     void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
-    void RcSetDescriptorGroups(const std::vector<DescriptorGroup*>& groups) override;
+
+    void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) override;
+    void RcSetDescriptor(unsigned int index, ResourceImage* const resource) override;
+
+    void RcSetDescriptors(unsigned int index, // DescriptorTable
+        const std::vector<Descriptor*>& descriptors) override;
 
     void RcSetPipelineLayout(PipelineLayout* const layout) override;
 
-    void RcDrawIndexed(InputIndex* const index) override;
+    void RcDraw(InputIndex* const index) override;
 
     void Submit() override;
     void Wait() override;

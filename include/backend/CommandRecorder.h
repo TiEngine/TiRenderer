@@ -49,19 +49,25 @@ public:
 
     virtual void RcSetRenderAttachments(
         Swapchain* const swapchain,
-        const std::vector<ResourceImage*>& colorAttachments,
-        const std::vector<ResourceImage*>& depthStencilAttachments,
+        const std::vector<Descriptor*>& colorAttachments,
+        const std::vector<Descriptor*>& depthStencilAttachments,
         bool descriptorsContinuous = false) = 0;
 
-    virtual void RcSetVertex(const std::vector<InputVertex*>& vertices) = 0;
-    virtual void RcSetIndex(InputIndex* const index) = 0;
+    virtual void RcSetVertex(const std::vector<InputVertex*>& vertices,
+        InputVertexAttributes* const attributes, unsigned int startSlot = 0) = 0;
+    virtual void RcSetIndex(InputIndex* const index, InputIndexAttribute* const attribute) = 0;
 
     virtual void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) = 0;
-    virtual void RcSetDescriptorGroups(const std::vector<DescriptorGroup*>& groups) = 0;
+
+    virtual void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) = 0;
+    virtual void RcSetDescriptor(unsigned int index, ResourceImage* const resource) = 0;
+
+    virtual void RcSetDescriptors(unsigned int index,
+        const std::vector<Descriptor*>& descriptors) = 0;
 
     virtual void RcSetPipelineLayout(PipelineLayout* const layout) = 0;
 
-    virtual void RcDrawIndexed(InputIndex* const index) = 0;
+    virtual void RcDraw(InputIndex* const index) = 0;
 
     virtual void Submit() = 0;
     virtual void Wait() = 0;

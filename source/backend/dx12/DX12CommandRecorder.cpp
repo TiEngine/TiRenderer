@@ -109,58 +109,66 @@ void DX12CommandRecorder::EndRecord()
 void DX12CommandRecorder::RcBarrier(
     InputVertex* const resource, ResourceState before, ResourceState after)
 {
-    RcBarrierTemplate<DX12InputVertex>(*this, resource, before, after);
+    RcBarrierTemplate<DX12InputVertex>(*this, *resource, before, after);
 }
 
 void DX12CommandRecorder::RcBarrier(
     InputIndex* const resource, ResourceState before, ResourceState after)
 {
-    RcBarrierTemplate<DX12InputIndex>(*this, resource, before, after);
+    RcBarrierTemplate<DX12InputIndex>(*this, *resource, before, after);
 }
 
 void DX12CommandRecorder::RcBarrier(
     ResourceBuffer* const resource, ResourceState before, ResourceState after)
 {
-    RcBarrierTemplate<DX12ResourceBuffer>(*this, resource, before, after);
+    RcBarrierTemplate<DX12ResourceBuffer>(*this, *resource, before, after);
 }
 
 void DX12CommandRecorder::RcBarrier(
     ResourceImage* const resource, ResourceState before, ResourceState after)
 {
-    RcBarrierTemplate<DX12ResourceImage>(*this, resource, before, after);
+    RcBarrierTemplate<DX12ResourceImage>(*this, *resource, before, after);
 }
 
 void DX12CommandRecorder::RcBarrier(
     Swapchain* const swapchain, ResourceState before, ResourceState after)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcBarrier:Swapchain);
+    auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
+    recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        // It is enough to use barrier for the RenderTargetBuffer alone,
+        // and there is no need for DepthStencilBuffer, because that the
+        // DepthStencilBuffer in Swaphain will not be used elsewhere.
+        dxSwapchain->CurrentRenderTargetBuffer().Get(),
+        ConvertResourceState(before), ConvertResourceState(after)));
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     InputVertex* const destination, InputVertex* const staging)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
-    RcUploadTemplate<DX12InputVertex>(*this, destination, staging, size, data);
+    RcUploadTemplate<DX12InputVertex>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     InputIndex* const destination, InputIndex* const staging)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputIndex);
-    RcUploadTemplate<DX12InputIndex>(*this, destination, staging, size, data);
+    RcUploadTemplate<DX12InputIndex>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     ResourceBuffer* const destination, ResourceBuffer* const staging)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceBuffer);
-    RcUploadTemplate<DX12ResourceBuffer>(*this, destination, staging, size, data);
+    RcUploadTemplate<DX12ResourceBuffer>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     ResourceImage* const destination, ResourceImage* const staging)
 {
     CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceImage);
-    RcUploadTemplate<DX12ResourceImage>(*this, destination, staging, size, data);
+    RcUploadTemplate<DX12ResourceImage>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcSetViewports(const std::vector<Viewport>& viewports)
@@ -221,21 +229,62 @@ void DX12CommandRecorder::RcClearDepthStencilAttachment(ResourceImage* const att
 
 void DX12CommandRecorder::RcSetRenderAttachments(
     Swapchain* const swapchain,
-    const std::vector<ResourceImage*>& colorAttachments,
-    const std::vector<ResourceImage*>& depthStencilAttachments,
+    const std::vector<Descriptor*>& colorAttachments,
+    const std::vector<Descriptor*>& depthStencilAttachments,
     bool descriptorsContinuous)
 {
     CHECK_RECORD(description.type, CommandType::Graphics, RcSetRenderAttachments);
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> depthStencilDescriptors;
+    if (swapchain) {
+        auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
+        renderTargetDescriptors.emplace_back(dxSwapchain->CurrentRenderTargetView());
+        if (dxSwapchain->IsSwapchainEnableDepthStencil()) {
+            depthStencilDescriptors.emplace_back(dxSwapchain->CurrentRenderTargetView());
+        }
+    }
+    for (auto attachment : colorAttachments) {
+        auto dxDescriptor = down_cast<DX12Descriptor*>(attachment);
+        renderTargetDescriptors.emplace_back(dxDescriptor->AttachmentView());
+    }
+    for (auto attachment : depthStencilAttachments) {
+        auto dxDescriptor = down_cast<DX12Descriptor*>(attachment);
+        depthStencilDescriptors.emplace_back(dxDescriptor->AttachmentView());
+    }
+    if (swapchain && renderTargetDescriptors.size() > 1) {
+        descriptorsContinuous = false;
+    }
+    recorder->OMSetRenderTargets(static_cast<UINT>(renderTargetDescriptors.size()),
+        renderTargetDescriptors.data(), descriptorsContinuous,
+        depthStencilDescriptors.data());
 }
 
-void DX12CommandRecorder::RcSetVertex(const std::vector<InputVertex*>& vertices)
+void DX12CommandRecorder::RcSetVertex(
+    const std::vector<InputVertex*>& vertices,
+    InputVertexAttributes* const attributes, unsigned int startSlot)
 {
     CHECK_RECORD(description.type, CommandType::Graphics, RcSetVertex);
+    std::vector<DX12InputVertex*> dxVertices(vertices.size());
+    for (size_t n = 0; n < vertices.size(); n++) {
+        dxVertices[n] = down_cast<DX12InputVertex*>(vertices[n]);
+    }
+    auto dxAttributes = down_cast<DX12InputVertexAttributes*>(attributes);
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> bufferViews(dxVertices.size());
+    for (size_t n = 0; n < dxVertices.size(); n++) {
+        bufferViews[n] = dxVertices[n]->BufferView(dxAttributes);
+    }
+    recorder->IASetVertexBuffers(startSlot,
+        static_cast<UINT>(dxVertices.size()), bufferViews.data());
 }
 
-void DX12CommandRecorder::RcSetIndex(InputIndex* const index)
+void DX12CommandRecorder::RcSetIndex(
+    InputIndex* const index, InputIndexAttribute* const attribute)
 {
     CHECK_RECORD(description.type, CommandType::Graphics, RcSetIndex);
+    auto dxIndex = down_cast<DX12InputIndex*>(index);
+    auto dxAttribute = down_cast<DX12InputIndexAttribute*>(attribute);
+    recorder->IASetIndexBuffer(&dxIndex->BufferView(dxAttribute));
+    recorder->IASetPrimitiveTopology(dxAttribute->GetIndexInformation().PrimitiveTopology);
 }
 
 void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps)
@@ -275,8 +324,38 @@ void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>
         descriptorHeaps.size()), descriptorHeaps.data());
 }
 
-void DX12CommandRecorder::RcSetDescriptorGroups(const std::vector<DescriptorGroup*>& groups)
+void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceBuffer* const resource)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:ResourceBuffer);
+    auto dxResource = down_cast<DX12ResourceBuffer*>(resource);
+    recorder->SetGraphicsRootConstantBufferView(index,
+        dxResource->Buffer()->GetGPUVirtualAddress());
+}
+
+void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceImage* const resource)
+{
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:ResourceImage);
+    // TODO
+}
+
+void DX12CommandRecorder::RcSetDescriptors(unsigned int index,
+    const std::vector<Descriptor*>& descriptors)
+{
+    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:Descriptors);
+    if (descriptors.size() <= 0) {
+        TI_LOG_RET_W(TAG, "Records RcSetDescriptors is not executed, input descriptors is empty.");
+    }
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dxDescriptorsHandles;
+    for (auto descriptor : descriptors) {
+        auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
+        dxDescriptorsHandles.emplace_back(dxDescriptor->NativeCpuDescriptor());
+    }
+    auto dxBaseDescriptor = down_cast<DX12Descriptor*>(descriptors[0]);
+    if (dxBaseDescriptor->IsNativeDescriptorsContinuous(dxDescriptorsHandles)) {
+        recorder->SetGraphicsRootDescriptorTable(index, dxBaseDescriptor->NativeGpuDescriptor());
+    } else {
+        TI_LOG_RET_E(TAG, "Records RcSetDescriptors failed, descriptors is not continuous.");
+    }
 }
 
 void DX12CommandRecorder::RcSetPipelineLayout(PipelineLayout* const layout)
@@ -285,8 +364,10 @@ void DX12CommandRecorder::RcSetPipelineLayout(PipelineLayout* const layout)
     recorder->SetGraphicsRootSignature(down_cast<DX12PipelineLayout*>(layout)->Signature().Get());
 }
 
-void DX12CommandRecorder::RcDrawIndexed(InputIndex* const index)
+void DX12CommandRecorder::RcDraw(InputIndex* const index)
 {
+    CHECK_RECORD(description.type, CommandType::Graphics, RcDraw);
+    recorder->DrawIndexedInstanced(down_cast<DX12InputIndex*>(index)->IndicesCount(), 1, 0, 0, 0);
 }
 
 void DX12CommandRecorder::Submit()

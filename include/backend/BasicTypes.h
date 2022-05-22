@@ -51,9 +51,10 @@ enum class TransferDirection {
 enum class ResourceState {
     UNDEFINED,
     PRESENT,
-    GENERAL_READ,
+    COLOR_OUTPUT,
     DEPTH_STENCIL_READ,
     DEPTH_STENCIL_WRITE,
+    GENERAL_READ,
     COPY_SOURCE,
     COPY_DESTINATION,
     RESOLVE_SOURCE,

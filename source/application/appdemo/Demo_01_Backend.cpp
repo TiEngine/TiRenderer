@@ -123,12 +123,12 @@ void Demo_01_Backend::Begin()
         auto transfer = device->CreateCommandRecorder({
             ti::backend::CommandType::Transfer });
         transfer->BeginRecord();
-        transfer->RcBarrier(*inputVertex,
+        transfer->RcBarrier(inputVertex,
             ti::backend::ResourceState::GENERAL_READ,
             ti::backend::ResourceState::COPY_DESTINATION);
-        transfer->RcUpload(*inputVertex, *staging,
-            vertices.size() * sizeof(VertexData), static_cast<const void*>(vertices.data()));
-        transfer->RcBarrier(*inputVertex,
+        transfer->RcUpload(static_cast<const void*>(vertices.data()),
+            vertices.size() * sizeof(VertexData), inputVertex, staging);
+        transfer->RcBarrier(inputVertex,
             ti::backend::ResourceState::COPY_DESTINATION,
             ti::backend::ResourceState::GENERAL_READ);
         transfer->EndRecord();
@@ -145,12 +145,12 @@ void Demo_01_Backend::Begin()
         auto transfer = device->CreateCommandRecorder({
             ti::backend::CommandType::Transfer });
         transfer->BeginRecord();
-        transfer->RcBarrier(*inputIndex,
+        transfer->RcBarrier(inputIndex,
             ti::backend::ResourceState::GENERAL_READ,
             ti::backend::ResourceState::COPY_DESTINATION);
-        transfer->RcUpload(*inputIndex, *staging,
-            indices.size() * sizeof(uint16_t), static_cast<const void*>(indices.data()));
-        transfer->RcBarrier(*inputIndex,
+        transfer->RcUpload(static_cast<const void*>(indices.data()),
+            indices.size() * sizeof(uint16_t), inputIndex, staging);
+        transfer->RcBarrier(inputIndex,
             ti::backend::ResourceState::COPY_DESTINATION,
             ti::backend::ResourceState::GENERAL_READ);
         transfer->EndRecord();
@@ -167,12 +167,12 @@ void Demo_01_Backend::Begin()
     descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
 
     descriptorGroup = device->CreateDescriptorGroup({ 0 }); // space/binding is 0
-    descriptorGroup->AddDescriptor(
+    descriptorGroup->AddDescriptor(                         // descriptor 0, ConstantBuffer
         ti::backend::DescriptorType::ConstantBuffer,
         0, ti::backend::ShaderStage::Graphics);             // register/location is 0
 
     pipelineLayout = device->CreatePipelineLayout();
-    pipelineLayout->AddGroup(descriptorGroup);
+    pipelineLayout->AddGroup(descriptorGroup);              // this group has descriptor 0
     pipelineLayout->BuildLayout();
 
     pipelineState = device->CreatePipelineState();
@@ -195,7 +195,6 @@ void Demo_01_Backend::Update()
 {
     frame++;
     AutomateRotate();
-
     if (updateObjectMVP) {
         device->WaitIdle();
         memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
@@ -211,25 +210,27 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcSetViewports({ viewport });
     commandRecorder->RcSetScissors({ scissor });
 
-    commandRecorder->RcBarrier(swapchain);
+    commandRecorder->RcBarrier(swapchain,
+        ti::backend::ResourceState::PRESENT, ti::backend::ResourceState::COLOR_OUTPUT);
 
-    commandRecorder->RcClearColorAttachment(*swapchain);
-    commandRecorder->RcClearDepthStencilAttachment(*swapchain);
+    commandRecorder->RcClearColorAttachment(swapchain);
+    commandRecorder->RcClearDepthStencilAttachment(swapchain);
 
-    commandRecorder->RcSetRenderAttachments();
+    commandRecorder->RcSetRenderAttachments(swapchain, {}, {}, true);
 
     commandRecorder->RcSetDescriptorHeap({ descriptorHeap });
 
     commandRecorder->RcSetPipelineLayout(pipelineLayout);
 
-    commandRecorder->RcSetVertex({ inputVertex }, { inputVertexAttributes });
-    commandRecorder->RcSetIndex({ inputIndex }, { inputIndexAttribute });
+    commandRecorder->RcSetVertex({ inputVertex }, inputVertexAttributes);
+    commandRecorder->RcSetIndex(inputIndex, inputIndexAttribute);
 
-    commandRecorder->RcSetDescriptorGroups({ descriptorGroup });
+    commandRecorder->RcSetDescriptor(0, cbObjectMVP); // descriptor 0, ConstantBuffer
 
-    commandRecorder->RcDraw();
+    commandRecorder->RcDraw(inputIndex);
 
-    commandRecorder->RcBarrier(swapchain);
+    commandRecorder->RcBarrier(swapchain,
+        ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::PRESENT);
 
     commandRecorder->EndRecord();
 
@@ -249,8 +250,8 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
 
     aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
-    viewport.width = width;
-    viewport.height = height;
+    viewport.width = static_cast<float>(width);
+    viewport.height = static_cast<float>(height);
 
     scissor.right = width;
     scissor.bottom = height;
@@ -258,10 +259,6 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
 
 void Demo_01_Backend::AutomateRotate()
 {
-    if ((frame % 2) > 0) {
-        return;
-    }
-
     theta += delta;
 
     // Convert Spherical to Cartesian coordinates.

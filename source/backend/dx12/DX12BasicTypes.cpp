@@ -89,9 +89,10 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
     static const std::unordered_map<ResourceState, D3D12_RESOURCE_STATES> map = {
         { ResourceState::UNDEFINED,           D3D12_RESOURCE_STATE_COMMON         },
         { ResourceState::PRESENT,             D3D12_RESOURCE_STATE_PRESENT        },
-        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
+        { ResourceState::COLOR_OUTPUT,        D3D12_RESOURCE_STATE_RENDER_TARGET  },
         { ResourceState::DEPTH_STENCIL_READ,  D3D12_RESOURCE_STATE_DEPTH_READ     },
         { ResourceState::DEPTH_STENCIL_WRITE, D3D12_RESOURCE_STATE_DEPTH_WRITE    },
+        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
         { ResourceState::COPY_SOURCE,         D3D12_RESOURCE_STATE_COPY_SOURCE    },
         { ResourceState::COPY_DESTINATION,    D3D12_RESOURCE_STATE_COPY_DEST      },
         { ResourceState::RESOLVE_SOURCE,      D3D12_RESOURCE_STATE_RESOLVE_SOURCE },

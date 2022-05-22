@@ -17,14 +17,14 @@ void DX12InputVertex::Setup(Description description)
 {
     this->description = description;
 
-    unsigned int bytesSize = description.verticesCount * description.attributesByteSize;
-    if (bytesSize == 0) {
+    bufferTotalByteSize = description.verticesCount * description.attributesByteSize;
+    if (bufferTotalByteSize == 0) {
         TI_LOG_RET_F(TAG, "Create vertex buffer failed, buffer size is zero!");
     }
 
     LogIfFailedF(device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(ConvertHeap(description.memoryType)),
-        D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bytesSize),
+        D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferTotalByteSize),
         ConvertResourceState(ResourceState::GENERAL_READ),
         NULL, IID_PPV_ARGS(&buffer)));
 }
@@ -32,12 +32,22 @@ void DX12InputVertex::Setup(Description description)
 void DX12InputVertex::Shutdown()
 {
     description = { 0u, 0u };
+    bufferTotalByteSize = 0u;
     buffer.Reset();
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12InputVertex::Buffer()
 {
     return buffer;
+}
+
+D3D12_VERTEX_BUFFER_VIEW DX12InputVertex::BufferView(DX12InputVertexAttributes* attributes) const
+{
+    D3D12_VERTEX_BUFFER_VIEW vbv{};
+    vbv.BufferLocation = buffer->GetGPUVirtualAddress();
+    vbv.SizeInBytes = bufferTotalByteSize;
+    vbv.StrideInBytes = description.attributesByteSize;
+    return vbv;
 }
 
 void* DX12InputVertex::Map()

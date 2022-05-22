@@ -28,7 +28,7 @@ void DX12Descriptor::Setup(Description description)
 {
     this->description = description;
 
-    UINT descriptorHandleIncrementSize = 0;
+    descriptorHandleIncrementSize = 0;
     if (common::EnumCast(description.type) &
         common::EnumCast(DescriptorType::GenericBuffer)) {
         descriptorHandleIncrementSize = mResourceDescriptorHandleIncrementSize;
@@ -49,9 +49,13 @@ void DX12Descriptor::Setup(Description description)
         TI_LOG_RET_E(TAG, "The descriptor type is not match with the heap type!");
     }
 
-    auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(heap.Heap()->GetCPUDescriptorHandleForHeapStart());
-    handle.Offset(indexInHeap, descriptorHandleIncrementSize);
-    hCpuDescriptor = handle;
+    auto hCpu = CD3DX12_CPU_DESCRIPTOR_HANDLE(heap.Heap()->GetCPUDescriptorHandleForHeapStart());
+    hCpu.Offset(indexInHeap, descriptorHandleIncrementSize);
+    hCpuDescriptor = hCpu;
+
+    auto hGpu = CD3DX12_GPU_DESCRIPTOR_HANDLE(heap.Heap()->GetGPUDescriptorHandleForHeapStart());
+    hGpu.Offset(indexInHeap, descriptorHandleIncrementSize);
+    hGpuDescriptor = hGpu;
 }
 
 void DX12Descriptor::Shutdown()
@@ -75,6 +79,36 @@ void DX12Descriptor::BuildDescriptor(ResourceBuffer* resource)
 void DX12Descriptor::BuildDescriptor(ResourceImage* resource)
 {
     //TODO
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::AttachmentView() const
+{
+    return hCpuDescriptor;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::NativeCpuDescriptor() const
+{
+    return hCpuDescriptor;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE DX12Descriptor::NativeGpuDescriptor() const
+{
+    return hGpuDescriptor;
+}
+
+bool DX12Descriptor::IsNativeDescriptorsContinuous(
+    const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& descriptors)
+{
+    if (descriptors.size() > 0) {
+        for (size_t n = 0; n < descriptors.size(); n++) {
+            CD3DX12_CPU_DESCRIPTOR_HANDLE current(hCpuDescriptor);
+            current.Offset(static_cast<INT>(n), descriptorHandleIncrementSize);
+            if (current != descriptors[n]) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 }

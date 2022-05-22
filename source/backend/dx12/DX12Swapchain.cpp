@@ -190,4 +190,9 @@ D3D12_CLEAR_FLAGS DX12Swapchain::DepthStencilClearFlags() const
     }
     return flags;
 }
+
+bool DX12Swapchain::IsSwapchainEnableDepthStencil() const
+{
+    return description.isEnabledDepthStencil;
+}
 }

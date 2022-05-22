@@ -19,6 +19,11 @@ public:
     void BuildDescriptor(ResourceBuffer* resource) override;
     void BuildDescriptor(ResourceImage* resource) override;
 
+    D3D12_CPU_DESCRIPTOR_HANDLE AttachmentView() const;      // RTV/DSV
+    D3D12_CPU_DESCRIPTOR_HANDLE NativeCpuDescriptor() const; // CBV/SRV/UAV
+    D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV
+    bool IsNativeDescriptorsContinuous(const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& handles);
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
@@ -34,7 +39,8 @@ private:
     UINT mDepthStencilViewDescriptorHandleIncrementSize = 0; // DSV
 
     Description description{ DescriptorType::ConstantBuffer };
-    D3D12_CPU_DESCRIPTOR_HANDLE hCpuDescriptor; // Only the CPU descriptor handle needs to be held,
-    D3D12_GPU_DESCRIPTOR_HANDLE hGpuDescriptor; // the GPU descriptor handle is unused.
+    UINT descriptorHandleIncrementSize = 0;
+    D3D12_CPU_DESCRIPTOR_HANDLE hCpuDescriptor;
+    D3D12_GPU_DESCRIPTOR_HANDLE hGpuDescriptor;
 };
 }
