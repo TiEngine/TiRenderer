@@ -240,7 +240,7 @@ void DX12CommandRecorder::RcSetRenderAttachments(
         auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
         renderTargetDescriptors.emplace_back(dxSwapchain->CurrentRenderTargetView());
         if (dxSwapchain->IsSwapchainEnableDepthStencil()) {
-            depthStencilDescriptors.emplace_back(dxSwapchain->CurrentRenderTargetView());
+            depthStencilDescriptors.emplace_back(dxSwapchain->CurrentDepthStencilView());
         }
     }
     for (auto attachment : colorAttachments) {

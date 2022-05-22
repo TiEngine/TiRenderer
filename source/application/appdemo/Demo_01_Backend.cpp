@@ -188,6 +188,7 @@ void Demo_01_Backend::Begin()
 
 void Demo_01_Backend::Finish()
 {
+    device->WaitIdle();
     ti::backend::BackendContext::DestroyBackend(ti::backend::BackendContext::Backend::DX12);
 }
 
@@ -245,7 +246,11 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
         device->WaitIdle();
         swapchain->Resize(width, height);
     } else {
-        swapchain = device->CreateSwapchain({ window, width, height });
+        ti::backend::Swapchain::Description description{ window, width, height };
+        description.colorClearValue.color[0] = 0.0f; // Alpha
+        description.colorClearValue.color[1] = 1.0f; // Green
+        description.colorClearValue.color[3] = 0.0f; // Red
+        swapchain = device->CreateSwapchain(description);
     }
 
     aspectRatio = static_cast<float>(width) / static_cast<float>(height);

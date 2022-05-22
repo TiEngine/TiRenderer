@@ -17,11 +17,7 @@ void DX12ResourceBuffer::Setup(Description description)
 {
     this->description = description;
 
-    alignedBytesSize = CalculateAlignedBytesSize(description.bufferBytesSize);
-    allocatedBytesSize = description.bufferBytesSize;
-    if (isAlignedBytesSize) {
-        allocatedBytesSize = alignedBytesSize;
-    }
+    allocatedBytesSize = CalculateAlignedBytesSize(description.bufferBytesSize);
     if (allocatedBytesSize == 0) {
         TI_LOG_RET_F(TAG, "Create constant buffer failed, buffer size is zero!");
     }
@@ -36,7 +32,6 @@ void DX12ResourceBuffer::Setup(Description description)
 void DX12ResourceBuffer::Shutdown()
 {
     description = { 0u };
-    alignedBytesSize = 0;
     allocatedBytesSize = 0;
     buffer.Reset();
 }
@@ -57,19 +52,9 @@ void DX12ResourceBuffer::Unmap()
     }
 }
 
-void DX12ResourceBuffer::SetAligned(bool align)
-{
-    isAlignedBytesSize = align;
-}
-
-unsigned int DX12ResourceBuffer::GetBytesSize() const
+unsigned int DX12ResourceBuffer::GetBufferBytesSize() const
 {
     return description.bufferBytesSize;
-}
-
-unsigned int DX12ResourceBuffer::GetAlignedBytesSize() const
-{
-    return alignedBytesSize;
 }
 
 unsigned int DX12ResourceBuffer::GetAllocatedBytesSize() const
@@ -96,6 +81,4 @@ unsigned int DX12ResourceBuffer::CalculateAlignedBytesSize(unsigned int input)
     //   512
     return (input + 255u) & ~255u;
 }
-
-bool DX12ResourceBuffer::isAlignedBytesSize = false;
 }
