@@ -159,15 +159,10 @@ D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
 {
-    D3D12_CLEAR_VALUE clearValue{};
-    clearValue.Format = ConvertBasicFormat(format);
-    clearValue.Color[0] = value.color[0];
-    clearValue.Color[1] = value.color[1];
-    clearValue.Color[2] = value.color[2];
-    clearValue.Color[3] = value.color[3];
-    clearValue.DepthStencil.Depth = value.depth;
-    clearValue.DepthStencil.Stencil = value.stencil;
-    return clearValue;
+    if (IsBasicFormatHasDepth(format) || IsBasicFormatHasStencil(format)) {
+        return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format), value.depth, value.stencil);
+    }
+    return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format), value.color);
 }
 
 D3D12_FILL_MODE ConvertFillMode(FillMode mode)

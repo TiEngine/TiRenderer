@@ -131,13 +131,6 @@ enum class ShaderStage : uint32_t {
     Graphics = Vertex | Hull | Domain | Geometry | Pixel
 };
 
-struct ColorValue {
-    float r = 0.0f;
-    float g = 0.0f;
-    float b = 0.0f;
-    float a = 1.0f;
-};
-
 struct ClearValue {
     float color[4]{};
     float depth = 1.0f;

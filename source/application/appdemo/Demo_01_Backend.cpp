@@ -247,9 +247,6 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
         swapchain->Resize(width, height);
     } else {
         ti::backend::Swapchain::Description description{ window, width, height };
-        description.colorClearValue.color[0] = 0.0f; // Alpha
-        description.colorClearValue.color[1] = 1.0f; // Green
-        description.colorClearValue.color[3] = 0.0f; // Red
         swapchain = device->CreateSwapchain(description);
     }
 
