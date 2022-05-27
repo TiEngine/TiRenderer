@@ -97,7 +97,7 @@ void Demo_01_Backend::Begin()
         ti::backend::BackendContext::Backend::DX12);
     device = backend->CreateDevice({});
 
-    commandRecorder = device->CreateCommandRecorder({});
+    commandRecorder = device->CreateCommandRecorder({ "DrawToSwapchain" });
 
     vertexShader = device->CreateShader({
         ti::backend::ShaderStage::Vertex, vertexShaderString });
@@ -121,7 +121,7 @@ void Demo_01_Backend::Begin()
             static_cast<unsigned int>(vertices.size()), sizeof(VertexData),
             ti::backend::TransferDirection::CPU_TO_GPU });
         auto transfer = device->CreateCommandRecorder({
-            ti::backend::CommandType::Transfer });
+            "Transfer", ti::backend::CommandType::Transfer});
         transfer->BeginRecord();
         transfer->RcBarrier(inputVertex,
             ti::backend::ResourceState::GENERAL_READ,
@@ -134,6 +134,7 @@ void Demo_01_Backend::Begin()
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
+        device->RleaseCommandRecordersMemory("Transfer");
     }
 
     inputIndex = device->CreateInputIndex({
@@ -143,7 +144,7 @@ void Demo_01_Backend::Begin()
             static_cast<unsigned int>(indices.size()), sizeof(uint16_t),
             ti::backend::TransferDirection::CPU_TO_GPU });
         auto transfer = device->CreateCommandRecorder({
-            ti::backend::CommandType::Transfer });
+            "Transfer", ti::backend::CommandType::Transfer });
         transfer->BeginRecord();
         transfer->RcBarrier(inputIndex,
             ti::backend::ResourceState::GENERAL_READ,
@@ -156,6 +157,7 @@ void Demo_01_Backend::Begin()
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
+        device->RleaseCommandRecordersMemory("Transfer");
     }
 
     descriptorHeap = device->CreateDescriptorHeap({
@@ -198,6 +200,7 @@ void Demo_01_Backend::Update()
     AutomateRotate();
     if (updateObjectMVP) {
         device->WaitIdle();
+        device->RleaseCommandRecordersMemory("DrawToSwapchain");
         memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
         cbObjectMVP->Unmap();
     }

@@ -72,11 +72,12 @@ public:
 
     void WaitIdle() override;
 
+    void RleaseCommandRecordersMemory(const std::string& commandContainer) override;
+
     Microsoft::WRL::ComPtr<IDXGIFactory4> DXGIFactory();
     Microsoft::WRL::ComPtr<ID3D12Device> NativeDevice();
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue(CommandType type);
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator(CommandType type);
-    void ResetCommandAllocator();
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator(const std::string& name);
 
 protected:
     // TODO:  Support select a adapter by custom.
@@ -90,11 +91,13 @@ private:
 
     Description description;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
 
-    UINT64 currentFence = 0;
-    Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    // TODO:  CommandQueue has not been abstracted into a separate class yet.
+    std::unordered_map<CommandType, Microsoft::WRL::ComPtr<ID3D12CommandQueue>> queues;
+    std::unordered_map<CommandType, std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, UINT64>> fences;
+
+    // TODO: CommandMemory has not been abstracted into a separate class yet.
+    std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> allocators;
 
     std::vector<std::unique_ptr<DX12Shader>> shaders;
     std::vector<std::unique_ptr<DX12Swapchain>> swapchains;

@@ -13,7 +13,15 @@ namespace ti::backend {
 class CommandRecorder {
 public:
     struct Description {
-        CommandType type = CommandType::Graphics;
+        std::string container;
+        CommandType commandType;
+
+        Description(
+            const std::string& commandContainer,
+            CommandType commandType = CommandType::Graphics)
+            : container(commandContainer)
+            , commandType(commandType)
+        {}
     };
 
     virtual void BeginRecord(PipelineState* const pipelineState = nullptr) = 0;

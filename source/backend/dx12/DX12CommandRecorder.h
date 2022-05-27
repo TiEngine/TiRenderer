@@ -77,7 +77,7 @@ private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Description description;
+    Description description{ "" };
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> recorder;
