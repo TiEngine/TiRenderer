@@ -16,6 +16,8 @@ public:
 
     std::string DumpBytecode() const override;
 
+    Reflection Reflect() const override;
+
     Microsoft::WRL::ComPtr<ID3DBlob> GetBytecode();
 
 protected:

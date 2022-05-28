@@ -104,6 +104,9 @@ void Demo_01_Backend::Begin()
     pixelShader = device->CreateShader({
         ti::backend::ShaderStage::Pixel, fragmentShaderString });
 
+    //auto vertexShaderReflection = vertexShader->Reflect();
+    //auto pixelShaderReflection = pixelShader->Reflect();
+
     inputVertexAttributes = device->CreateInputVertexAttributes();
     inputVertexAttributes->AddAttribute({
         ti::backend::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
