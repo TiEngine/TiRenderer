@@ -72,7 +72,7 @@ public:
 
     void WaitIdle() override;
 
-    void RleaseCommandRecordersMemory(const std::string& commandContainer) override;
+    void ReleaseCommandRecordersMemory(const std::string& commandContainer) override;
 
     Microsoft::WRL::ComPtr<IDXGIFactory4> DXGIFactory();
     Microsoft::WRL::ComPtr<ID3D12Device> NativeDevice();

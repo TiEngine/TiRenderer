@@ -100,4 +100,8 @@ private:
         = ti::backend::BasicFormat::R8G8B8A8_UNORM;
     const ti::backend::BasicFormat DepthStencilAttachmentFormat
         = ti::backend::BasicFormat::D24_UNORM_S8_UINT;
+
+    ti::backend::ResourceImage* halfColorOutput = nullptr;
+    ti::backend::DescriptorHeap* descriptorHeapRT = nullptr; // ColorOutput descriptor heap
+    ti::backend::Descriptor* descriptorForHalfColorOutput = nullptr;
 };

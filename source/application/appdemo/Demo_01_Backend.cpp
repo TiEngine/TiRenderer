@@ -40,13 +40,15 @@ struct VertexOut
 
 struct PixelOut
 {
-    float4 color : SV_Target;
+    float4 color     : SV_Target0;
+    float4 halfColor : SV_Target1;
 };
 
 PixelOut Main(VertexOut pin)
 {
     PixelOut pout;
     pout.color = pin.outColor;
+    pout.halfColor = float4(pin.outColor.rgb / 2, pin.outColor.a);
     return pout;
 }
 )";
@@ -137,7 +139,7 @@ void Demo_01_Backend::Begin()
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
-        device->RleaseCommandRecordersMemory("Transfer");
+        device->ReleaseCommandRecordersMemory("Transfer");
     }
 
     inputIndex = device->CreateInputIndex({
@@ -160,7 +162,7 @@ void Demo_01_Backend::Begin()
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
-        device->RleaseCommandRecordersMemory("Transfer");
+        device->ReleaseCommandRecordersMemory("Transfer");
     }
 
     descriptorHeap = device->CreateDescriptorHeap({
@@ -180,6 +182,11 @@ void Demo_01_Backend::Begin()
     pipelineLayout->AddGroup(descriptorGroup);              // this group has descriptor 0
     pipelineLayout->BuildLayout();
 
+    descriptorHeapRT = device->CreateDescriptorHeap({
+        1, ti::backend::DescriptorType::ColorOutput });
+    descriptorForHalfColorOutput = descriptorHeapRT->AllocateDescriptor({
+        ti::backend::DescriptorType::ColorOutput });
+
     pipelineState = device->CreatePipelineState();
     pipelineState->SetPipelineLayout(pipelineLayout);
     pipelineState->SetIndexAssembly(inputIndexAttribute);
@@ -187,6 +194,7 @@ void Demo_01_Backend::Begin()
     pipelineState->SetShader(ti::backend::ShaderStage::Vertex, vertexShader);
     pipelineState->SetShader(ti::backend::ShaderStage::Pixel, pixelShader);
     pipelineState->SetColorAttachment(0, ColorAttachmentFormat);
+    pipelineState->SetColorAttachment(1, ColorAttachmentFormat);
     pipelineState->SetDepthStencilAttachment(DepthStencilAttachmentFormat);
     pipelineState->BuildState();
 }
@@ -203,7 +211,7 @@ void Demo_01_Backend::Update()
     AutomateRotate();
     if (updateObjectMVP) {
         device->WaitIdle();
-        device->RleaseCommandRecordersMemory("DrawToSwapchain");
+        device->ReleaseCommandRecordersMemory("DrawToSwapchain");
         memcpy(cbObjectMVP->Map(), &objectMVP, sizeof(ObjectMVP));
         cbObjectMVP->Unmap();
     }
@@ -219,11 +227,15 @@ void Demo_01_Backend::Draw()
 
     commandRecorder->RcBarrier(swapchain,
         ti::backend::ResourceState::PRESENT, ti::backend::ResourceState::COLOR_OUTPUT);
+    commandRecorder->RcBarrier(halfColorOutput,
+        ti::backend::ResourceState::GENERAL_READ, ti::backend::ResourceState::COLOR_OUTPUT);
 
     commandRecorder->RcClearColorAttachment(swapchain);
     commandRecorder->RcClearDepthStencilAttachment(swapchain);
+    commandRecorder->RcClearColorAttachment(halfColorOutput, descriptorForHalfColorOutput);
 
-    commandRecorder->RcSetRenderAttachments(swapchain, {}, {}, true);
+    commandRecorder->RcSetRenderAttachments(swapchain,
+        { descriptorForHalfColorOutput }, {}, false);
 
     commandRecorder->RcSetDescriptorHeap({ descriptorHeap });
 
@@ -238,6 +250,8 @@ void Demo_01_Backend::Draw()
 
     commandRecorder->RcBarrier(swapchain,
         ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::PRESENT);
+    commandRecorder->RcBarrier(halfColorOutput,
+        ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::GENERAL_READ);
 
     commandRecorder->EndRecord();
 
@@ -253,8 +267,19 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
         swapchain->Resize(width, height);
     } else {
         ti::backend::Swapchain::Description description{ window, width, height };
+        description.bufferCount = 3;
+        description.colorFormat = ColorAttachmentFormat;
+        description.depthStencilFormat = DepthStencilAttachmentFormat;
         swapchain = device->CreateSwapchain(description);
     }
+    if (halfColorOutput) {
+        device->DestroyResourceImage(halfColorOutput);
+    }
+    ti::backend::ResourceImage::Description halfColorOutputDescription{
+        ColorAttachmentFormat, width, height };
+    halfColorOutputDescription.usage = ti::backend::ImageType::Color;
+    halfColorOutput = device->CreateResourceImage(halfColorOutputDescription);
+    descriptorForHalfColorOutput->BuildDescriptor(halfColorOutput);
 
     aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 

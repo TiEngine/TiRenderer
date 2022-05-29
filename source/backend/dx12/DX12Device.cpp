@@ -221,7 +221,7 @@ void DX12Device::WaitIdle()
     }
 }
 
-void DX12Device::RleaseCommandRecordersMemory(const std::string& commandContainer)
+void DX12Device::ReleaseCommandRecordersMemory(const std::string& commandContainer)
 {
     auto iter = allocators.find(commandContainer);
     if (iter != allocators.end()) {

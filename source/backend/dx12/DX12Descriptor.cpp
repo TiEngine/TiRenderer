@@ -78,7 +78,24 @@ void DX12Descriptor::BuildDescriptor(ResourceBuffer* resource)
 
 void DX12Descriptor::BuildDescriptor(ResourceImage* resource)
 {
-    //TODO
+    auto dxResource = down_cast<DX12ResourceImage*>(resource);
+
+    switch (heap.GetHeapType()) {
+    case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: {
+        device->CreateShaderResourceView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
+        return;
+    }
+    case D3D12_DESCRIPTOR_HEAP_TYPE_RTV: {
+        device->CreateRenderTargetView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
+        return;
+    }
+    case D3D12_DESCRIPTOR_HEAP_TYPE_DSV: {
+        device->CreateDepthStencilView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
+        return;
+    }
+    }
+
+    TI_LOG_RET_E(TAG, "This descriptor heap and descriptor is not support image!");
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::AttachmentView() const

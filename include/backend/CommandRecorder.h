@@ -51,9 +51,12 @@ public:
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
 
     virtual void RcClearColorAttachment(Swapchain* const swapchain) = 0;
-    virtual void RcClearColorAttachment(ResourceImage* const attachment) = 0;
     virtual void RcClearDepthStencilAttachment(Swapchain* const swapchain) = 0;
-    virtual void RcClearDepthStencilAttachment(ResourceImage* const attachment) = 0;
+
+    virtual void RcClearColorAttachment(
+        ResourceImage* const attachment, Descriptor* const descriptor) = 0;
+    virtual void RcClearDepthStencilAttachment(
+        ResourceImage* const attachment, Descriptor* const descriptor) = 0;
 
     virtual void RcSetRenderAttachments(
         Swapchain* const swapchain,

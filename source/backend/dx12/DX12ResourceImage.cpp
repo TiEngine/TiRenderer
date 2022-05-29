@@ -62,6 +62,21 @@ void DX12ResourceImage::Unmap(unsigned int msaaLayer)
     }
 }
 
+D3D12_CLEAR_VALUE DX12ResourceImage::RenderTargetClearValue() const
+{
+    return ConvertClearValue(description.format, description.clearValue);
+}
+
+D3D12_CLEAR_VALUE DX12ResourceImage::DepthStencilClearValue() const
+{
+    return ConvertClearValue(description.format, description.clearValue);
+}
+
+D3D12_CLEAR_FLAGS DX12ResourceImage::DepthStencilClearFlags() const
+{
+    return ConvertClearFlags(description.format);
+}
+
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceImage::Buffer()
 {
     return buffer;

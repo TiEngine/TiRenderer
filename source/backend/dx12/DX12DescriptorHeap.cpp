@@ -24,7 +24,7 @@ void DX12DescriptorHeap::Setup(Description description)
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
     heapDesc.NumDescriptors = description.capacity;
     heapDesc.Type = ConvertDescriptorHeap(description.type);
-    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    heapDesc.Flags = ConvertDescriptorHeapVisible(description.type);
     heapDesc.NodeMask = 0;
     LogIfFailedF(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&heap)));
 }

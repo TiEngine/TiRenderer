@@ -42,9 +42,12 @@ public:
     void RcSetScissors(const std::vector<Scissor>& scissors) override;
 
     void RcClearColorAttachment(Swapchain* const swapchain) override;
-    void RcClearColorAttachment(ResourceImage* const attachment) override;
     void RcClearDepthStencilAttachment(Swapchain* const swapchain) override;
-    void RcClearDepthStencilAttachment(ResourceImage* const attachment) override;
+
+    void RcClearColorAttachment(
+        ResourceImage* const attachment, Descriptor* const descriptor) override;
+    void RcClearDepthStencilAttachment(
+        ResourceImage* const attachment, Descriptor* const descriptor) override;
 
     void RcSetRenderAttachments(
         Swapchain* const swapchain,

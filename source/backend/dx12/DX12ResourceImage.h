@@ -18,6 +18,10 @@ public:
     void* Map(unsigned int msaaLayer) override;
     void Unmap(unsigned int msaaLayer) override;
 
+    D3D12_CLEAR_VALUE RenderTargetClearValue() const;
+    D3D12_CLEAR_VALUE DepthStencilClearValue() const;
+    D3D12_CLEAR_FLAGS DepthStencilClearFlags() const;
+
     Microsoft::WRL::ComPtr<ID3D12Resource> Buffer();
 
 private:

@@ -67,7 +67,7 @@ public:
     // This virtual function here is very ugly and should not have this interface.
     // However, I don't know where this implementation(reset the CommandAllocator)
     // should be placed is the most suitable, so finally I add this interface...
-    virtual void RleaseCommandRecordersMemory(const std::string& commandContainer) = 0;
+    virtual void ReleaseCommandRecordersMemory(const std::string& commandContainer) = 0;
 
 protected:
     Device() = default;

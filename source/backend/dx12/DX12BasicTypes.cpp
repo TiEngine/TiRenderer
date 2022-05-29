@@ -90,9 +90,9 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
         { ResourceState::UNDEFINED,           D3D12_RESOURCE_STATE_COMMON         },
         { ResourceState::PRESENT,             D3D12_RESOURCE_STATE_PRESENT        },
         { ResourceState::COLOR_OUTPUT,        D3D12_RESOURCE_STATE_RENDER_TARGET  },
+        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
         { ResourceState::DEPTH_STENCIL_READ,  D3D12_RESOURCE_STATE_DEPTH_READ     },
         { ResourceState::DEPTH_STENCIL_WRITE, D3D12_RESOURCE_STATE_DEPTH_WRITE    },
-        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
         { ResourceState::COPY_SOURCE,         D3D12_RESOURCE_STATE_COPY_SOURCE    },
         { ResourceState::COPY_DESTINATION,    D3D12_RESOURCE_STATE_COPY_DEST      },
         { ResourceState::RESOLVE_SOURCE,      D3D12_RESOURCE_STATE_RESOLVE_SOURCE },
@@ -143,6 +143,21 @@ D3D12_DESCRIPTOR_HEAP_TYPE ConvertDescriptorHeap(DescriptorType type)
     return map.at(type);
 }
 
+D3D12_DESCRIPTOR_HEAP_FLAGS ConvertDescriptorHeapVisible(DescriptorType type)
+{
+    static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_HEAP_FLAGS> map = {
+        { DescriptorType::GenericBuffer, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE },
+        { DescriptorType::ImageSampler,  D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE },
+        { DescriptorType::ColorOutput,   D3D12_DESCRIPTOR_HEAP_FLAG_NONE           },
+        { DescriptorType::DepthStencil,  D3D12_DESCRIPTOR_HEAP_FLAG_NONE           }
+    };
+    if (common::EnumCast<DescriptorType>(type) &
+        common::EnumCast<DescriptorType>(DescriptorType::GenericBuffer)) {
+        type = DescriptorType::GenericBuffer;
+    }
+    return map.at(type);
+}
+
 D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
 {
     static const std::unordered_map<ShaderStage, D3D12_SHADER_VISIBILITY> map = {
@@ -163,6 +178,19 @@ D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
         return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format), value.depth, value.stencil);
     }
     return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format), value.color);
+}
+
+D3D12_CLEAR_FLAGS ConvertClearFlags(BasicFormat format)
+{
+    D3D12_CLEAR_FLAGS flags;
+    ZeroMemory(&flags, sizeof(flags));
+    if (IsBasicFormatHasDepth(format)) {
+        flags |= D3D12_CLEAR_FLAG_DEPTH;
+    }
+    if (IsBasicFormatHasStencil(format)) {
+        flags |= D3D12_CLEAR_FLAG_STENCIL;
+    }
+    return flags;
 }
 
 D3D12_FILL_MODE ConvertFillMode(FillMode mode)
