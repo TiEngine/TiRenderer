@@ -61,8 +61,8 @@ public:
 
     void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
 
-    void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) override;
-    void RcSetDescriptor(unsigned int index, ResourceImage* const resource) override;
+    void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) override; // TODO: Remove it!
+    void RcSetDescriptor(unsigned int index, ResourceImage* const resource) override;  // TODO: Remove it!
 
     void RcSetDescriptors(unsigned int index, // DescriptorTable
         const std::vector<Descriptor*>& descriptors) override;

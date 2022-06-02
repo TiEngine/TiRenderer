@@ -47,8 +47,8 @@ public:
     virtual ResourceImage* CreateResourceImage(ResourceImage::Description description) = 0;
     virtual bool DestroyResourceImage(ResourceImage* instance) = 0;
 
-    //virtual ImageSampler* CreateImageSampler(ImageSampler::Description description) = 0;
-    //virtual bool DestroyImageSampler(ImageSampler* instance) = 0;
+    virtual ImageSampler* CreateImageSampler(ImageSampler::Description description) = 0;
+    virtual bool DestroyImageSampler(ImageSampler* instance) = 0;
 
     virtual DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) = 0;
     virtual bool DestroyDescriptorHeap(DescriptorHeap* instance) = 0;

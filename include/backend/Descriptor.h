@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 #include "ResourceBuffer.h"
 #include "ResourceImage.h"
+#include "ImageSampler.h"
 
 namespace ti::backend {
 class Descriptor {
@@ -18,6 +19,8 @@ public:
 
     virtual void BuildDescriptor(ResourceBuffer* resource) = 0;
     virtual void BuildDescriptor(ResourceImage* resource) = 0;
+
+    virtual void BuildDescriptor(ImageSampler* sampler) = 0;
 
 protected:
     Descriptor() = default;

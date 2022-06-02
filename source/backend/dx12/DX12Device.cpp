@@ -149,6 +149,16 @@ bool DX12Device::DestroyResourceImage(ResourceImage* instance)
     return DestroyInstance(resourceImages, instance);
 }
 
+ImageSampler* DX12Device::CreateImageSampler(ImageSampler::Description description)
+{
+    return CreateInstance<ImageSampler>(imageSamplers, description);
+}
+
+bool DX12Device::DestroyImageSampler(ImageSampler* instance)
+{
+    return DestroyInstance(imageSamplers, instance);
+}
+
 DescriptorHeap* DX12Device::CreateDescriptorHeap(DescriptorHeap::Description description)
 {
     return CreateInstance<DescriptorHeap>(descriptorHeaps, description, *this);

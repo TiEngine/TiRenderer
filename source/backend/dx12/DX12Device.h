@@ -10,6 +10,7 @@
 #include "DX12InputIndexAttribute.h"
 #include "DX12ResourceBuffer.h"
 #include "DX12ResourceImage.h"
+#include "DX12ImageSampler.h"
 #include "DX12DescriptorHeap.h"
 #include "DX12DescriptorGroup.h"
 #include "DX12PipelineLayout.h"
@@ -55,8 +56,8 @@ public:
     ResourceImage* CreateResourceImage(ResourceImage::Description description) override;
     bool DestroyResourceImage(ResourceImage* instance) override;
 
-    //ImageSampler* CreateImageSampler(ImageSampler::Description description) override;
-    //bool DestroyImageSampler(ImageSampler* instance) override;
+    ImageSampler* CreateImageSampler(ImageSampler::Description description) override;
+    bool DestroyImageSampler(ImageSampler* instance) override;
 
     DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) override;
     bool DestroyDescriptorHeap(DescriptorHeap* instance) override;
@@ -108,6 +109,7 @@ private:
     std::vector<std::unique_ptr<DX12InputIndexAttribute>> inputIndexAttributes;
     std::vector<std::unique_ptr<DX12ResourceBuffer>> resourceBuffers;
     std::vector<std::unique_ptr<DX12ResourceImage>> resourceImages;
+    std::vector<std::unique_ptr<DX12ImageSampler>> imageSamplers;
     std::vector<std::unique_ptr<DX12DescriptorHeap>> descriptorHeaps;
     std::vector<std::unique_ptr<DX12DescriptorGroup>> descriptorGroups;
     std::vector<std::unique_ptr<DX12PipelineLayout>> pipelineLayouts;

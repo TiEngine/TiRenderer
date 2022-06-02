@@ -30,7 +30,7 @@ void DX12Descriptor::Setup(Description description)
 
     descriptorHandleIncrementSize = 0;
     if (common::EnumCast(description.type) &
-        common::EnumCast(DescriptorType::GenericBuffer)) {
+        common::EnumCast(DescriptorType::ShaderResource)) {
         descriptorHandleIncrementSize = mResourceDescriptorHandleIncrementSize;
     } else if (common::EnumCast(description.type) &
         common::EnumCast(DescriptorType::ImageSampler)) {
@@ -56,6 +56,8 @@ void DX12Descriptor::Setup(Description description)
     auto hGpu = CD3DX12_GPU_DESCRIPTOR_HANDLE(heap.Heap()->GetGPUDescriptorHandleForHeapStart());
     hGpu.Offset(indexInHeap, descriptorHandleIncrementSize);
     hGpuDescriptor = hGpu;
+
+    pResource = static_cast<void*>(nullptr);
 }
 
 void DX12Descriptor::Shutdown()
@@ -67,6 +69,10 @@ void DX12Descriptor::Shutdown()
 
 void DX12Descriptor::BuildDescriptor(ResourceBuffer* resource)
 {
+    if (heap.GetHeapType() != D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) {
+        TI_LOG_RET_E(TAG, "This descriptor heap and descriptor is not support buffer!");
+    }
+
     auto dxResource = down_cast<DX12ResourceBuffer*>(resource);
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
@@ -74,6 +80,8 @@ void DX12Descriptor::BuildDescriptor(ResourceBuffer* resource)
     cbvDesc.SizeInBytes = dxResource->GetAllocatedBytesSize();
 
     device->CreateConstantBufferView(&cbvDesc, hCpuDescriptor);
+
+    pResource = dxResource;
 }
 
 void DX12Descriptor::BuildDescriptor(ResourceImage* resource)
@@ -81,21 +89,33 @@ void DX12Descriptor::BuildDescriptor(ResourceImage* resource)
     auto dxResource = down_cast<DX12ResourceImage*>(resource);
 
     switch (heap.GetHeapType()) {
-    case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: {
+    case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
         device->CreateShaderResourceView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
-        return;
-    }
-    case D3D12_DESCRIPTOR_HEAP_TYPE_RTV: {
+        break;
+    case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
         device->CreateRenderTargetView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
-        return;
-    }
-    case D3D12_DESCRIPTOR_HEAP_TYPE_DSV: {
+        break;
+    case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
         device->CreateDepthStencilView(dxResource->Buffer().Get(), NULL, hCpuDescriptor);
-        return;
-    }
+        break;
+    default:
+        TI_LOG_RET_E(TAG, "This descriptor heap and descriptor is not support image!");
     }
 
-    TI_LOG_RET_E(TAG, "This descriptor heap and descriptor is not support image!");
+    pResource = dxResource;
+}
+
+void DX12Descriptor::BuildDescriptor(ImageSampler* sampler)
+{
+    if (heap.GetHeapType() != D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) {
+        TI_LOG_RET_E(TAG, "This descriptor heap and descriptor is not support sampler!");
+    }
+
+    auto dxSampler = down_cast<DX12ImageSampler*>(sampler);
+
+    device->CreateSampler(&dxSampler->NativeSamplerState(), hCpuDescriptor);
+
+    pResource = dxSampler;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DX12Descriptor::AttachmentView() const

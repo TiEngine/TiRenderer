@@ -40,13 +40,30 @@ void DX12DescriptorGroup::AddDescriptor(
         // TODO
         break;
 
-    case DescriptorType::ImageSampler:
+    case DescriptorType::ReadWriteBuffer:
         // TODO
+        break;
+
+    case DescriptorType::ReadOnlyTexture:
+        parameter.InitAsShaderResourceView(id, description.space,
+            ConvertShaderVisibility(visibility));
+        break;
+
+    case DescriptorType::ReadWriteTexture:
+        // TODO
+        break;
+
+    case DescriptorType::ImageSampler:
+        descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
+        descriptorRanges.back()->Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
+            1, id, description.space); // Sampler can not be used as a root parameter directly.
+        parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
+            ConvertShaderVisibility(visibility));
         break;
 
     default:
         TI_LOG_RET_F(TAG, "Add descriptor information to descriptor group failed! "
-            "Invalid descriptor type, only can be ConstantBuffer/StorageBuffer/ImageSampler.");
+            "Invalid descriptor type, only can be the buffer/texture/sampler types.");
     }
 
     parameters.emplace_back(parameter);
@@ -77,13 +94,29 @@ void DX12DescriptorGroup::AddDescriptors(
         // TODO
         break;
 
-    case DescriptorType::ImageSampler:
+    case DescriptorType::ReadWriteBuffer:
         // TODO
+        break;
+
+    case DescriptorType::ReadOnlyTexture:
+        // TODO
+        break;
+
+    case DescriptorType::ReadWriteTexture:
+        // TODO
+        break;
+
+    case DescriptorType::ImageSampler:
+        descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
+        descriptorRanges.back()->Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
+            endId - beginId, beginId, description.space);
+        parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
+            ConvertShaderVisibility(visibility));
         break;
 
     default:
         TI_LOG_RET_F(TAG, "Add ranged descriptors information to descriptor group failed! "
-            "Invalid descriptor type, only can be ConstantBuffer/StorageBuffer/ImageSampler.");
+            "Invalid descriptor type, only can be the buffer/texture/sampler types.");
     }
 
     parameters.emplace_back(parameter);

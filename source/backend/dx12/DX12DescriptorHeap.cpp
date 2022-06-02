@@ -31,7 +31,7 @@ void DX12DescriptorHeap::Setup(Description description)
 
 void DX12DescriptorHeap::Shutdown()
 {
-    description = { 0u, DescriptorType::GenericBuffer };
+    description = { 0u, DescriptorType::ShaderResource };
     heap.Reset();
     descriptors.resize(0);
 }

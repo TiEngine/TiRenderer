@@ -67,18 +67,19 @@ enum class MSAA : uint8_t {
 };
 
 enum class CommandType : uint8_t {
-    Graphics = 0x1,
-    Transfer = 0x2,
-    Compute  = 0x4,
-    Generic  = Graphics | Transfer | Compute
+    Graphics = (1 << 0),
+    Transfer = (1 << 1),
+    Compute  = (1 << 2),
+    Generic  = Graphics | Compute,
+    All      = Graphics | Transfer | Compute
 };
 
 enum class ImageType : uint8_t {
-    Color   = 0x1,                  // render target / color attachment
-    Depth   = 0x2,                  // depth, a part of depth stencil attachment
-    Stencil = 0x4,                  // stencil, a part of depth stencil attachment
+    Color   = (1 << 0), // render target / color attachment
+    Depth   = (1 << 1), // depth, a part of depth stencil attachment
+    Stencil = (1 << 2), // stencil, a part of depth stencil attachment
     DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
-    ShaderResource = 0x0            // generic image, cannot be used as attachment
+    ShaderResource = 0 // generic image, only can be used as shader resource, not as attachment
 };
 
 enum class ImageDimension : uint8_t {
@@ -88,12 +89,16 @@ enum class ImageDimension : uint8_t {
 };
 
 enum class DescriptorType : uint8_t {
-    ConstantBuffer = (1 << 0), // descriptor for constant buffer
-    StorageBuffer  = (1 << 1), // descriptor for storage buffer
-    GenericBuffer  = ConstantBuffer | StorageBuffer,
-    ImageSampler   = (1 << 4), // descriptor for image sampler
-    ColorOutput    = (1 << 5), // descriptor for render target
-    DepthStencil   = (1 << 6)  // descriptor for depth stencil
+    ConstantBuffer   = (1 << 0),
+    StorageBuffer    = (1 << 1),
+    ReadWriteBuffer  = (1 << 2),
+    ReadOnlyTexture  = (1 << 3),
+    ReadWriteTexture = (1 << 4),
+    ShaderResource = // descriptor for shader resource: buffer or texture
+        ConstantBuffer | StorageBuffer | ReadWriteBuffer | ReadOnlyTexture | ReadWriteTexture,
+    ImageSampler   = (1 << 5), // descriptor for image sampler
+    ColorOutput    = (1 << 6), // descriptor for render target
+    DepthStencil   = (1 << 7)  // descriptor for depth stencil
 };
 
 enum class Stage : uint32_t {
@@ -131,10 +136,15 @@ enum class ShaderStage : uint32_t {
     Graphics = Vertex | Hull | Domain | Geometry | Pixel
 };
 
-struct ClearValue {
-    float color[4]{};
-    float depth = 1.0f;
-    uint8_t stencil = 0;
+union ClearValue {
+    struct Image {
+        float color[4]{};
+        float depth = 1.0f;
+        uint8_t stencil = 0;
+    } image;
+    struct Buffer {
+        float value[4]{};
+    } buffer;
 };
 
 struct Viewport {
@@ -167,6 +177,24 @@ enum class CullMode {
 struct RasterizerState {
     FillMode fillMode;
     CullMode cullMode;
+};
+
+enum class AddressMode {
+    Wrap,
+    Mirror,
+    Clamp,
+    Border
+};
+
+struct SamplerState {
+    enum class Filter {
+        Point,      // Point and Linear can be used for different filter objects, for example,
+        Linear,     // Minification uses the Point and Magnification uses the Linear filter.
+        Anisotropic // But if use Anisotropic, must make sure Min/Mag/Mip all use it.
+    } minification, magnification, mipLevel;
+    AddressMode addressMode[3]; // UVW
+    unsigned int maxAnisotropy; // If Filter is Anisotropic, maxAnisotropy will be used.
+    float borderColor[4];       // If AddressMode is Border, borderColor will be used.
 };
 
 inline bool IsBasicFormatHasDepth(BasicFormat format)

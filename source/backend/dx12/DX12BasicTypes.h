@@ -43,4 +43,8 @@ D3D12_FILL_MODE ConvertFillMode(FillMode mode);
 D3D12_CULL_MODE ConvertCullMode(CullMode mode);
 
 D3D12_RASTERIZER_DESC ConvertRasterizerState(RasterizerState state);
+
+D3D12_TEXTURE_ADDRESS_MODE ConvertAddressMode(AddressMode mode);
+
+D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state);
 }

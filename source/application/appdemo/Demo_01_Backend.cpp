@@ -32,6 +32,9 @@ VertexOut Main(VertexIn vin)
 )";
 
 const std::string Demo_01_Backend::fragmentShaderString = R"(
+Texture2D gHalfTexture : register(t1);
+SamplerState gSimpleSampler : register(s2);
+
 struct VertexOut
 {
     float4 outWorldPos : SV_POSITION;
@@ -48,7 +51,7 @@ PixelOut Main(VertexOut pin)
 {
     PixelOut pout;
     pout.color = pin.outColor;
-    pout.halfColor = float4(pin.outColor.rgb / 2, pin.outColor.a);
+    pout.halfColor = pin.outColor * gHalfTexture.Sample(gSimpleSampler, float2(0.0f, 0.0f));
     return pout;
 }
 )";
@@ -166,26 +169,34 @@ void Demo_01_Backend::Begin()
     }
 
     descriptorHeap = device->CreateDescriptorHeap({
-        1, ti::backend::DescriptorType::ConstantBuffer });
+        2, ti::backend::DescriptorType::ShaderResource });
 
     cbObjectMVP = device->CreateResourceBuffer({ sizeof(ObjectMVP) });
     descriptorForObjectMVP = descriptorHeap->AllocateDescriptor({
         ti::backend::DescriptorType::ConstantBuffer });
     descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
 
-    descriptorGroup = device->CreateDescriptorGroup({ 0 }); // space/binding is 0
-    descriptorGroup->AddDescriptor(                         // descriptor 0, ConstantBuffer
-        ti::backend::DescriptorType::ConstantBuffer,
-        0, ti::backend::ShaderStage::Graphics);             // register/location is 0
+    halfColorTexture = device->CreateResourceImage({
+        ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u,
+        1u, 1u, ti::backend::ClearValue{ 0.5f, 0.5f, 0.5f, 1.0f } });
+    descriptorForTexture = descriptorHeap->AllocateDescriptor({
+        ti::backend::DescriptorType::ReadOnlyTexture });
+    descriptorForTexture->BuildDescriptor(halfColorTexture);
+
+    descriptorGroup = device->CreateDescriptorGroup({ 0u }); // space/binding is 0
+    descriptorGroup->AddDescriptor(                          // descriptor 0
+        ti::backend::DescriptorType::ConstantBuffer,         // ConstantBuffer
+        0, ti::backend::ShaderStage::Graphics);              // register/location is 0
+    descriptorGroup->AddDescriptor(                          // descriptor 1
+        ti::backend::DescriptorType::ReadOnlyTexture,        // ReadOnlyTexture
+        1, ti::backend::ShaderStage::Graphics);              // register/location is 1
+    descriptorGroup->AddDescriptor(                          // descriptor 2
+        ti::backend::DescriptorType::ImageSampler,           // ImageSampler
+        2, ti::backend::ShaderStage::Graphics);              // register/location is 2
 
     pipelineLayout = device->CreatePipelineLayout();
-    pipelineLayout->AddGroup(descriptorGroup);              // this group has descriptor 0
+    pipelineLayout->AddGroup(descriptorGroup);               // this group has descriptor 0 to 2
     pipelineLayout->BuildLayout();
-
-    descriptorHeapRT = device->CreateDescriptorHeap({
-        1, ti::backend::DescriptorType::ColorOutput });
-    descriptorForHalfColorOutput = descriptorHeapRT->AllocateDescriptor({
-        ti::backend::DescriptorType::ColorOutput });
 
     pipelineState = device->CreatePipelineState();
     pipelineState->SetPipelineLayout(pipelineLayout);
@@ -197,6 +208,18 @@ void Demo_01_Backend::Begin()
     pipelineState->SetColorAttachment(1, ColorAttachmentFormat);
     pipelineState->SetDepthStencilAttachment(DepthStencilAttachmentFormat);
     pipelineState->BuildState();
+
+    descriptorHeapRT = device->CreateDescriptorHeap({
+        1, ti::backend::DescriptorType::ColorOutput });
+    descriptorForHalfColorOutput = descriptorHeapRT->AllocateDescriptor({
+        ti::backend::DescriptorType::ColorOutput });
+
+    simpleSampler = device->CreateImageSampler({
+        ti::backend::SamplerState::Filter::Linear, ti::backend::AddressMode::Wrap });
+    descriptorHeapSampler = device->CreateDescriptorHeap({
+        1, ti::backend::DescriptorType::ImageSampler });
+    descriptorForSimpleSampler = descriptorHeapSampler->AllocateDescriptor({
+        ti::backend::DescriptorType::ImageSampler });
 }
 
 void Demo_01_Backend::Finish()
@@ -244,7 +267,9 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcSetVertex({ inputVertex }, inputVertexAttributes);
     commandRecorder->RcSetIndex(inputIndex, inputIndexAttribute);
 
-    commandRecorder->RcSetDescriptor(0, cbObjectMVP); // descriptor 0, ConstantBuffer
+    commandRecorder->RcSetDescriptor(0, cbObjectMVP);      // table 0, ConstantBuffer
+    commandRecorder->RcSetDescriptor(1, halfColorTexture); // table 1, ReadOnlyTexture
+    commandRecorder->RcSetDescriptors(2, { descriptorForSimpleSampler }); // table 2, ImageSamplers
 
     commandRecorder->RcDraw(inputIndex);
 

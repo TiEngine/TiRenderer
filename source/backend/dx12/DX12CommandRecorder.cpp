@@ -356,7 +356,9 @@ void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceBuffer* co
 void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceImage* const resource)
 {
     CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor:ResourceImage);
-    // TODO
+    auto dxResource = down_cast<DX12ResourceImage*>(resource);
+    recorder->SetGraphicsRootShaderResourceView(index,
+        dxResource->Buffer()->GetGPUVirtualAddress());
 }
 
 void DX12CommandRecorder::RcSetDescriptors(unsigned int index,
