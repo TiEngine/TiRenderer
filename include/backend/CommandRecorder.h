@@ -53,10 +53,8 @@ public:
     virtual void RcClearColorAttachment(Swapchain* const swapchain) = 0;
     virtual void RcClearDepthStencilAttachment(Swapchain* const swapchain) = 0;
 
-    virtual void RcClearColorAttachment(
-        ResourceImage* const attachment, Descriptor* const descriptor) = 0;
-    virtual void RcClearDepthStencilAttachment(
-        ResourceImage* const attachment, Descriptor* const descriptor) = 0;
+    virtual void RcClearColorAttachment(Descriptor* const descriptor) = 0;
+    virtual void RcClearDepthStencilAttachment(Descriptor* const descriptor) = 0;
 
     virtual void RcSetRenderAttachments(
         Swapchain* const swapchain,

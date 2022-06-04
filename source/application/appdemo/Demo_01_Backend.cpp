@@ -278,7 +278,7 @@ void Demo_01_Backend::Draw()
 
     commandRecorder->RcClearColorAttachment(swapchain);
     commandRecorder->RcClearDepthStencilAttachment(swapchain);
-    commandRecorder->RcClearColorAttachment(halfColorOutput, descriptorForHalfColorOutput);
+    commandRecorder->RcClearColorAttachment(descriptorForHalfColorOutput);
 
     commandRecorder->RcSetRenderAttachments(swapchain,
         { descriptorForHalfColorOutput }, {}, false);
@@ -326,6 +326,7 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
     ti::backend::ResourceImage::Description halfColorOutputDescription{
         ColorAttachmentFormat, width, height };
     halfColorOutputDescription.usage = ti::backend::ImageType::Color;
+    //halfColorOutputDescription.clearValue = ti::backend::MakeImageClearValue(1.0f, 0.0f, 0.0f, 0.0f);
     halfColorOutput = device->CreateResourceImage(halfColorOutputDescription);
     descriptorForHalfColorOutput->BuildDescriptor(halfColorOutput);
 

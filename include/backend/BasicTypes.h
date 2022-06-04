@@ -140,7 +140,7 @@ union ClearValue {
     struct Image {
         float color[4]{};
         float depth = 1.0f;
-        uint8_t stencil = 0;
+        uint8_t stencil = 0u;
     } image;
     struct Buffer {
         float value[4]{};
@@ -249,5 +249,33 @@ inline unsigned int QueryVertexFormatBytes(VertexFormat format)
         return 16;
     }
     return 0;
+}
+
+inline ClearValue MakeImageClearValue(float c1, float c2, float c3, float c4)
+{
+    ClearValue clear{};
+    clear.image.color[0] = c1;
+    clear.image.color[1] = c2;
+    clear.image.color[2] = c3;
+    clear.image.color[3] = c4;
+    return clear;
+}
+
+inline ClearValue MakeImageClearValue(float depth, uint8_t stencil)
+{
+    ClearValue clear{};
+    clear.image.depth = depth;
+    clear.image.stencil = stencil;
+    return clear;
+}
+
+inline ClearValue MakeBufferClearValue(float b1, float b2, float b3, float b4)
+{
+    ClearValue clear{};
+    clear.buffer.value[0] = b1;
+    clear.buffer.value[1] = b2;
+    clear.buffer.value[2] = b3;
+    clear.buffer.value[3] = b4;
+    return clear;
 }
 }

@@ -147,4 +147,34 @@ bool DX12Descriptor::IsNativeDescriptorsContinuous(
     return true;
 }
 
+DX12ResourceBuffer* DX12Descriptor::BindedResourceBuffer() const
+{
+    auto ptr = std::get_if<DX12ResourceBuffer*>(&pResource);
+    if (!ptr) {
+        TI_LOG_RETN_E(TAG, "Get binded resource buffer failed, this descriptor is not build with "
+            "ResourceBuffer, or maybe you forgot to call the BuildDescriptor function.");
+    }
+    return *ptr;
+}
+
+DX12ResourceImage* DX12Descriptor::BindedResourceImage() const
+{
+    auto ptr = std::get_if<DX12ResourceImage*>(&pResource);
+    if (!ptr) {
+        TI_LOG_RETN_E(TAG, "Get binded resource buffer failed, this descriptor is not build with "
+            "ResourceImage, or maybe you forgot to call the BuildDescriptor function.");
+    }
+    return *ptr;
+}
+
+DX12ImageSampler* DX12Descriptor::BindedImageSampler() const
+{
+    auto ptr = std::get_if<DX12ImageSampler*>(&pResource);
+    if (!ptr) {
+        TI_LOG_RETN_E(TAG, "Get binded resource buffer failed, this descriptor is not build with "
+            "ImageSampler, or maybe you forgot to call the BuildDescriptor function.");
+    }
+    return *ptr;
+}
+
 }

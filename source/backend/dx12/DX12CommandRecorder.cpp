@@ -220,26 +220,32 @@ void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain* const swapcha
         0, NULL);
 }
 
-void DX12CommandRecorder::RcClearColorAttachment(
-    ResourceImage* const attachment, Descriptor* const descriptor)
+void DX12CommandRecorder::RcClearColorAttachment(Descriptor* const descriptor)
 {
     CHECK_RECORD(description.commandType,
         CommandType::Graphics, RcClearColorAttachment:ResourceImage);
-    auto dxAttachment = down_cast<DX12ResourceImage*>(attachment);
     auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
+    auto dxAttachment = dxDescriptor->BindedResourceImage();
+    if (!dxAttachment) {
+        TI_LOG_RET_E(TAG, "Clear color attachment failed "
+            "because descriptor not bind image.");
+    }
     recorder->ClearRenderTargetView(
         dxDescriptor->AttachmentView(),
         dxAttachment->RenderTargetClearValue().Color,
         0, NULL);
 }
 
-void DX12CommandRecorder::RcClearDepthStencilAttachment(
-    ResourceImage* const attachment, Descriptor* const descriptor)
+void DX12CommandRecorder::RcClearDepthStencilAttachment(Descriptor* const descriptor)
 {
     CHECK_RECORD(description.commandType,
         CommandType::Graphics, RcClearDepthStencilAttachment:ResourceImage);
-    auto dxAttachment = down_cast<DX12ResourceImage*>(attachment);
     auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
+    auto dxAttachment = dxDescriptor->BindedResourceImage();
+    if (!dxAttachment) {
+        TI_LOG_RET_E(TAG, "Clear depth stencil attachment failed "
+            "because descriptor not bind image.");
+    }
     recorder->ClearDepthStencilView(
         dxDescriptor->AttachmentView(),
         dxAttachment->DepthStencilClearFlags(),

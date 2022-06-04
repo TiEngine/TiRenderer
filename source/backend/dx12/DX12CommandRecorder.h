@@ -44,10 +44,8 @@ public:
     void RcClearColorAttachment(Swapchain* const swapchain) override;
     void RcClearDepthStencilAttachment(Swapchain* const swapchain) override;
 
-    void RcClearColorAttachment(
-        ResourceImage* const attachment, Descriptor* const descriptor) override;
-    void RcClearDepthStencilAttachment(
-        ResourceImage* const attachment, Descriptor* const descriptor) override;
+    void RcClearColorAttachment(Descriptor* const descriptor) override;
+    void RcClearDepthStencilAttachment(Descriptor* const descriptor) override;
 
     void RcSetRenderAttachments(
         Swapchain* const swapchain,

@@ -36,7 +36,7 @@ void DX12ResourceImage::Setup(Description description)
             description.arrays * description.mips; // TODO: MSAA
         resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(bytes);
     }
-    D3D12_CLEAR_VALUE clearValue = ConvertClearValue(description.format, {});
+    D3D12_CLEAR_VALUE clearValue = ConvertClearValue(description.format, description.clearValue);
 
     LogIfFailedF(device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(ConvertHeap(description.memoryType)),

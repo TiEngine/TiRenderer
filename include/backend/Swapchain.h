@@ -28,8 +28,8 @@ public:
             bool isEnabledDepthStencil = true,
             BasicFormat colorFormat = BasicFormat::R8G8B8A8_UNORM,
             BasicFormat depthStencilFormat = BasicFormat::D24_UNORM_S8_UINT,
-            ClearValue colorClearValue = {},
-            ClearValue depthStencilClearValue = {},
+            ClearValue colorClearValue = MakeImageClearValue(0.0f, 0.0f, 0.0f, 0.0f),
+            ClearValue depthStencilClearValue = MakeImageClearValue(1.0f, 0u),
             bool fullScreen = false)
             : window(window)
             , width(width)

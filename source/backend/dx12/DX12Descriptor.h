@@ -29,6 +29,10 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV/Sampler
     bool IsNativeDescriptorsContinuous(const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& handles);
 
+    DX12ResourceBuffer* BindedResourceBuffer() const;
+    DX12ResourceImage* BindedResourceImage() const;
+    DX12ImageSampler* BindedImageSampler() const;
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
