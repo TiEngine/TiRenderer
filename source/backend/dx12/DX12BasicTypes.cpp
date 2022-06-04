@@ -158,6 +158,27 @@ D3D12_DESCRIPTOR_HEAP_FLAGS ConvertDescriptorHeapVisible(DescriptorType type)
     return map.at(type);
 }
 
+D3D12_DESCRIPTOR_RANGE_TYPE ConvertDescriptorRangeType(DescriptorType type, bool& success)
+{
+    static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_RANGE_TYPE> map = {
+        { DescriptorType::ConstantBuffer,   D3D12_DESCRIPTOR_RANGE_TYPE_CBV     },
+        { DescriptorType::StorageBuffer,    D3D12_DESCRIPTOR_RANGE_TYPE_SRV     },
+        { DescriptorType::ReadWriteBuffer,  D3D12_DESCRIPTOR_RANGE_TYPE_UAV     },
+        { DescriptorType::ReadOnlyTexture,  D3D12_DESCRIPTOR_RANGE_TYPE_SRV     },
+        { DescriptorType::ReadWriteTexture, D3D12_DESCRIPTOR_RANGE_TYPE_UAV     },
+        { DescriptorType::ImageSampler,     D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER }
+    };
+    success = false;
+    if ((type == DescriptorType::ImageSampler) ||
+        ((type != DescriptorType::ShaderResource)
+        && (common::EnumCast<DescriptorType>(type) &
+            common::EnumCast<DescriptorType>(DescriptorType::ShaderResource)))) {
+        success = true;
+        return map.at(type);
+    }
+    return {};
+}
+
 D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
 {
     static const std::unordered_map<ShaderStage, D3D12_SHADER_VISIBILITY> map = {
@@ -238,7 +259,7 @@ D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state)
     if (state.minification  == SamplerState::Filter::Anisotropic ||
         state.magnification == SamplerState::Filter::Anisotropic ||
         state.mipLevel      == SamplerState::Filter::Anisotropic) {
-        D3D12_ENCODE_ANISOTROPIC_FILTER(samplerState.Filter);
+        samplerState.Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(0);
     } else {
         auto ConvertFilter = [](SamplerState::Filter filter) {
             if (filter == SamplerState::Filter::Point) {
@@ -247,11 +268,11 @@ D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state)
             // Else is SamplerState::Filter::Linear
             return D3D12_FILTER_TYPE_LINEAR;
         };
-        D3D12_ENCODE_BASIC_FILTER(
+        samplerState.Filter = D3D12_ENCODE_BASIC_FILTER(
             ConvertFilter(state.minification),
             ConvertFilter(state.magnification),
             ConvertFilter(state.mipLevel),
-            samplerState.Filter);
+            0);
     }
     samplerState.AddressU = ConvertAddressMode(state.addressMode[0]);
     samplerState.AddressV = ConvertAddressMode(state.addressMode[1]);

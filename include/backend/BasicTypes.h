@@ -214,4 +214,40 @@ inline bool IsBasicFormatHasStencil(BasicFormat format)
     }
     return false;
 }
+
+inline unsigned int QueryBasicFormatBytes(BasicFormat format)
+{
+    switch (format) {
+    case BasicFormat::R8G8B8A8_UNORM:
+    case BasicFormat::D24_UNORM_S8_UINT:
+        return 4;
+    case BasicFormat::R32G32B32_FLOAT:
+        return 12;
+    case BasicFormat::R32G32B32A32_FLOAT:
+        return 16;
+    }
+    return 0;
+}
+
+inline unsigned int QueryIndexFormatBytes(IndexFormat format)
+{
+    switch (format) {
+    case IndexFormat::UINT16:
+        return 2;
+    case IndexFormat::UINT32:
+        return 4;
+    }
+    return 0;
+}
+
+inline unsigned int QueryVertexFormatBytes(VertexFormat format)
+{
+    switch (format) {
+    case VertexFormat::FLOAT32x3:
+        return 12;
+    case VertexFormat::FLOAT32x4:
+        return 16;
+    }
+    return 0;
+}
 }

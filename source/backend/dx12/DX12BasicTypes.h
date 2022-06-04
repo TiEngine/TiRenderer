@@ -32,6 +32,8 @@ D3D12_DESCRIPTOR_HEAP_TYPE ConvertDescriptorHeap(DescriptorType type);
 
 D3D12_DESCRIPTOR_HEAP_FLAGS ConvertDescriptorHeapVisible(DescriptorType type);
 
+D3D12_DESCRIPTOR_RANGE_TYPE ConvertDescriptorRangeType(DescriptorType type, bool& success);
+
 D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility);
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value);

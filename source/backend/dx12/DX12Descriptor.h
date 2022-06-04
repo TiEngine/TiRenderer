@@ -22,12 +22,11 @@ public:
 
     void BuildDescriptor(ResourceBuffer* resource) override;
     void BuildDescriptor(ResourceImage* resource) override;
-
     void BuildDescriptor(ImageSampler* sampler) override;
 
     D3D12_CPU_DESCRIPTOR_HANDLE AttachmentView() const;      // RTV/DSV
-    D3D12_CPU_DESCRIPTOR_HANDLE NativeCpuDescriptor() const; // CBV/SRV/UAV
-    D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV
+    D3D12_CPU_DESCRIPTOR_HANDLE NativeCpuDescriptor() const; // CBV/SRV/UAV/Sampler
+    D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV/Sampler
     bool IsNativeDescriptorsContinuous(const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& handles);
 
 private:

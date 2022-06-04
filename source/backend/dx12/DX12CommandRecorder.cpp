@@ -37,7 +37,7 @@ inline void RcUploadTemplate(DX12CommandRecorder& recorder,
     subResourceData.pData = data;
     subResourceData.RowPitch = size;
     subResourceData.SlicePitch = subResourceData.RowPitch;
-    UpdateSubresources<1>(recorder.CommandList().Get(),
+    UpdateSubresources(recorder.CommandList().Get(), // TODO: Only support one subresource yet.
         dest.Buffer().Get(), stag.Buffer().Get(),
         0, 0, 1, &subResourceData);
 }
@@ -285,6 +285,7 @@ void DX12CommandRecorder::RcSetVertex(
     InputVertexAttributes* const attributes, unsigned int startSlot)
 {
     CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetVertex);
+
     std::vector<DX12InputVertex*> dxVertices(vertices.size());
     for (size_t n = 0; n < vertices.size(); n++) {
         dxVertices[n] = down_cast<DX12InputVertex*>(vertices[n]);
@@ -302,6 +303,7 @@ void DX12CommandRecorder::RcSetIndex(
     InputIndex* const index, InputIndexAttribute* const attribute)
 {
     CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetIndex);
+
     auto dxIndex = down_cast<DX12InputIndex*>(index);
     auto dxAttribute = down_cast<DX12InputIndexAttribute*>(attribute);
     recorder->IASetIndexBuffer(&dxIndex->BufferView(dxAttribute));
@@ -345,29 +347,22 @@ void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>
         descriptorHeaps.size()), descriptorHeaps.data());
 }
 
-void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceBuffer* const resource)
+void DX12CommandRecorder::RcSetDescriptor(unsigned int index, Descriptor* const descriptor)
 {
-    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor:ResourceBuffer);
-    auto dxResource = down_cast<DX12ResourceBuffer*>(resource);
-    recorder->SetGraphicsRootConstantBufferView(index,
-        dxResource->Buffer()->GetGPUVirtualAddress());
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor);
+
+    RcSetDescriptors(index, { descriptor });
 }
 
-void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceImage* const resource)
+void DX12CommandRecorder::RcSetDescriptors(
+    unsigned int index, const std::vector<Descriptor*>& descriptors)
 {
-    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor:ResourceImage);
-    auto dxResource = down_cast<DX12ResourceImage*>(resource);
-    recorder->SetGraphicsRootShaderResourceView(index,
-        dxResource->Buffer()->GetGPUVirtualAddress());
-}
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptors);
 
-void DX12CommandRecorder::RcSetDescriptors(unsigned int index,
-    const std::vector<Descriptor*>& descriptors)
-{
-    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor:Descriptors);
     if (descriptors.size() <= 0) {
         TI_LOG_RET_W(TAG, "Records RcSetDescriptors is not executed, input descriptors is empty.");
     }
+
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dxDescriptorsHandles;
     for (auto descriptor : descriptors) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);

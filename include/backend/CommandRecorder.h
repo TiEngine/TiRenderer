@@ -70,11 +70,10 @@ public:
 
     virtual void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) = 0;
 
-    virtual void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) = 0;
-    virtual void RcSetDescriptor(unsigned int index, ResourceImage* const resource) = 0;
-
-    virtual void RcSetDescriptors(unsigned int index,
-        const std::vector<Descriptor*>& descriptors) = 0;
+    virtual void RcSetDescriptor(
+        unsigned int index, Descriptor* const descriptor) = 0;
+    virtual void RcSetDescriptors(
+        unsigned int index, const std::vector<Descriptor*>& descriptors) = 0;
 
     virtual void RcSetPipelineLayout(PipelineLayout* const layout) = 0;
 

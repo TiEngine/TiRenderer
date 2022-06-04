@@ -56,8 +56,6 @@ void DX12Descriptor::Setup(Description description)
     auto hGpu = CD3DX12_GPU_DESCRIPTOR_HANDLE(heap.Heap()->GetGPUDescriptorHandleForHeapStart());
     hGpu.Offset(indexInHeap, descriptorHandleIncrementSize);
     hGpuDescriptor = hGpu;
-
-    pResource = static_cast<void*>(nullptr);
 }
 
 void DX12Descriptor::Shutdown()
@@ -65,6 +63,7 @@ void DX12Descriptor::Shutdown()
     description = { DescriptorType::ConstantBuffer };
     hCpuDescriptor = {};
     hGpuDescriptor = {};
+    pResource = static_cast<void*>(nullptr);
 }
 
 void DX12Descriptor::BuildDescriptor(ResourceBuffer* resource)

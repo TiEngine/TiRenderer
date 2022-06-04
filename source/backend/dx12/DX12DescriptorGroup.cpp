@@ -28,45 +28,7 @@ void DX12DescriptorGroup::Shutdown()
 void DX12DescriptorGroup::AddDescriptor(
     DescriptorType type, unsigned int id, ShaderStage visibility)
 {
-    CD3DX12_ROOT_PARAMETER parameter{};
-
-    switch (type) {
-    case DescriptorType::ConstantBuffer:
-        parameter.InitAsConstantBufferView(id, description.space,
-            ConvertShaderVisibility(visibility));
-        break;
-
-    case DescriptorType::StorageBuffer:
-        // TODO
-        break;
-
-    case DescriptorType::ReadWriteBuffer:
-        // TODO
-        break;
-
-    case DescriptorType::ReadOnlyTexture:
-        parameter.InitAsShaderResourceView(id, description.space,
-            ConvertShaderVisibility(visibility));
-        break;
-
-    case DescriptorType::ReadWriteTexture:
-        // TODO
-        break;
-
-    case DescriptorType::ImageSampler:
-        descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
-        descriptorRanges.back()->Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
-            1, id, description.space); // Sampler can not be used as a root parameter directly.
-        parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
-            ConvertShaderVisibility(visibility));
-        break;
-
-    default:
-        TI_LOG_RET_F(TAG, "Add descriptor information to descriptor group failed! "
-            "Invalid descriptor type, only can be the buffer/texture/sampler types.");
-    }
-
-    parameters.emplace_back(parameter);
+    AddDescriptors(type, { id, id }, visibility);
 }
 
 void DX12DescriptorGroup::AddDescriptors(
@@ -79,45 +41,22 @@ void DX12DescriptorGroup::AddDescriptors(
             "Arguments are invalid, failed because the begin id is large then the end id.");
     }
 
-    CD3DX12_ROOT_PARAMETER parameter{};
+    bool isValidDescriptorType = false;
+    D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType =
+        ConvertDescriptorRangeType(type, isValidDescriptorType);
 
-    switch (type) {
-    case DescriptorType::ConstantBuffer:
-        descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
-        descriptorRanges.back()->Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
-            endId - beginId, beginId, description.space);
-        parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
-            ConvertShaderVisibility(visibility));
-        break;
-
-    case DescriptorType::StorageBuffer:
-        // TODO
-        break;
-
-    case DescriptorType::ReadWriteBuffer:
-        // TODO
-        break;
-
-    case DescriptorType::ReadOnlyTexture:
-        // TODO
-        break;
-
-    case DescriptorType::ReadWriteTexture:
-        // TODO
-        break;
-
-    case DescriptorType::ImageSampler:
-        descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
-        descriptorRanges.back()->Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
-            endId - beginId, beginId, description.space);
-        parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
-            ConvertShaderVisibility(visibility));
-        break;
-
-    default:
-        TI_LOG_RET_F(TAG, "Add ranged descriptors information to descriptor group failed! "
+    if (!isValidDescriptorType) {
+        TI_LOG_RET_F(TAG, "Add descriptor information to descriptor group failed! "
             "Invalid descriptor type, only can be the buffer/texture/sampler types.");
     }
+
+    descriptorRanges.emplace_back(std::make_unique<CD3DX12_DESCRIPTOR_RANGE>());
+    descriptorRanges.back()->Init(descriptorRangeType,
+        endId - beginId + 1, beginId, description.space);
+
+    CD3DX12_ROOT_PARAMETER parameter{};
+    parameter.InitAsDescriptorTable(1, descriptorRanges.back().get(),
+        ConvertShaderVisibility(visibility));
 
     parameters.emplace_back(parameter);
 }

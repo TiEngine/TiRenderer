@@ -176,9 +176,31 @@ void Demo_01_Backend::Begin()
         ti::backend::DescriptorType::ConstantBuffer });
     descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
 
+
     halfColorTexture = device->CreateResourceImage({
-        ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u,
-        1u, 1u, ti::backend::ClearValue{ 0.5f, 0.5f, 0.5f, 1.0f } });
+        ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u });
+    {   // Upload half texture to GPU_ONLY texture
+        ti::backend::ResourceImage::Description halfColorStagingTextureDesc(
+            ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u);
+        halfColorStagingTextureDesc.memoryType = ti::backend::TransferDirection::CPU_TO_GPU;
+        auto staging = device->CreateResourceImage(halfColorStagingTextureDesc);
+        auto transfer = device->CreateCommandRecorder({
+            "Transfer", ti::backend::CommandType::Transfer });
+        transfer->BeginRecord();
+        transfer->RcBarrier(halfColorTexture,
+            ti::backend::ResourceState::GENERAL_READ,
+            ti::backend::ResourceState::COPY_DESTINATION);
+        const float gray[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+        transfer->RcUpload(gray, 4 * sizeof(float), // Only a RGBA pixel.
+            halfColorTexture, staging);
+        transfer->RcBarrier(halfColorTexture,
+            ti::backend::ResourceState::COPY_DESTINATION,
+            ti::backend::ResourceState::GENERAL_READ);
+        transfer->EndRecord();
+        transfer->Submit();
+        transfer->Wait();
+        device->ReleaseCommandRecordersMemory("Transfer");
+    }
     descriptorForTexture = descriptorHeap->AllocateDescriptor({
         ti::backend::DescriptorType::ReadOnlyTexture });
     descriptorForTexture->BuildDescriptor(halfColorTexture);
@@ -220,6 +242,7 @@ void Demo_01_Backend::Begin()
         1, ti::backend::DescriptorType::ImageSampler });
     descriptorForSimpleSampler = descriptorHeapSampler->AllocateDescriptor({
         ti::backend::DescriptorType::ImageSampler });
+    descriptorForSimpleSampler->BuildDescriptor(simpleSampler);
 }
 
 void Demo_01_Backend::Finish()
@@ -260,16 +283,16 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcSetRenderAttachments(swapchain,
         { descriptorForHalfColorOutput }, {}, false);
 
-    commandRecorder->RcSetDescriptorHeap({ descriptorHeap });
+    commandRecorder->RcSetDescriptorHeap({ descriptorHeap, descriptorHeapSampler });
 
     commandRecorder->RcSetPipelineLayout(pipelineLayout);
 
     commandRecorder->RcSetVertex({ inputVertex }, inputVertexAttributes);
     commandRecorder->RcSetIndex(inputIndex, inputIndexAttribute);
 
-    commandRecorder->RcSetDescriptor(0, cbObjectMVP);      // table 0, ConstantBuffer
-    commandRecorder->RcSetDescriptor(1, halfColorTexture); // table 1, ReadOnlyTexture
-    commandRecorder->RcSetDescriptors(2, { descriptorForSimpleSampler }); // table 2, ImageSamplers
+    commandRecorder->RcSetDescriptor(0, descriptorForObjectMVP);     // table 0, ConstantBuffer
+    commandRecorder->RcSetDescriptor(1, descriptorForTexture);       // table 1, ReadOnlyTexture
+    commandRecorder->RcSetDescriptor(2, descriptorForSimpleSampler); // table 2, ImageSampler
 
     commandRecorder->RcDraw(inputIndex);
 
