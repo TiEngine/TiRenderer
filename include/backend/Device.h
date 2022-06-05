@@ -47,8 +47,8 @@ public:
     virtual ResourceImage* CreateResourceImage(ResourceImage::Description description) = 0;
     virtual bool DestroyResourceImage(ResourceImage* instance) = 0;
 
-    //virtual ImageSampler* CreateImageSampler(ImageSampler::Description description) = 0;
-    //virtual bool DestroyImageSampler(ImageSampler* instance) = 0;
+    virtual ImageSampler* CreateImageSampler(ImageSampler::Description description) = 0;
+    virtual bool DestroyImageSampler(ImageSampler* instance) = 0;
 
     virtual DescriptorHeap* CreateDescriptorHeap(DescriptorHeap::Description description) = 0;
     virtual bool DestroyDescriptorHeap(DescriptorHeap* instance) = 0;
@@ -63,6 +63,11 @@ public:
     virtual bool DestroyPipelineState(PipelineState* instance) = 0;
 
     virtual void WaitIdle() = 0;
+
+    // This virtual function here is very ugly and should not have this interface.
+    // However, I don't know where this implementation(reset the CommandAllocator)
+    // should be placed is the most suitable, so finally I add this interface...
+    virtual void ReleaseCommandRecordersMemory(const std::string& commandContainer) = 0;
 
 protected:
     Device() = default;

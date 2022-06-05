@@ -31,6 +31,8 @@ private:
     // AddDescriptor will add descriptor placeholder to root parameter directly,
     // AddDescriptors will use the descriptor range and add range to root parameter.
     std::vector<CD3DX12_ROOT_PARAMETER> parameters;
+    // NB: The descriptorRanges use the unique_ptr to make sure that the raw pointer
+    //     of the object in the vector will not change.
     std::vector<std::unique_ptr<CD3DX12_DESCRIPTOR_RANGE>> descriptorRanges;
 };
 }

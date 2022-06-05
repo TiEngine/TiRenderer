@@ -15,7 +15,7 @@ public:
     void Setup(Description description);
     void Shutdown();
 
-    void BeginRecord(PipelineState* const pipelineState) override;
+    void BeginRecord() override;
     void EndRecord() override;
 
     void RcBarrier(InputVertex* const resource,
@@ -42,15 +42,16 @@ public:
     void RcSetScissors(const std::vector<Scissor>& scissors) override;
 
     void RcClearColorAttachment(Swapchain* const swapchain) override;
-    void RcClearColorAttachment(ResourceImage* const attachment) override;
     void RcClearDepthStencilAttachment(Swapchain* const swapchain) override;
-    void RcClearDepthStencilAttachment(ResourceImage* const attachment) override;
-
+    void RcClearColorAttachment(Descriptor* const descriptor) override;
+    void RcClearDepthStencilAttachment(Descriptor* const descriptor) override;
     void RcSetRenderAttachments(
         Swapchain* const swapchain,
         const std::vector<Descriptor*>& colorAttachments,
         const std::vector<Descriptor*>& depthStencilAttachments,
         bool descriptorsContinuous) override;
+
+    void RcSetPipeline(PipelineState* const pipelineState) override;
 
     void RcSetVertex(const std::vector<InputVertex*>& vertices,
         InputVertexAttributes* const attributes, unsigned int startSlot) override;
@@ -58,13 +59,10 @@ public:
 
     void RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps) override;
 
-    void RcSetDescriptor(unsigned int index, ResourceBuffer* const resource) override;
-    void RcSetDescriptor(unsigned int index, ResourceImage* const resource) override;
-
-    void RcSetDescriptors(unsigned int index, // DescriptorTable
-        const std::vector<Descriptor*>& descriptors) override;
-
-    void RcSetPipelineLayout(PipelineLayout* const layout) override;
+    void RcSetDescriptor(
+        unsigned int index, Descriptor* const descriptor) override;
+    void RcSetDescriptors(
+        unsigned int index, const std::vector<Descriptor*>& descriptors) override;
 
     void RcDraw(InputIndex* const index) override;
 
@@ -77,10 +75,10 @@ private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Description description;
+    Description description{ "" };
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> recorder;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> recorder;
 
     UINT64 currentFence = 0;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;

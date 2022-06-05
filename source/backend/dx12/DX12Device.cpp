@@ -36,20 +36,18 @@ void DX12Device::Setup(Description description)
     D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
     commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    LogIfFailedF(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&queue)));
-    LogIfFailedF(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)));
-
-    // This fence is used to synchronize between CPU Host and GPU Device.
-    LogIfFailedF(device->CreateFence(currentFence, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+    LogIfFailedF(device->CreateCommandQueue(
+        &commandQueueDesc, IID_PPV_ARGS(&queues[CommandType::Graphics])));
+    LogIfFailedF(device->CreateFence(fences[CommandType::Graphics].second,
+        D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fences[CommandType::Graphics].first)));
 }
 
 void DX12Device::Shutdown()
 {
     device.Reset();
-    queue.Reset();
-    allocator.Reset();
-    currentFence = 0;
-    fence.Reset();
+    queues.clear();
+    fences.clear();
+    allocators.clear();
     shaders.resize(0);
     swapchains.resize(0);
     commandRecorders.resize(0);
@@ -151,6 +149,16 @@ bool DX12Device::DestroyResourceImage(ResourceImage* instance)
     return DestroyInstance(resourceImages, instance);
 }
 
+ImageSampler* DX12Device::CreateImageSampler(ImageSampler::Description description)
+{
+    return CreateInstance<ImageSampler>(imageSamplers, description);
+}
+
+bool DX12Device::DestroyImageSampler(ImageSampler* instance)
+{
+    return DestroyInstance(imageSamplers, instance);
+}
+
 DescriptorHeap* DX12Device::CreateDescriptorHeap(DescriptorHeap::Description description)
 {
     return CreateInstance<DescriptorHeap>(descriptorHeaps, description, *this);
@@ -193,6 +201,12 @@ bool DX12Device::DestroyPipelineState(PipelineState* instance)
 
 void DX12Device::WaitIdle()
 {
+    // TODO: Only a graphics command queue is used currently,
+    //       so only a fence is used currently. :-)
+    auto& queue = queues[CommandType::Graphics];
+    auto& fence = fences[CommandType::Graphics].first;
+    auto& currentFence = fences[CommandType::Graphics].second;
+
     // Advance the fence value to mark commands up to this fence point.
     currentFence++;
 
@@ -217,6 +231,17 @@ void DX12Device::WaitIdle()
     }
 }
 
+void DX12Device::ReleaseCommandRecordersMemory(const std::string& commandContainer)
+{
+    auto iter = allocators.find(commandContainer);
+    if (iter != allocators.end()) {
+        LogIfFailedF(iter->second->Reset());
+    } else {
+        TI_LOG_W(TAG, "The command allocator was not reset because it(commandContainer=`%s`) "
+            "was not found in the allocator.", commandContainer.c_str());
+    }
+}
+
 Microsoft::WRL::ComPtr<IDXGIFactory4> DX12Device::DXGIFactory()
 {
     return dxgi;
@@ -227,22 +252,22 @@ Microsoft::WRL::ComPtr<ID3D12Device> DX12Device::NativeDevice()
     return device;
 }
 
-Microsoft::WRL::ComPtr<ID3D12CommandQueue> DX12Device::CommandQueue(CommandType type)
+Microsoft::WRL::ComPtr<ID3D12CommandQueue>
+DX12Device::CommandQueue(CommandType type)
 {
-    return queue;
+    // TODO: Only a CommandType::Graphics CommandQueue is used currently.
+    return queues[CommandType::Graphics];
 }
 
-Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DX12Device::CommandAllocator(CommandType type)
+Microsoft::WRL::ComPtr<ID3D12CommandAllocator>
+DX12Device::CommandAllocator(const std::string& name)
 {
+    auto& allocator = allocators[name];
+    if (allocator == nullptr) {
+        LogIfFailedF(device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)));
+    }
     return allocator;
-}
-
-void DX12Device::ResetCommandAllocator()
-{
-    // Reuse the all memory associated with command recording.
-    // It will call all CommandList->Reset in this command allocator and release all memory.
-    // Only can be reset when the associated command lists have finished execution on the GPU.
-    LogIfFailedF(allocator->Reset());
 }
 
 void DX12Device::EnumAdapters()

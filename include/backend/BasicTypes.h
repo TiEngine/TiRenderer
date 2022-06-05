@@ -52,9 +52,9 @@ enum class ResourceState {
     UNDEFINED,
     PRESENT,
     COLOR_OUTPUT,
+    GENERAL_READ,
     DEPTH_STENCIL_READ,
     DEPTH_STENCIL_WRITE,
-    GENERAL_READ,
     COPY_SOURCE,
     COPY_DESTINATION,
     RESOLVE_SOURCE,
@@ -67,18 +67,19 @@ enum class MSAA : uint8_t {
 };
 
 enum class CommandType : uint8_t {
-    Graphics = 0x1,
-    Transfer = 0x2,
-    Compute  = 0x4,
-    Generic  = Graphics | Transfer | Compute
+    Graphics = (1 << 0),
+    Transfer = (1 << 1),
+    Compute  = (1 << 2),
+    Generic  = Graphics | Compute,
+    All      = Graphics | Transfer | Compute
 };
 
 enum class ImageType : uint8_t {
-    Color   = 0x1,                  // render target / color attachment
-    Depth   = 0x2,                  // depth, a part of depth stencil attachment
-    Stencil = 0x4,                  // stencil, a part of depth stencil attachment
+    Color   = (1 << 0), // render target / color attachment
+    Depth   = (1 << 1), // depth, a part of depth stencil attachment
+    Stencil = (1 << 2), // stencil, a part of depth stencil attachment
     DepthStencil = Depth | Stencil, // depth stencil / depth stencil attachment
-    ShaderResource = 0x0            // generic image, cannot be used as attachment
+    ShaderResource = 0 // generic image, only can be used as shader resource, not as attachment
 };
 
 enum class ImageDimension : uint8_t {
@@ -88,12 +89,16 @@ enum class ImageDimension : uint8_t {
 };
 
 enum class DescriptorType : uint8_t {
-    ConstantBuffer = (1 << 0), // descriptor for constant buffer
-    StorageBuffer  = (1 << 1), // descriptor for storage buffer
-    GenericBuffer  = ConstantBuffer | StorageBuffer,
-    ImageSampler   = (1 << 4), // descriptor for image sampler
-    ColorOutput    = (1 << 5), // descriptor for render target
-    DepthStencil   = (1 << 6)  // descriptor for depth stencil
+    ConstantBuffer   = (1 << 0),
+    StorageBuffer    = (1 << 1),
+    ReadWriteBuffer  = (1 << 2),
+    ReadOnlyTexture  = (1 << 3),
+    ReadWriteTexture = (1 << 4),
+    ShaderResource = // descriptor for shader resource: buffer or texture
+        ConstantBuffer | StorageBuffer | ReadWriteBuffer | ReadOnlyTexture | ReadWriteTexture,
+    ImageSampler   = (1 << 5), // descriptor for image sampler
+    ColorOutput    = (1 << 6), // descriptor for render target
+    DepthStencil   = (1 << 7)  // descriptor for depth stencil
 };
 
 enum class Stage : uint32_t {
@@ -131,17 +136,15 @@ enum class ShaderStage : uint32_t {
     Graphics = Vertex | Hull | Domain | Geometry | Pixel
 };
 
-struct ColorValue {
-    float r = 0.0f;
-    float g = 0.0f;
-    float b = 0.0f;
-    float a = 1.0f;
-};
-
-struct ClearValue {
-    float color[4]{};
-    float depth = 1.0f;
-    uint8_t stencil = 0;
+union ClearValue {
+    struct Image {
+        float color[4]{};
+        float depth = 1.0f;
+        uint8_t stencil = 0u;
+    } image;
+    struct Buffer {
+        float value[4]{};
+    } buffer;
 };
 
 struct Viewport {
@@ -176,6 +179,24 @@ struct RasterizerState {
     CullMode cullMode;
 };
 
+enum class AddressMode {
+    Wrap,
+    Mirror,
+    Clamp,
+    Border
+};
+
+struct SamplerState {
+    enum class Filter {
+        Point,      // Point and Linear can be used for different filter objects, for example,
+        Linear,     // Minification uses the Point and Magnification uses the Linear filter.
+        Anisotropic // But if use Anisotropic, must make sure Min/Mag/Mip all use it.
+    } minification, magnification, mipLevel;
+    AddressMode addressMode[3]; // UVW
+    unsigned int maxAnisotropy; // If Filter is Anisotropic, maxAnisotropy will be used.
+    float borderColor[4];       // If AddressMode is Border, borderColor will be used.
+};
+
 inline bool IsBasicFormatHasDepth(BasicFormat format)
 {
     switch (format) {
@@ -192,5 +213,69 @@ inline bool IsBasicFormatHasStencil(BasicFormat format)
         return true;
     }
     return false;
+}
+
+inline unsigned int QueryBasicFormatBytes(BasicFormat format)
+{
+    switch (format) {
+    case BasicFormat::R8G8B8A8_UNORM:
+    case BasicFormat::D24_UNORM_S8_UINT:
+        return 4;
+    case BasicFormat::R32G32B32_FLOAT:
+        return 12;
+    case BasicFormat::R32G32B32A32_FLOAT:
+        return 16;
+    }
+    return 0;
+}
+
+inline unsigned int QueryIndexFormatBytes(IndexFormat format)
+{
+    switch (format) {
+    case IndexFormat::UINT16:
+        return 2;
+    case IndexFormat::UINT32:
+        return 4;
+    }
+    return 0;
+}
+
+inline unsigned int QueryVertexFormatBytes(VertexFormat format)
+{
+    switch (format) {
+    case VertexFormat::FLOAT32x3:
+        return 12;
+    case VertexFormat::FLOAT32x4:
+        return 16;
+    }
+    return 0;
+}
+
+inline ClearValue MakeImageClearValue(float c1, float c2, float c3, float c4)
+{
+    ClearValue clear{};
+    clear.image.color[0] = c1;
+    clear.image.color[1] = c2;
+    clear.image.color[2] = c3;
+    clear.image.color[3] = c4;
+    return clear;
+}
+
+inline ClearValue MakeImageClearValue(float depth, uint8_t stencil)
+{
+    ClearValue clear{};
+    clear.image.depth = depth;
+    clear.image.stencil = stencil;
+    return clear;
+}
+
+inline ClearValue MakeBufferClearValue(float b1, float b2, float b3, float b4)
+{
+    ClearValue clear{};
+    clear.buffer.value[0] = b1;
+    clear.buffer.value[1] = b2;
+    clear.buffer.value[2] = b3;
+    clear.buffer.value[3] = b4;
+    return clear;
 }
 }

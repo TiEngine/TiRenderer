@@ -23,7 +23,7 @@ private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-    Description description{ 0u, DescriptorType::GenericBuffer };
+    Description description{ 0u, DescriptorType::ShaderResource };
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 
     std::vector<std::unique_ptr<DX12Descriptor>> descriptors;

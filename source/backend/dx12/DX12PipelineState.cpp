@@ -51,12 +51,13 @@ void DX12PipelineState::Setup(Description description)
 void DX12PipelineState::Shutdown()
 {
     pipelineStateObject.Reset();
+    pLayout = nullptr;
 }
 
 void DX12PipelineState::SetPipelineLayout(PipelineLayout* layout)
 {
-    auto dxLayout = down_cast<DX12PipelineLayout*>(layout);
-    pipelineState.pRootSignature = dxLayout->Signature().Get();
+    pLayout = down_cast<DX12PipelineLayout*>(layout);
+    pipelineState.pRootSignature = pLayout->Signature().Get();
 }
 
 void DX12PipelineState::SetIndexAssembly(InputIndexAttribute* iia)
@@ -142,5 +143,10 @@ void DX12PipelineState::BuildState()
 Microsoft::WRL::ComPtr<ID3D12PipelineState> DX12PipelineState::PSO()
 {
     return pipelineStateObject;
+}
+
+DX12PipelineLayout* DX12PipelineState::BindedPipelineLayout() const
+{
+    return pLayout;
 }
 }

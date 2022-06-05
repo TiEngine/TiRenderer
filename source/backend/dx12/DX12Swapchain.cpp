@@ -181,14 +181,7 @@ D3D12_CLEAR_VALUE DX12Swapchain::DepthStencilClearValue() const
 
 D3D12_CLEAR_FLAGS DX12Swapchain::DepthStencilClearFlags() const
 {
-    D3D12_CLEAR_FLAGS flags = static_cast<D3D12_CLEAR_FLAGS>(0);
-    if (IsBasicFormatHasDepth(description.depthStencilFormat)) {
-        flags |= D3D12_CLEAR_FLAG_DEPTH;
-    }
-    if (IsBasicFormatHasStencil(description.depthStencilFormat)) {
-        flags |= D3D12_CLEAR_FLAG_STENCIL;
-    }
-    return flags;
+    return ConvertClearFlags(description.depthStencilFormat);
 }
 
 bool DX12Swapchain::IsSwapchainEnableDepthStencil() const

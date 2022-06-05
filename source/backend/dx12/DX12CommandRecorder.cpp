@@ -37,7 +37,7 @@ inline void RcUploadTemplate(DX12CommandRecorder& recorder,
     subResourceData.pData = data;
     subResourceData.RowPitch = size;
     subResourceData.SlicePitch = subResourceData.RowPitch;
-    UpdateSubresources<1>(recorder.CommandList().Get(),
+    UpdateSubresources(recorder.CommandList().Get(), // TODO: Only support one subresource yet.
         dest.Buffer().Get(), stag.Buffer().Get(),
         0, 0, 1, &subResourceData);
 }
@@ -57,8 +57,8 @@ DX12CommandRecorder::~DX12CommandRecorder()
 void DX12CommandRecorder::Setup(Description description)
 {
     this->description = description;
-    queue = internal.CommandQueue(description.type);
-    allocator = internal.CommandAllocator(description.type);
+    queue = internal.CommandQueue(description.commandType);
+    allocator = internal.CommandAllocator(description.container);
 
     LogIfFailedF(device->CreateCommandList(0,
         D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -84,6 +84,7 @@ void DX12CommandRecorder::Setup(Description description)
 
 void DX12CommandRecorder::Shutdown()
 {
+    description = { "" };
     queue.Reset();
     allocator.Reset();
     recorder.Reset();
@@ -91,14 +92,9 @@ void DX12CommandRecorder::Shutdown()
     fence.Reset();
 }
 
-void DX12CommandRecorder::BeginRecord(PipelineState* const pipelineState)
+void DX12CommandRecorder::BeginRecord()
 {
-    if (pipelineState) {
-        DX12PipelineState* dxPSO = down_cast<DX12PipelineState*>(pipelineState);
-        LogIfFailedF(recorder->Reset(allocator.Get(), dxPSO->PSO().Get()));
-    } else {
-        LogIfFailedF(recorder->Reset(allocator.Get(), NULL));
-    }
+    LogIfFailedF(recorder->Reset(allocator.Get(), NULL));
 }
 
 void DX12CommandRecorder::EndRecord()
@@ -133,7 +129,7 @@ void DX12CommandRecorder::RcBarrier(
 void DX12CommandRecorder::RcBarrier(
     Swapchain* const swapchain, ResourceState before, ResourceState after)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcBarrier:Swapchain);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcBarrier:Swapchain);
     auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
     recorder->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
         // It is enough to use barrier for the RenderTargetBuffer alone,
@@ -146,34 +142,34 @@ void DX12CommandRecorder::RcBarrier(
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     InputVertex* const destination, InputVertex* const staging)
 {
-    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputVertex);
+    CHECK_RECORD(description.commandType, CommandType::Transfer, RcUpload:InputVertex);
     RcUploadTemplate<DX12InputVertex>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     InputIndex* const destination, InputIndex* const staging)
 {
-    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:InputIndex);
+    CHECK_RECORD(description.commandType, CommandType::Transfer, RcUpload:InputIndex);
     RcUploadTemplate<DX12InputIndex>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     ResourceBuffer* const destination, ResourceBuffer* const staging)
 {
-    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceBuffer);
+    CHECK_RECORD(description.commandType, CommandType::Transfer, RcUpload:ResourceBuffer);
     RcUploadTemplate<DX12ResourceBuffer>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcUpload(const void* const data, size_t size,
     ResourceImage* const destination, ResourceImage* const staging)
 {
-    CHECK_RECORD(description.type, CommandType::Transfer, RcUpload:ResourceImage);
+    CHECK_RECORD(description.commandType, CommandType::Transfer, RcUpload:ResourceImage);
     RcUploadTemplate<DX12ResourceImage>(*this, *destination, *staging, size, data);
 }
 
 void DX12CommandRecorder::RcSetViewports(const std::vector<Viewport>& viewports)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetViewports);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetViewports);
     std::vector<D3D12_VIEWPORT> dxViewports;
     dxViewports.reserve(viewports.size());
     for (const auto& viewport : viewports) {
@@ -185,7 +181,7 @@ void DX12CommandRecorder::RcSetViewports(const std::vector<Viewport>& viewports)
 
 void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetScissors);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetScissors);
     std::vector<D3D12_RECT> dxScissors;
     dxScissors.reserve(scissors.size());
     for (const auto& scissor : scissors) {
@@ -197,7 +193,8 @@ void DX12CommandRecorder::RcSetScissors(const std::vector<Scissor>& scissors)
 
 void DX12CommandRecorder::RcClearColorAttachment(Swapchain* const swapchain)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearOutputColor:Swapchain);
+    CHECK_RECORD(description.commandType,
+        CommandType::Graphics, RcClearColorAttachment:Swapchain);
     auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
     recorder->ClearRenderTargetView(
         dxSwapchain->CurrentRenderTargetView(),
@@ -205,14 +202,10 @@ void DX12CommandRecorder::RcClearColorAttachment(Swapchain* const swapchain)
         0, NULL);
 }
 
-void DX12CommandRecorder::RcClearColorAttachment(ResourceImage* const attachment)
-{
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearOutputColor:ResourceImage);
-}
-
 void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain* const swapchain)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencil:Swapchain);
+    CHECK_RECORD(description.commandType,
+        CommandType::Graphics, RcClearDepthStencilAttachment:Swapchain);
     auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
     recorder->ClearDepthStencilView(
         dxSwapchain->CurrentDepthStencilView(),
@@ -222,9 +215,38 @@ void DX12CommandRecorder::RcClearDepthStencilAttachment(Swapchain* const swapcha
         0, NULL);
 }
 
-void DX12CommandRecorder::RcClearDepthStencilAttachment(ResourceImage* const attachment)
+void DX12CommandRecorder::RcClearColorAttachment(Descriptor* const descriptor)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcClearDepthStencil:ResourceImage);
+    CHECK_RECORD(description.commandType,
+        CommandType::Graphics, RcClearColorAttachment:ResourceImage);
+    auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
+    auto dxAttachment = dxDescriptor->BindedResourceImage();
+    if (!dxAttachment) {
+        TI_LOG_RET_E(TAG, "Clear color attachment failed "
+            "because descriptor not bind image.");
+    }
+    recorder->ClearRenderTargetView(
+        dxDescriptor->AttachmentView(),
+        dxAttachment->RenderTargetClearValue().Color,
+        0, NULL);
+}
+
+void DX12CommandRecorder::RcClearDepthStencilAttachment(Descriptor* const descriptor)
+{
+    CHECK_RECORD(description.commandType,
+        CommandType::Graphics, RcClearDepthStencilAttachment:ResourceImage);
+    auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
+    auto dxAttachment = dxDescriptor->BindedResourceImage();
+    if (!dxAttachment) {
+        TI_LOG_RET_E(TAG, "Clear depth stencil attachment failed "
+            "because descriptor not bind image.");
+    }
+    recorder->ClearDepthStencilView(
+        dxDescriptor->AttachmentView(),
+        dxAttachment->DepthStencilClearFlags(),
+        dxAttachment->DepthStencilClearValue().DepthStencil.Depth,
+        dxAttachment->DepthStencilClearValue().DepthStencil.Stencil,
+        0, NULL);
 }
 
 void DX12CommandRecorder::RcSetRenderAttachments(
@@ -233,7 +255,7 @@ void DX12CommandRecorder::RcSetRenderAttachments(
     const std::vector<Descriptor*>& depthStencilAttachments,
     bool descriptorsContinuous)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetRenderAttachments);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetRenderAttachments);
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> depthStencilDescriptors;
     if (swapchain) {
@@ -259,11 +281,21 @@ void DX12CommandRecorder::RcSetRenderAttachments(
         depthStencilDescriptors.data());
 }
 
+void DX12CommandRecorder::RcSetPipeline(PipelineState* const pipelineState)
+{
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetPipeline);
+
+    auto dxPipelineState = down_cast<DX12PipelineState*>(pipelineState);
+    recorder->SetPipelineState(dxPipelineState->PSO().Get());
+    recorder->SetGraphicsRootSignature(dxPipelineState->BindedPipelineLayout()->Signature().Get());
+}
+
 void DX12CommandRecorder::RcSetVertex(
     const std::vector<InputVertex*>& vertices,
     InputVertexAttributes* const attributes, unsigned int startSlot)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetVertex);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetVertex);
+
     std::vector<DX12InputVertex*> dxVertices(vertices.size());
     for (size_t n = 0; n < vertices.size(); n++) {
         dxVertices[n] = down_cast<DX12InputVertex*>(vertices[n]);
@@ -280,7 +312,8 @@ void DX12CommandRecorder::RcSetVertex(
 void DX12CommandRecorder::RcSetIndex(
     InputIndex* const index, InputIndexAttribute* const attribute)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetIndex);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetIndex);
+
     auto dxIndex = down_cast<DX12InputIndex*>(index);
     auto dxAttribute = down_cast<DX12InputIndexAttribute*>(attribute);
     recorder->IASetIndexBuffer(&dxIndex->BufferView(dxAttribute));
@@ -289,7 +322,7 @@ void DX12CommandRecorder::RcSetIndex(
 
 void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>& heaps)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptorHeap);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptorHeap);
 
     std::vector<ID3D12DescriptorHeap*> descriptorHeaps;
     descriptorHeaps.reserve(2);
@@ -324,27 +357,22 @@ void DX12CommandRecorder::RcSetDescriptorHeap(const std::vector<DescriptorHeap*>
         descriptorHeaps.size()), descriptorHeaps.data());
 }
 
-void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceBuffer* const resource)
+void DX12CommandRecorder::RcSetDescriptor(unsigned int index, Descriptor* const descriptor)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:ResourceBuffer);
-    auto dxResource = down_cast<DX12ResourceBuffer*>(resource);
-    recorder->SetGraphicsRootConstantBufferView(index,
-        dxResource->Buffer()->GetGPUVirtualAddress());
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptor);
+
+    RcSetDescriptors(index, { descriptor });
 }
 
-void DX12CommandRecorder::RcSetDescriptor(unsigned int index, ResourceImage* const resource)
+void DX12CommandRecorder::RcSetDescriptors(
+    unsigned int index, const std::vector<Descriptor*>& descriptors)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:ResourceImage);
-    // TODO
-}
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetDescriptors);
 
-void DX12CommandRecorder::RcSetDescriptors(unsigned int index,
-    const std::vector<Descriptor*>& descriptors)
-{
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetDescriptor:Descriptors);
     if (descriptors.size() <= 0) {
         TI_LOG_RET_W(TAG, "Records RcSetDescriptors is not executed, input descriptors is empty.");
     }
+
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dxDescriptorsHandles;
     for (auto descriptor : descriptors) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(descriptor);
@@ -358,15 +386,9 @@ void DX12CommandRecorder::RcSetDescriptors(unsigned int index,
     }
 }
 
-void DX12CommandRecorder::RcSetPipelineLayout(PipelineLayout* const layout)
-{
-    CHECK_RECORD(description.type, CommandType::Graphics, RcSetPipelineLayout);
-    recorder->SetGraphicsRootSignature(down_cast<DX12PipelineLayout*>(layout)->Signature().Get());
-}
-
 void DX12CommandRecorder::RcDraw(InputIndex* const index)
 {
-    CHECK_RECORD(description.type, CommandType::Graphics, RcDraw);
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcDraw);
     recorder->DrawIndexedInstanced(down_cast<DX12InputIndex*>(index)->IndicesCount(), 1, 0, 0, 0);
 }
 

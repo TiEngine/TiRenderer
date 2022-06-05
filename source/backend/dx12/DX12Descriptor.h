@@ -1,5 +1,6 @@
 #pragma once
 
+#include <variant>
 #include "backend/Descriptor.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
@@ -7,6 +8,9 @@
 namespace ti::backend {
 class DX12Device;
 class DX12DescriptorHeap;
+class DX12ResourceBuffer;
+class DX12ResourceImage;
+class DX12ImageSampler;
 class DX12Descriptor : public Descriptor
     , DX12Object<DX12Descriptor> {
 public:
@@ -18,11 +22,16 @@ public:
 
     void BuildDescriptor(ResourceBuffer* resource) override;
     void BuildDescriptor(ResourceImage* resource) override;
+    void BuildDescriptor(ImageSampler* sampler) override;
 
     D3D12_CPU_DESCRIPTOR_HANDLE AttachmentView() const;      // RTV/DSV
-    D3D12_CPU_DESCRIPTOR_HANDLE NativeCpuDescriptor() const; // CBV/SRV/UAV
-    D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV
+    D3D12_CPU_DESCRIPTOR_HANDLE NativeCpuDescriptor() const; // CBV/SRV/UAV/Sampler
+    D3D12_GPU_DESCRIPTOR_HANDLE NativeGpuDescriptor() const; // CBV/SRV/UAV/Sampler
     bool IsNativeDescriptorsContinuous(const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& handles);
+
+    DX12ResourceBuffer* BindedResourceBuffer() const;
+    DX12ResourceImage* BindedResourceImage() const;
+    DX12ImageSampler* BindedImageSampler() const;
 
 private:
     DX12Device& internal;
@@ -42,5 +51,11 @@ private:
     UINT descriptorHandleIncrementSize = 0;
     D3D12_CPU_DESCRIPTOR_HANDLE hCpuDescriptor;
     D3D12_GPU_DESCRIPTOR_HANDLE hGpuDescriptor;
+
+    std::variant<void*,
+        DX12ResourceBuffer*,
+        DX12ResourceImage*,
+        DX12ImageSampler*
+    > pResource;
 };
 }

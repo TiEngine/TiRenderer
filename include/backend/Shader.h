@@ -24,7 +24,13 @@ public:
         {}
     };
 
+    struct Reflection {
+        unsigned int descriptorsCount = 0;
+    };
+
     virtual std::string DumpBytecode() const = 0;
+
+    virtual Reflection Reflect() const = 0;
 
 protected:
     Shader() = default;

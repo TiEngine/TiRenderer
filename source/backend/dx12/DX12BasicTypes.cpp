@@ -90,9 +90,9 @@ D3D12_RESOURCE_STATES ConvertResourceState(ResourceState state)
         { ResourceState::UNDEFINED,           D3D12_RESOURCE_STATE_COMMON         },
         { ResourceState::PRESENT,             D3D12_RESOURCE_STATE_PRESENT        },
         { ResourceState::COLOR_OUTPUT,        D3D12_RESOURCE_STATE_RENDER_TARGET  },
+        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
         { ResourceState::DEPTH_STENCIL_READ,  D3D12_RESOURCE_STATE_DEPTH_READ     },
         { ResourceState::DEPTH_STENCIL_WRITE, D3D12_RESOURCE_STATE_DEPTH_WRITE    },
-        { ResourceState::GENERAL_READ,        D3D12_RESOURCE_STATE_GENERIC_READ   },
         { ResourceState::COPY_SOURCE,         D3D12_RESOURCE_STATE_COPY_SOURCE    },
         { ResourceState::COPY_DESTINATION,    D3D12_RESOURCE_STATE_COPY_DEST      },
         { ResourceState::RESOLVE_SOURCE,      D3D12_RESOURCE_STATE_RESOLVE_SOURCE },
@@ -131,16 +131,52 @@ D3D12_RESOURCE_DIMENSION ConvertImageDimension(ImageDimension dimension)
 D3D12_DESCRIPTOR_HEAP_TYPE ConvertDescriptorHeap(DescriptorType type)
 {
     static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_HEAP_TYPE> map = {
-        { DescriptorType::GenericBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV },
-        { DescriptorType::ImageSampler,  D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER     },
-        { DescriptorType::ColorOutput,   D3D12_DESCRIPTOR_HEAP_TYPE_RTV         },
-        { DescriptorType::DepthStencil,  D3D12_DESCRIPTOR_HEAP_TYPE_DSV         }
+        { DescriptorType::ShaderResource, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV },
+        { DescriptorType::ImageSampler,   D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER     },
+        { DescriptorType::ColorOutput,    D3D12_DESCRIPTOR_HEAP_TYPE_RTV         },
+        { DescriptorType::DepthStencil,   D3D12_DESCRIPTOR_HEAP_TYPE_DSV         }
     };
     if (common::EnumCast<DescriptorType>(type) &
-        common::EnumCast<DescriptorType>(DescriptorType::GenericBuffer)) {
-        type = DescriptorType::GenericBuffer;
+        common::EnumCast<DescriptorType>(DescriptorType::ShaderResource)) {
+        type = DescriptorType::ShaderResource;
     }
     return map.at(type);
+}
+
+D3D12_DESCRIPTOR_HEAP_FLAGS ConvertDescriptorHeapVisible(DescriptorType type)
+{
+    static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_HEAP_FLAGS> map = {
+        { DescriptorType::ShaderResource, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE },
+        { DescriptorType::ImageSampler,   D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE },
+        { DescriptorType::ColorOutput,    D3D12_DESCRIPTOR_HEAP_FLAG_NONE           },
+        { DescriptorType::DepthStencil,   D3D12_DESCRIPTOR_HEAP_FLAG_NONE           }
+    };
+    if (common::EnumCast<DescriptorType>(type) &
+        common::EnumCast<DescriptorType>(DescriptorType::ShaderResource)) {
+        type = DescriptorType::ShaderResource;
+    }
+    return map.at(type);
+}
+
+D3D12_DESCRIPTOR_RANGE_TYPE ConvertDescriptorRangeType(DescriptorType type, bool& success)
+{
+    static const std::unordered_map<DescriptorType, D3D12_DESCRIPTOR_RANGE_TYPE> map = {
+        { DescriptorType::ConstantBuffer,   D3D12_DESCRIPTOR_RANGE_TYPE_CBV     },
+        { DescriptorType::StorageBuffer,    D3D12_DESCRIPTOR_RANGE_TYPE_SRV     },
+        { DescriptorType::ReadWriteBuffer,  D3D12_DESCRIPTOR_RANGE_TYPE_UAV     },
+        { DescriptorType::ReadOnlyTexture,  D3D12_DESCRIPTOR_RANGE_TYPE_SRV     },
+        { DescriptorType::ReadWriteTexture, D3D12_DESCRIPTOR_RANGE_TYPE_UAV     },
+        { DescriptorType::ImageSampler,     D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER }
+    };
+    success = false;
+    if ((type == DescriptorType::ImageSampler) ||
+        ((type != DescriptorType::ShaderResource)
+        && (common::EnumCast<DescriptorType>(type) &
+            common::EnumCast<DescriptorType>(DescriptorType::ShaderResource)))) {
+        success = true;
+        return map.at(type);
+    }
+    return {};
 }
 
 D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
@@ -159,15 +195,24 @@ D3D12_SHADER_VISIBILITY ConvertShaderVisibility(ShaderStage visibility)
 
 D3D12_CLEAR_VALUE ConvertClearValue(BasicFormat format, ClearValue value)
 {
-    D3D12_CLEAR_VALUE clearValue{};
-    clearValue.Format = ConvertBasicFormat(format);
-    clearValue.Color[0] = value.color[0];
-    clearValue.Color[1] = value.color[1];
-    clearValue.Color[2] = value.color[2];
-    clearValue.Color[3] = value.color[3];
-    clearValue.DepthStencil.Depth = value.depth;
-    clearValue.DepthStencil.Stencil = value.stencil;
-    return clearValue;
+    if (IsBasicFormatHasDepth(format) || IsBasicFormatHasStencil(format)) {
+        return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format),
+            value.image.depth, value.image.stencil);
+    }
+    return CD3DX12_CLEAR_VALUE(ConvertBasicFormat(format), value.image.color);
+}
+
+D3D12_CLEAR_FLAGS ConvertClearFlags(BasicFormat format)
+{
+    D3D12_CLEAR_FLAGS flags;
+    ZeroMemory(&flags, sizeof(flags));
+    if (IsBasicFormatHasDepth(format)) {
+        flags |= D3D12_CLEAR_FLAG_DEPTH;
+    }
+    if (IsBasicFormatHasStencil(format)) {
+        flags |= D3D12_CLEAR_FLAG_STENCIL;
+    }
+    return flags;
 }
 
 D3D12_FILL_MODE ConvertFillMode(FillMode mode)
@@ -195,5 +240,52 @@ D3D12_RASTERIZER_DESC ConvertRasterizerState(RasterizerState state)
     rasterizerState.FillMode = ConvertFillMode(state.fillMode);
     rasterizerState.CullMode = ConvertCullMode(state.cullMode);
     return rasterizerState;
+}
+
+D3D12_TEXTURE_ADDRESS_MODE ConvertAddressMode(AddressMode mode)
+{
+    static const std::unordered_map<AddressMode, D3D12_TEXTURE_ADDRESS_MODE> map = {
+        { AddressMode::Wrap,   D3D12_TEXTURE_ADDRESS_MODE_WRAP   },
+        { AddressMode::Mirror, D3D12_TEXTURE_ADDRESS_MODE_MIRROR },
+        { AddressMode::Clamp,  D3D12_TEXTURE_ADDRESS_MODE_CLAMP  },
+        { AddressMode::Border, D3D12_TEXTURE_ADDRESS_MODE_BORDER }
+    };
+    return map.at(mode);
+}
+
+D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state)
+{
+    D3D12_SAMPLER_DESC samplerState{};
+    if (state.minification  == SamplerState::Filter::Anisotropic ||
+        state.magnification == SamplerState::Filter::Anisotropic ||
+        state.mipLevel      == SamplerState::Filter::Anisotropic) {
+        samplerState.Filter = D3D12_ENCODE_ANISOTROPIC_FILTER(0);
+    } else {
+        auto ConvertFilter = [](SamplerState::Filter filter) {
+            if (filter == SamplerState::Filter::Point) {
+                return D3D12_FILTER_TYPE_POINT;
+            }
+            // Else is SamplerState::Filter::Linear
+            return D3D12_FILTER_TYPE_LINEAR;
+        };
+        samplerState.Filter = D3D12_ENCODE_BASIC_FILTER(
+            ConvertFilter(state.minification),
+            ConvertFilter(state.magnification),
+            ConvertFilter(state.mipLevel),
+            0);
+    }
+    samplerState.AddressU = ConvertAddressMode(state.addressMode[0]);
+    samplerState.AddressV = ConvertAddressMode(state.addressMode[1]);
+    samplerState.AddressW = ConvertAddressMode(state.addressMode[2]);
+    samplerState.MipLODBias = 0; // TODO: Mip level filter is no supported yet.
+    samplerState.MaxAnisotropy = state.maxAnisotropy;
+    samplerState.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL; // TODO: No supported yet.
+    samplerState.BorderColor[0] = state.borderColor[0];
+    samplerState.BorderColor[1] = state.borderColor[1];
+    samplerState.BorderColor[2] = state.borderColor[2];
+    samplerState.BorderColor[3] = state.borderColor[3];
+    samplerState.MinLOD = 0.0f;
+    samplerState.MaxLOD = D3D12_FLOAT32_MAX;
+    return samplerState;
 }
 }

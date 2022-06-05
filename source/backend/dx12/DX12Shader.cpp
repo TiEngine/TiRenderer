@@ -39,6 +39,22 @@ std::string DX12Shader::DumpBytecode() const
     return std::string();
 }
 
+Shader::Reflection DX12Shader::Reflect() const
+{
+    Reflection reflection;
+
+    Microsoft::WRL::ComPtr<ID3D12ShaderReflection> dxReflection;
+    LogIfFailedW(D3DReflect(bytecode->GetBufferPointer(),
+        bytecode->GetBufferSize(), IID_PPV_ARGS(&dxReflection)));
+
+    D3D12_SHADER_DESC dxShaderDesc{};
+    LogIfFailedW(dxReflection->GetDesc(&dxShaderDesc));
+
+    // TODO: Shader reflection to construct PSO
+
+    return reflection;
+}
+
 Microsoft::WRL::ComPtr<ID3DBlob> DX12Shader::GetBytecode()
 {
     return bytecode;
