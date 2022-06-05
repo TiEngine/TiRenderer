@@ -266,7 +266,7 @@ void Demo_01_Backend::Update()
 
 void Demo_01_Backend::Draw()
 {
-    commandRecorder->BeginRecord(pipelineState);
+    commandRecorder->BeginRecord();
 
     commandRecorder->RcSetViewports({ viewport });
     commandRecorder->RcSetScissors({ scissor });
@@ -276,6 +276,8 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcBarrier(halfColorOutput,
         ti::backend::ResourceState::GENERAL_READ, ti::backend::ResourceState::COLOR_OUTPUT);
 
+    commandRecorder->RcSetPipeline(pipelineState);
+
     commandRecorder->RcClearColorAttachment(swapchain);
     commandRecorder->RcClearDepthStencilAttachment(swapchain);
     commandRecorder->RcClearColorAttachment(descriptorForHalfColorOutput);
@@ -284,8 +286,6 @@ void Demo_01_Backend::Draw()
         { descriptorForHalfColorOutput }, {}, false);
 
     commandRecorder->RcSetDescriptorHeap({ descriptorHeap, descriptorHeapSampler });
-
-    commandRecorder->RcSetPipelineLayout(pipelineLayout);
 
     commandRecorder->RcSetVertex({ inputVertex }, inputVertexAttributes);
     commandRecorder->RcSetIndex(inputIndex, inputIndexAttribute);

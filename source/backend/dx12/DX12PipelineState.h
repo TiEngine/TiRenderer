@@ -7,6 +7,7 @@
 
 namespace ti::backend {
 class DX12Device;
+class DX12PipelineLayout;
 class DX12PipelineState : public PipelineState
     , DX12Object<DX12PipelineState> {
 public:
@@ -35,11 +36,15 @@ public:
 
     Microsoft::WRL::ComPtr<ID3D12PipelineState> PSO();
 
+    DX12PipelineLayout* BindedPipelineLayout() const;
+
 private:
     DX12Device& internal;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineState;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateObject; // PSO
+
+    DX12PipelineLayout* pLayout = nullptr;
 };
 }

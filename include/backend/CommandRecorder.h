@@ -24,7 +24,7 @@ public:
         {}
     };
 
-    virtual void BeginRecord(PipelineState* const pipelineState = nullptr) = 0;
+    virtual void BeginRecord() = 0;
     virtual void EndRecord() = 0;
 
     virtual void RcBarrier(InputVertex* const resource,
@@ -50,17 +50,25 @@ public:
     virtual void RcSetViewports(const std::vector<Viewport>& viewports) = 0;
     virtual void RcSetScissors(const std::vector<Scissor>& scissors) = 0;
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Global Driven Mode
+    // TODO: Move these to DX12CommandRecorder, only export and use the Pass Driven
     virtual void RcClearColorAttachment(Swapchain* const swapchain) = 0;
     virtual void RcClearDepthStencilAttachment(Swapchain* const swapchain) = 0;
-
     virtual void RcClearColorAttachment(Descriptor* const descriptor) = 0;
     virtual void RcClearDepthStencilAttachment(Descriptor* const descriptor) = 0;
-
     virtual void RcSetRenderAttachments(
         Swapchain* const swapchain,
         const std::vector<Descriptor*>& colorAttachments,
         const std::vector<Descriptor*>& depthStencilAttachments,
         bool descriptorsContinuous = false) = 0;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pass Driven
+    //virtual void RcBeginPass() = 0;
+    //virtual void RcEndPass() = 0;
+
+    virtual void RcSetPipeline(PipelineState* const pipelineState) = 0;
 
     virtual void RcSetVertex(const std::vector<InputVertex*>& vertices,
         InputVertexAttributes* const attributes, unsigned int startSlot = 0) = 0;
@@ -72,8 +80,6 @@ public:
         unsigned int index, Descriptor* const descriptor) = 0;
     virtual void RcSetDescriptors(
         unsigned int index, const std::vector<Descriptor*>& descriptors) = 0;
-
-    virtual void RcSetPipelineLayout(PipelineLayout* const layout) = 0;
 
     virtual void RcDraw(InputIndex* const index) = 0;
 

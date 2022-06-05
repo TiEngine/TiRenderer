@@ -92,14 +92,9 @@ void DX12CommandRecorder::Shutdown()
     fence.Reset();
 }
 
-void DX12CommandRecorder::BeginRecord(PipelineState* const pipelineState)
+void DX12CommandRecorder::BeginRecord()
 {
-    if (pipelineState) {
-        DX12PipelineState* dxPSO = down_cast<DX12PipelineState*>(pipelineState);
-        LogIfFailedF(recorder->Reset(allocator.Get(), dxPSO->PSO().Get()));
-    } else {
-        LogIfFailedF(recorder->Reset(allocator.Get(), NULL));
-    }
+    LogIfFailedF(recorder->Reset(allocator.Get(), NULL));
 }
 
 void DX12CommandRecorder::EndRecord()
@@ -286,6 +281,15 @@ void DX12CommandRecorder::RcSetRenderAttachments(
         depthStencilDescriptors.data());
 }
 
+void DX12CommandRecorder::RcSetPipeline(PipelineState* const pipelineState)
+{
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetPipeline);
+
+    auto dxPipelineState = down_cast<DX12PipelineState*>(pipelineState);
+    recorder->SetPipelineState(dxPipelineState->PSO().Get());
+    recorder->SetGraphicsRootSignature(dxPipelineState->BindedPipelineLayout()->Signature().Get());
+}
+
 void DX12CommandRecorder::RcSetVertex(
     const std::vector<InputVertex*>& vertices,
     InputVertexAttributes* const attributes, unsigned int startSlot)
@@ -380,12 +384,6 @@ void DX12CommandRecorder::RcSetDescriptors(
     } else {
         TI_LOG_RET_E(TAG, "Records RcSetDescriptors failed, descriptors is not continuous.");
     }
-}
-
-void DX12CommandRecorder::RcSetPipelineLayout(PipelineLayout* const layout)
-{
-    CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetPipelineLayout);
-    recorder->SetGraphicsRootSignature(down_cast<DX12PipelineLayout*>(layout)->Signature().Get());
 }
 
 void DX12CommandRecorder::RcDraw(InputIndex* const index)
