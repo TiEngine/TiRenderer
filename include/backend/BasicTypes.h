@@ -197,6 +197,16 @@ struct SamplerState {
     float borderColor[4];       // If AddressMode is Border, borderColor will be used.
 };
 
+enum class PassAction : uint8_t {
+    Discard = (1 << 0),
+    Load    = (1 << 1),
+    Store   = (1 << 2),
+    Clear   = (1 << 3),
+    Resolve = (1 << 4),
+    BeginAction = Discard | Load  | Clear,
+    EndAction   = Discard | Store | Resolve
+};
+
 inline bool IsBasicFormatHasDepth(BasicFormat format)
 {
     switch (format) {

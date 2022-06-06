@@ -256,29 +256,105 @@ void DX12CommandRecorder::RcSetRenderAttachments(
     bool descriptorsContinuous)
 {
     CHECK_RECORD(description.commandType, CommandType::Graphics, RcSetRenderAttachments);
+
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> depthStencilDescriptors;
+
     if (swapchain) {
         auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
         renderTargetDescriptors.emplace_back(dxSwapchain->CurrentRenderTargetView());
+
         if (dxSwapchain->IsSwapchainEnableDepthStencil()) {
             depthStencilDescriptors.emplace_back(dxSwapchain->CurrentDepthStencilView());
         }
     }
+
     for (auto attachment : colorAttachments) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(attachment);
         renderTargetDescriptors.emplace_back(dxDescriptor->AttachmentView());
     }
+
     for (auto attachment : depthStencilAttachments) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(attachment);
         depthStencilDescriptors.emplace_back(dxDescriptor->AttachmentView());
     }
+
     if (swapchain && renderTargetDescriptors.size() > 1) {
         descriptorsContinuous = false;
     }
+
     recorder->OMSetRenderTargets(static_cast<UINT>(renderTargetDescriptors.size()),
         renderTargetDescriptors.data(), descriptorsContinuous,
         depthStencilDescriptors.data());
+}
+
+void DX12CommandRecorder::RcBeginPass(
+    Swapchain* const swapchain,
+    const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& colorOutputs,
+    const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& depthStencil,
+    bool writeBufferOrTextureResource)
+{
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcBeginPass);
+
+    std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargetDescs;
+    std::vector<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> depthStencilDescs;
+
+    if (swapchain) {
+        auto dxSwapchain = down_cast<DX12Swapchain*>(swapchain);
+
+        D3D12_RENDER_PASS_BEGINNING_ACCESS beginningAccess{
+            D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
+            { dxSwapchain->RenderTargetClearValue() }
+        };
+        D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
+            D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+            {} // Do not need to resolve.
+        };
+        D3D12_RENDER_PASS_RENDER_TARGET_DESC renderTargetDesc{
+            dxSwapchain->CurrentRenderTargetView(),
+            beginningAccess, endingAccess
+        };
+        renderTargetDescs.emplace_back(renderTargetDesc);
+
+        if (dxSwapchain->IsSwapchainEnableDepthStencil()) {
+            D3D12_RENDER_PASS_BEGINNING_ACCESS beginningAccess{
+                D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
+                { dxSwapchain->DepthStencilClearValue() }
+            };
+            D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
+                D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+                {} // Do not need to resolve too.
+            };
+            D3D12_RENDER_PASS_DEPTH_STENCIL_DESC depthStencilDesc{
+                dxSwapchain->CurrentDepthStencilView(),
+                beginningAccess, beginningAccess, endingAccess, endingAccess
+            };
+            depthStencilDescs.emplace_back(depthStencilDesc);
+        }
+    }
+
+    for (const auto& attachment : colorOutputs) {
+        auto dxDescriptor = down_cast<DX12Descriptor*>(std::get<0>(attachment));
+        // TODO: Process RenderTargets
+        renderTargetDescs.emplace_back(renderTargetDesc);
+    }
+
+    for (const auto& attachment : depthStencil) {
+        auto dxDescriptor = down_cast<DX12Descriptor*>(std::get<0>(attachment));
+        // TODO: Process DepthStencil
+        depthStencilDescs.emplace_back(depthStencilDesc);
+    }
+
+    recorder->BeginRenderPass(renderTargetDescs.size(),
+        renderTargetDescs.data(), depthStencilDescs.data(),
+        writeBufferOrTextureResource ?
+        D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES : D3D12_RENDER_PASS_FLAG_NONE);
+}
+
+void DX12CommandRecorder::RcEndPass()
+{
+    CHECK_RECORD(description.commandType, CommandType::Graphics, RcEndPass);
+    recorder->EndRenderPass();
 }
 
 void DX12CommandRecorder::RcSetPipeline(PipelineState* const pipelineState)

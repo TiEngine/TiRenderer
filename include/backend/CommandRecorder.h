@@ -65,8 +65,12 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pass Driven
-    //virtual void RcBeginPass() = 0;
-    //virtual void RcEndPass() = 0;
+    virtual void RcBeginPass(
+        Swapchain* const swapchain,
+        const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& colorOutputs,
+        const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& depthStencil,
+        bool writeBufferOrTextureResource = false) = 0;
+    virtual void RcEndPass() = 0;
 
     virtual void RcSetPipeline(PipelineState* const pipelineState) = 0;
 
