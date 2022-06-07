@@ -226,9 +226,9 @@ void Demo_01_Backend::Begin()
     pipelineState->SetVertexAssembly(inputVertexAttributes);
     pipelineState->SetShader(ti::backend::ShaderStage::Vertex, vertexShader);
     pipelineState->SetShader(ti::backend::ShaderStage::Pixel, pixelShader);
-    pipelineState->SetColorAttachment(0, ColorAttachmentFormat);
-    pipelineState->SetColorAttachment(1, ColorAttachmentFormat);
-    pipelineState->SetDepthStencilAttachment(DepthStencilAttachmentFormat);
+    pipelineState->SetColorOutputFormat(0, ColorAttachmentFormat);
+    pipelineState->SetColorOutputFormat(1, ColorAttachmentFormat);
+    pipelineState->SetDepthStencilOutputFormat(DepthStencilAttachmentFormat);
     pipelineState->BuildState();
 
     descriptorHeapRT = device->CreateDescriptorHeap({
@@ -276,14 +276,22 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcBarrier(halfColorOutput,
         ti::backend::ResourceState::GENERAL_READ, ti::backend::ResourceState::COLOR_OUTPUT);
 
+    // Global Driven Mode
+    //commandRecorder->RcClearColorAttachment(swapchain);
+    //commandRecorder->RcClearDepthStencilAttachment(swapchain);
+    //commandRecorder->RcClearColorAttachment(descriptorForHalfColorOutput);
+    //commandRecorder->RcSetRenderAttachments(swapchain,
+    //    { descriptorForHalfColorOutput }, {}, false);
+
+    // Pass Driven Mode [BEGIN]
+    commandRecorder->RcBeginPass(swapchain,
+        { { descriptorForHalfColorOutput,
+            ti::backend::PassAction::Clear,
+            ti::backend::PassAction::Store } },
+        {},
+        false);
+
     commandRecorder->RcSetPipeline(pipelineState);
-
-    commandRecorder->RcClearColorAttachment(swapchain);
-    commandRecorder->RcClearDepthStencilAttachment(swapchain);
-    commandRecorder->RcClearColorAttachment(descriptorForHalfColorOutput);
-
-    commandRecorder->RcSetRenderAttachments(swapchain,
-        { descriptorForHalfColorOutput }, {}, false);
 
     commandRecorder->RcSetDescriptorHeap({ descriptorHeap, descriptorHeapSampler });
 
@@ -295,6 +303,9 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcSetDescriptor(2, descriptorForSimpleSampler); // table 2, ImageSampler
 
     commandRecorder->RcDraw(inputIndex);
+
+    // Pass Driven Mode [END]
+    commandRecorder->RcEndPass();
 
     commandRecorder->RcBarrier(swapchain,
         ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::PRESENT);

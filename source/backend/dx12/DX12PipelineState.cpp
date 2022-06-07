@@ -94,7 +94,7 @@ void DX12PipelineState::SetShader(ShaderStage stage, Shader* shader)
     }
 }
 
-void DX12PipelineState::SetColorAttachment(unsigned int location, BasicFormat format)
+void DX12PipelineState::SetColorOutputFormat(unsigned int location, BasicFormat format)
 {
     if (location >= (sizeof(pipelineState.RTVFormats) / sizeof(pipelineState.RTVFormats[0]))) {
         TI_LOG_RET_W(TAG, "Pipeline state set color attachment failed, location overflow!");
@@ -109,7 +109,7 @@ void DX12PipelineState::SetColorAttachment(unsigned int location, BasicFormat fo
     }
 }
 
-void DX12PipelineState::SetDepthStencilAttachment(BasicFormat format)
+void DX12PipelineState::SetDepthStencilOutputFormat(BasicFormat format)
 {
     pipelineState.DSVFormat = ConvertBasicFormat(format);
 }

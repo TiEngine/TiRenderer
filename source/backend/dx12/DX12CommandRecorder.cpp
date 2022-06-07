@@ -308,7 +308,7 @@ void DX12CommandRecorder::RcBeginPass(
         };
         D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
             D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-            {} // Do not need to resolve.
+            {} // Donot need to resolve.
         };
         D3D12_RENDER_PASS_RENDER_TARGET_DESC renderTargetDesc{
             dxSwapchain->CurrentRenderTargetView(),
@@ -323,7 +323,7 @@ void DX12CommandRecorder::RcBeginPass(
             };
             D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
                 D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-                {} // Do not need to resolve too.
+                {} // Donot need to resolve too.
             };
             D3D12_RENDER_PASS_DEPTH_STENCIL_DESC depthStencilDesc{
                 dxSwapchain->CurrentDepthStencilView(),
@@ -335,17 +335,39 @@ void DX12CommandRecorder::RcBeginPass(
 
     for (const auto& attachment : colorOutputs) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(std::get<0>(attachment));
-        // TODO: Process RenderTargets
+        D3D12_RENDER_PASS_BEGINNING_ACCESS beginningAccess{
+            ConvertRenderPassBeginningAccessType(std::get<1>(attachment)),
+            { dxDescriptor->BindedResourceImage()->RenderTargetClearValue() }
+        };
+        D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
+            ConvertRenderPassEndingAccessType(std::get<2>(attachment)),
+            {} // TODO: MSAA resolve is no supported yet!
+        };
+        D3D12_RENDER_PASS_RENDER_TARGET_DESC renderTargetDesc{
+            dxDescriptor->AttachmentView(),
+            beginningAccess, endingAccess
+        };
         renderTargetDescs.emplace_back(renderTargetDesc);
     }
 
     for (const auto& attachment : depthStencil) {
         auto dxDescriptor = down_cast<DX12Descriptor*>(std::get<0>(attachment));
-        // TODO: Process DepthStencil
+        D3D12_RENDER_PASS_BEGINNING_ACCESS beginningAccess{
+            ConvertRenderPassBeginningAccessType(std::get<1>(attachment)),
+            { dxDescriptor->BindedResourceImage()->DepthStencilClearValue() }
+        };
+        D3D12_RENDER_PASS_ENDING_ACCESS endingAccess{
+            ConvertRenderPassEndingAccessType(std::get<2>(attachment)),
+            {} // TODO: MSAA resolve is no supported yet!
+        };
+        D3D12_RENDER_PASS_DEPTH_STENCIL_DESC depthStencilDesc{
+            dxDescriptor->AttachmentView(),
+            beginningAccess, beginningAccess, endingAccess, endingAccess
+        };
         depthStencilDescs.emplace_back(depthStencilDesc);
     }
 
-    recorder->BeginRenderPass(renderTargetDescs.size(),
+    recorder->BeginRenderPass(static_cast<UINT>(renderTargetDescs.size()),
         renderTargetDescs.data(), depthStencilDescs.data(),
         writeBufferOrTextureResource ?
         D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES : D3D12_RENDER_PASS_FLAG_NONE);

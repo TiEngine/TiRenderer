@@ -64,7 +64,7 @@ public:
         bool descriptorsContinuous = false) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Pass Driven
+    // Pass Driven Mode
     virtual void RcBeginPass(
         Swapchain* const swapchain,
         const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& colorOutputs,
