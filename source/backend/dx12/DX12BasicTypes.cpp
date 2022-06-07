@@ -288,4 +288,32 @@ D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state)
     samplerState.MaxLOD = D3D12_FLOAT32_MAX;
     return samplerState;
 }
+
+D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE ConvertRenderPassBeginningAccessType(PassAction action)
+{
+    static const std::unordered_map<PassAction, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE> map = {
+        { PassAction::Discard, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD  },
+        { PassAction::Load,    D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE },
+        { PassAction::Clear,   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR    }
+    };
+    if (common::EnumCast<PassAction>(action) &
+        common::EnumCast<PassAction>(PassAction::BeginAction)) {
+        return map.at(action);
+    }
+    return {};
+}
+
+D3D12_RENDER_PASS_ENDING_ACCESS_TYPE ConvertRenderPassEndingAccessType(PassAction action)
+{
+    static const std::unordered_map<PassAction, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE> map = {
+        { PassAction::Discard, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD  },
+        { PassAction::Store,   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE },
+        { PassAction::Resolve, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE  }
+    };
+    if (common::EnumCast<PassAction>(action) &
+        common::EnumCast<PassAction>(PassAction::EndAction)) {
+        return map.at(action);
+    }
+    return {};
+}
 }

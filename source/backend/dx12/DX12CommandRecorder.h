@@ -51,6 +51,13 @@ public:
         const std::vector<Descriptor*>& depthStencilAttachments,
         bool descriptorsContinuous) override;
 
+    void RcBeginPass(
+        Swapchain* const swapchain,
+        const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& colorOutputs,
+        const std::vector<std::tuple<Descriptor*, PassAction, PassAction>>& depthStencil,
+        bool writeBufferOrTextureResource) override;
+    void RcEndPass() override;
+
     void RcSetPipeline(PipelineState* const pipelineState) override;
 
     void RcSetVertex(const std::vector<InputVertex*>& vertices,
@@ -78,7 +85,7 @@ private:
     Description description{ "" };
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> recorder;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> recorder; // CommandList4 for RenderPass
 
     UINT64 currentFence = 0;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;

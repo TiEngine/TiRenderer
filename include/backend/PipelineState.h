@@ -26,8 +26,8 @@ public:
     virtual void SetShader(ShaderStage stage, Shader* shader) = 0;
 
     // Output state
-    virtual void SetColorAttachment(unsigned int location, BasicFormat format) = 0;
-    virtual void SetDepthStencilAttachment(BasicFormat format) = 0;
+    virtual void SetColorOutputFormat(unsigned int location, BasicFormat format) = 0;
+    virtual void SetDepthStencilOutputFormat(BasicFormat format) = 0;
 
     // Non-programming state
     virtual void SetRasterizerState(RasterizerState state) = 0;

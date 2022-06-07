@@ -49,4 +49,8 @@ D3D12_RASTERIZER_DESC ConvertRasterizerState(RasterizerState state);
 D3D12_TEXTURE_ADDRESS_MODE ConvertAddressMode(AddressMode mode);
 
 D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state);
+
+D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE ConvertRenderPassBeginningAccessType(PassAction action);
+
+D3D12_RENDER_PASS_ENDING_ACCESS_TYPE ConvertRenderPassEndingAccessType(PassAction action);
 }

@@ -24,8 +24,8 @@ public:
 
     void SetShader(ShaderStage stage, Shader* shader) override;
 
-    void SetColorAttachment(unsigned int location, BasicFormat format) override;
-    void SetDepthStencilAttachment(BasicFormat format) override;
+    void SetColorOutputFormat(unsigned int location, BasicFormat format) override;
+    void SetDepthStencilOutputFormat(BasicFormat format) override;
 
     void SetRasterizerState(RasterizerState state) override;
     void SetRasterizerStateFillMode(FillMode mode) override;
