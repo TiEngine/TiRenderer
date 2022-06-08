@@ -9,7 +9,7 @@ public:
     virtual void OnDestroy() {}
 
     virtual void OnPrepare(Registry& registry) {}
-    virtual void OnFinished(Registry& registry) {}
+    virtual void OnShutdown(Registry& registry) {}
 
     virtual void OnPrepTick(Registry& registry, float delta) {}
     virtual void OnPostTick(Registry& registry, float delta) {}
