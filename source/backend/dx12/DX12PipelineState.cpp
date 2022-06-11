@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12PipelineState::DX12PipelineState(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -149,4 +150,5 @@ DX12PipelineLayout* DX12PipelineState::BindedPipelineLayout() const
 {
     return pLayout;
 }
+
 }

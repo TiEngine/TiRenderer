@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12ResourceImage::DX12ResourceImage(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -89,4 +90,5 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DX12ResourceImage::Buffer()
 {
     return buffer;
 }
+
 }

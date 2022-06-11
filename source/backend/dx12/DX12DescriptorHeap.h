@@ -1,10 +1,11 @@
 #pragma once
 
-#include "backend/DescriptorHeap.h"
 #include "DX12Descriptor.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12DescriptorHeap : public DescriptorHeap
     , DX12Object<DX12DescriptorHeap> {
 public:
@@ -28,4 +29,5 @@ private:
 
     std::vector<std::unique_ptr<DX12Descriptor>> descriptors;
 };
+
 }

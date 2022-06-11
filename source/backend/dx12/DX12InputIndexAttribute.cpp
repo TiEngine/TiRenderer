@@ -2,6 +2,7 @@
 #include "DX12BasicTypes.h"
 
 namespace ti::backend {
+
 DX12InputIndexAttribute::DX12InputIndexAttribute()
 {
 }
@@ -36,4 +37,5 @@ DX12InputIndexAttribute::GetIndexInformation() const
 {
     return informations.back();
 }
+
 }

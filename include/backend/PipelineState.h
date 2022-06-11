@@ -4,6 +4,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class PipelineLayout;
 class InputIndexAttribute;
 class InputVertexAttributes;
@@ -42,4 +43,5 @@ protected:
     PipelineState() = default;
     virtual ~PipelineState() = default;
 };
+
 }

@@ -4,6 +4,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class InputVertexAttributes {
 public:
     struct Description {
@@ -41,4 +42,5 @@ protected:
     InputVertexAttributes() = default;
     virtual ~InputVertexAttributes() = default;
 };
+
 }

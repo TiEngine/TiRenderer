@@ -2,14 +2,19 @@
 
 #include <vector>
 #include "backend/BasicTypes.h"
-#include "InputVertex.h"
-#include "InputIndex.h"
-#include "DescriptorHeap.h"
-#include "PipelineLayout.h"
-#include "PipelineState.h"
-#include "Swapchain.h"
 
 namespace ti::backend {
+
+class InputVertex;
+class InputIndex;
+class InputVertexAttributes;
+class InputIndexAttribute;
+class ResourceBuffer;
+class ResourceImage;
+class Descriptor;
+class DescriptorHeap;
+class PipelineState;
+
 class CommandRecorder {
 public:
     struct Description {
@@ -94,4 +99,5 @@ protected:
     CommandRecorder() = default;
     virtual ~CommandRecorder() = default;
 };
+
 }

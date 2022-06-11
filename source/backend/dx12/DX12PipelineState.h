@@ -1,13 +1,13 @@
 #pragma once
 
-#include <unordered_set>
-#include "backend/PipelineState.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
 class DX12PipelineLayout;
+
 class DX12PipelineState : public PipelineState
     , DX12Object<DX12PipelineState> {
 public:
@@ -47,4 +47,5 @@ private:
 
     DX12PipelineLayout* pLayout = nullptr;
 };
+
 }

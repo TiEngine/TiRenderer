@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12Descriptor::DX12Descriptor(DX12Device& internal,
     DX12DescriptorHeap& heap, unsigned int index)
     : internal(internal), heap(heap)

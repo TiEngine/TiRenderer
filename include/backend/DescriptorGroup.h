@@ -4,6 +4,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class DescriptorGroup {
 public:
     struct Description {
@@ -25,4 +26,5 @@ protected:
     DescriptorGroup() = default;
     virtual ~DescriptorGroup() = default;
 };
+
 }

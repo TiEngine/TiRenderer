@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12ResourceBuffer::DX12ResourceBuffer(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -81,4 +82,5 @@ unsigned int DX12ResourceBuffer::CalculateAlignedBytesSize(unsigned int input)
     //   512
     return (input + 255u) & ~255u;
 }
+
 }

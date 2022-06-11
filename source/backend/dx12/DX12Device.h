@@ -1,6 +1,5 @@
 #pragma once
 
-#include "backend/Device.h"
 #include "DX12Shader.h"
 #include "DX12Swapchain.h"
 #include "DX12CommandRecorder.h"

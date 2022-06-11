@@ -3,6 +3,7 @@
 #include "Descriptor.h"
 
 namespace ti::backend {
+
 class DescriptorHeap {
 public:
     struct Description {
@@ -25,4 +26,5 @@ protected:
     DescriptorHeap() = default;
     virtual ~DescriptorHeap() = default;
 };
+
 }

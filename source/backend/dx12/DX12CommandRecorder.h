@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/CommandRecorder.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12CommandRecorder : public CommandRecorder
     , DX12Object<DX12CommandRecorder> {
 public:
@@ -90,4 +91,5 @@ private:
     UINT64 currentFence = 0;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 };
+
 }

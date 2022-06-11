@@ -1,10 +1,10 @@
 #pragma once
 
-#include "backend/InputIndexAttribute.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12InputIndexAttribute : public InputIndexAttribute
     , DX12Object<DX12InputIndexAttribute> {
 public:
@@ -41,4 +41,5 @@ public:
 private:
     std::vector<IndexInformation> informations;
 };
+
 }

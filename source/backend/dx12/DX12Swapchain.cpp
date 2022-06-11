@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12Swapchain::DX12Swapchain(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -188,4 +189,5 @@ bool DX12Swapchain::IsSwapchainEnableDepthStencil() const
 {
     return description.isEnabledDepthStencil;
 }
+
 }

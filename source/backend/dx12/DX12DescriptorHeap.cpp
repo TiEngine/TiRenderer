@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12DescriptorHeap::DX12DescriptorHeap(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -51,4 +52,5 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DX12DescriptorHeap::Heap()
 {
     return heap;
 }
+
 }

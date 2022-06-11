@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/Swapchain.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12Swapchain : public Swapchain
     , DX12Object<DX12Swapchain> {
 public:
@@ -53,4 +54,5 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetBuffer; // render target
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthStencilBuffer; // depth stencil
 };
+
 }

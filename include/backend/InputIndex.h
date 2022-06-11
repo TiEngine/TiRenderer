@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class InputIndex {
 public:
     struct Description {
@@ -27,4 +28,5 @@ protected:
     InputIndex() = default;
     virtual ~InputIndex() = default;
 };
+
 }

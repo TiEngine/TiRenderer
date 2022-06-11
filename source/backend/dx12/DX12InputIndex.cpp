@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12InputIndex::DX12InputIndex(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -70,4 +71,5 @@ UINT DX12InputIndex::IndicesCount() const
 {
     return description.indicesCount;
 }
+
 }

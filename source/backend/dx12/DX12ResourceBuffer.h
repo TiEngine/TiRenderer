@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/ResourceBuffer.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12ResourceBuffer : public ResourceBuffer
     , DX12Object<DX12ResourceBuffer> {
 public:
@@ -34,4 +35,5 @@ private:
     unsigned int allocatedBytesSize = 0;
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
+
 }

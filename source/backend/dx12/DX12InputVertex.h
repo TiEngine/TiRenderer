@@ -1,6 +1,5 @@
 #pragma once
 
-#include "backend/InputVertex.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
@@ -32,4 +31,5 @@ private:
     unsigned int bufferTotalByteSize = 0u;
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
+
 }

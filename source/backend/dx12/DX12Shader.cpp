@@ -1,8 +1,8 @@
 #include <d3dcompiler.h>
 #include "DX12Shader.h"
-#include "DX12Common.h"
 
 namespace ti::backend {
+
 DX12Shader::DX12Shader()
 {
 }
@@ -95,4 +95,5 @@ void DX12Shader::ProcessBytecode()
     LogIfFailedW(D3DCreateBlob(description.source.size(), &bytecode));
     CopyMemory(bytecode->GetBufferPointer(), description.source.data(), description.source.size());
 }
+
 }

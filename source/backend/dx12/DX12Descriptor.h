@@ -1,16 +1,17 @@
 #pragma once
 
 #include <variant>
-#include "backend/Descriptor.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
 class DX12DescriptorHeap;
 class DX12ResourceBuffer;
 class DX12ResourceImage;
 class DX12ImageSampler;
+
 class DX12Descriptor : public Descriptor
     , DX12Object<DX12Descriptor> {
 public:
@@ -58,4 +59,5 @@ private:
         DX12ImageSampler*
     > pResource;
 };
+
 }

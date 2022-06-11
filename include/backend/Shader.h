@@ -4,6 +4,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class Shader {
 public:
     struct Description {
@@ -36,4 +37,5 @@ protected:
     Shader() = default;
     virtual ~Shader() = default;
 };
+
 }

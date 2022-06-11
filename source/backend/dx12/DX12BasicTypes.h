@@ -1,9 +1,9 @@
 #pragma once
 
-#include "backend/BasicTypes.h"
 #include "DX12BackendHeaders.h"
 
 namespace ti::backend {
+
 DXGI_FORMAT ConvertBasicFormat(BasicFormat format);
 
 DXGI_FORMAT ConvertIndexFormat(IndexFormat format);
@@ -53,4 +53,5 @@ D3D12_SAMPLER_DESC ConvertSamplerState(SamplerState state);
 D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE ConvertRenderPassBeginningAccessType(PassAction action);
 
 D3D12_RENDER_PASS_ENDING_ACCESS_TYPE ConvertRenderPassEndingAccessType(PassAction action);
+
 }

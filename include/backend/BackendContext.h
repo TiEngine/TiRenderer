@@ -4,6 +4,7 @@
 #include "Device.h"
 
 namespace ti::backend {
+
 class BackendContext {
 public:
     enum class Backend {
@@ -22,4 +23,5 @@ protected:
     BackendContext() = default;
     virtual ~BackendContext() = default;
 };
+
 }

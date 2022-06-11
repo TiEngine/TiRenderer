@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class InputIndexAttribute {
 public:
     struct Description {
@@ -30,4 +31,5 @@ protected:
     InputIndexAttribute() = default;
     virtual ~InputIndexAttribute() = default;
 };
+
 }

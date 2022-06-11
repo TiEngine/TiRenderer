@@ -12,6 +12,7 @@ do {                                                               \
 } while(0)
 
 namespace {
+
 using namespace ti::backend;
 
 template <typename Implement, typename Interface>
@@ -41,9 +42,11 @@ inline void RcUploadTemplate(DX12CommandRecorder& recorder,
         dest.Buffer().Get(), stag.Buffer().Get(),
         0, 0, 1, &subResourceData);
 }
+
 }
 
 namespace ti::backend {
+
 DX12CommandRecorder::DX12CommandRecorder(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -518,4 +521,5 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DX12CommandRecorder::CommandLi
 {
     return recorder;
 }
+
 }

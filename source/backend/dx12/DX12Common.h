@@ -42,6 +42,7 @@ do {                    \
 } while(0)
 
 namespace ti::backend {
+
 LOG_TAG(DX12Backend)
 
 std::string FormatResult(HRESULT hr);
@@ -74,4 +75,5 @@ bool DestroyInstance(std::vector<std::unique_ptr<Implement>>& container, Interfa
     }
     return false;
 }
+
 }

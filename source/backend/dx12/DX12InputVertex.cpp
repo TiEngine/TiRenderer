@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12InputVertex::DX12InputVertex(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -65,4 +66,5 @@ void DX12InputVertex::Unmap()
         buffer->Unmap(0, NULL);
     }
 }
+
 }

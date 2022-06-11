@@ -1,9 +1,8 @@
-#pragma once
-
 #include "DX12InputVertexAttributes.h"
 #include "DX12BasicTypes.h"
 
 namespace ti::backend {
+
 DX12InputVertexAttributes::DX12InputVertexAttributes()
 {
 }
@@ -54,4 +53,5 @@ const std::vector<D3D12_INPUT_ELEMENT_DESC>& DX12InputVertexAttributes::GetInput
 {
     return elements;
 }
+
 }

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "backend/InputIndex.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
 class DX12InputIndexAttribute;
+
 class DX12InputIndex : public InputIndex
     , DX12Object<DX12InputIndex> {
 public:
@@ -32,4 +33,5 @@ private:
     unsigned int bufferTotalByteSize = 0u;
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
+
 }

@@ -3,6 +3,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12DescriptorGroup::DX12DescriptorGroup(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -65,4 +66,5 @@ const std::vector<CD3DX12_ROOT_PARAMETER>& DX12DescriptorGroup::GetRootParameter
 {
     return parameters;
 }
+
 }

@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class ResourceImage {
 public:
     struct Description {
@@ -48,4 +49,5 @@ protected:
     ResourceImage() = default;
     virtual ~ResourceImage() = default;
 };
+
 }

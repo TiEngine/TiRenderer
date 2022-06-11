@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/PipelineLayout.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12PipelineLayout : public PipelineLayout
     , DX12Object<DX12PipelineLayout> {
 public:
@@ -28,4 +29,5 @@ private:
     std::vector<D3D12_STATIC_SAMPLER_DESC> samplers;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> signature;
 };
+
 }

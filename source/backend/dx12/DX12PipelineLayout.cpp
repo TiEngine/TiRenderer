@@ -4,6 +4,7 @@
 #include "DX12Device.h"
 
 namespace ti::backend {
+
 DX12PipelineLayout::DX12PipelineLayout(DX12Device& internal) : internal(internal)
 {
     device = internal.NativeDevice();
@@ -67,4 +68,5 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> DX12PipelineLayout::Signature()
 {
     return signature;
 }
+
 }

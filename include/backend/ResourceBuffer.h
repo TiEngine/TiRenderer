@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 
 namespace ti::backend {
+
 class ResourceBuffer {
 public:
     struct Description {
@@ -25,13 +26,24 @@ protected:
     virtual ~ResourceBuffer() = default;
 };
 
-class ResourceBufferEx {
+class StructuredBuffer {
 public:
     struct Description {
     };
 
 protected:
-    ResourceBufferEx() = default;
-    virtual ~ResourceBufferEx() = default;
+    StructuredBuffer() = default;
+    virtual ~StructuredBuffer() = default;
 };
+
+class ReadWriteBuffer {
+public:
+    struct Description {
+    };
+
+protected:
+    ReadWriteBuffer() = default;
+    virtual ~ReadWriteBuffer() = default;
+};
+
 }

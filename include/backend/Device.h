@@ -3,13 +3,20 @@
 #include "Shader.h"
 #include "Swapchain.h"
 #include "CommandRecorder.h"
-
+#include "InputVertex.h"
 #include "InputVertexAttributes.h"
+#include "InputIndex.h"
 #include "InputIndexAttribute.h"
-
+#include "ResourceBuffer.h"
+#include "ResourceImage.h"
+#include "ImageSampler.h"
+#include "DescriptorHeap.h"
 #include "DescriptorGroup.h"
+#include "PipelineLayout.h"
+#include "PipelineState.h"
 
 namespace ti::backend {
+
 class Device {
 public:
     struct Description {
@@ -73,4 +80,5 @@ protected:
     Device() = default;
     virtual ~Device() = default;
 };
+
 }

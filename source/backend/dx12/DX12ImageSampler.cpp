@@ -2,6 +2,7 @@
 #include "DX12BasicTypes.h"
 
 namespace ti::backend {
+
 DX12ImageSampler::DX12ImageSampler()
 {
 }
@@ -25,4 +26,5 @@ const D3D12_SAMPLER_DESC& DX12ImageSampler::NativeSamplerState() const
 {
     return samplerState;
 }
+
 }

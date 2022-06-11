@@ -3,7 +3,9 @@
 #include <string>
 
 namespace ti::backend {
+
 class DescriptorGroup;
+
 class PipelineLayout {
 public:
     struct Description {
@@ -17,4 +19,5 @@ protected:
     PipelineLayout() = default;
     virtual ~PipelineLayout() = default;
 };
+
 }

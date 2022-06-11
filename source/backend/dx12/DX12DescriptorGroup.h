@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/DescriptorGroup.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12DescriptorGroup : public DescriptorGroup
     , DX12Object<DX12DescriptorGroup> {
 public:
@@ -35,4 +36,5 @@ private:
     //     of the object in the vector will not change.
     std::vector<std::unique_ptr<CD3DX12_DESCRIPTOR_RANGE>> descriptorRanges;
 };
+
 }

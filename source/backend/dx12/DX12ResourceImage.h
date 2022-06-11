@@ -1,11 +1,12 @@
 #pragma once
 
-#include "backend/ResourceImage.h"
 #include "DX12BackendHeaders.h"
 #include "DX12BaseObject.h"
 
 namespace ti::backend {
+
 class DX12Device;
+
 class DX12ResourceImage : public ResourceImage
     , DX12Object<DX12ResourceImage> {
 public:
@@ -31,4 +32,5 @@ private:
     Description description{ BasicFormat::R32G32B32A32_FLOAT, 0u, 0u };
     Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 };
+
 }
