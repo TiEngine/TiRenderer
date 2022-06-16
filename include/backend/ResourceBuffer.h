@@ -26,14 +26,14 @@ protected:
     virtual ~ResourceBuffer() = default;
 };
 
-class StructuredBuffer {
+class StorageBuffer {
 public:
     struct Description {
     };
 
 protected:
-    StructuredBuffer() = default;
-    virtual ~StructuredBuffer() = default;
+    StorageBuffer() = default;
+    virtual ~StorageBuffer() = default;
 };
 
 class ReadWriteBuffer {

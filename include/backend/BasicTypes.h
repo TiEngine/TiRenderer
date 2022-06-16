@@ -2,7 +2,8 @@
 
 #include "common/TypeCast.hpp"
 
-namespace ti::backend {
+namespace ti {
+
 enum class BasicFormat {
     R8G8B8A8_UNORM,
     R32G32B32_FLOAT,
@@ -288,4 +289,5 @@ inline ClearValue MakeBufferClearValue(float b1, float b2, float b3, float b4)
     clear.buffer.value[3] = b4;
     return clear;
 }
+
 }
