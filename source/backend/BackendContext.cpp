@@ -26,7 +26,10 @@ BackendContext* BackendContext::CreateBackend(Backend type)
 
     auto& instance = storage[type]; // backend instance(library wrapper and context pointer)
 
-    instance.first.Load(library->second);
+    if (!instance.first.Load(library->second)) {
+        return nullptr;
+    }
+
     instance.second = instance.first.ExecuteFunction<BackendContext*()>("CreateBackend");
     return instance.second;
 }

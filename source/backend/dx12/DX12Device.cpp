@@ -202,7 +202,7 @@ bool DX12Device::DestroyPipelineState(PipelineState* instance)
 void DX12Device::WaitIdle()
 {
     // TODO: Only a graphics command queue is used currently,
-    //       so only a fence is used currently. :-)
+    //       so only one fence is used currently. :-)
     auto& queue = queues[CommandType::Graphics];
     auto& fence = fences[CommandType::Graphics].first;
     auto& currentFence = fences[CommandType::Graphics].second;

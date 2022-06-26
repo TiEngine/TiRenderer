@@ -17,7 +17,7 @@ using namespace ti::backend;
 
 template <typename Implement, typename Interface>
 inline void RcBarrierTemplate(DX12CommandRecorder& recorder,
-    Interface& resource, ResourceState before, ResourceState after)
+    Interface& resource, ti::ResourceState before, ti::ResourceState after)
 {
     static_assert(std::is_base_of<Interface, Implement>::value,
         "RcBarrierTemplate: Implement should inherit from Interface!");

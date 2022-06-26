@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "backend/BackendContext.h"
 
 namespace ti::passflow {
 
@@ -9,7 +9,11 @@ class Passflow;
 class BasePass {
 public:
     virtual void PreparePass() = 0;
-    virtual void ExecutePass() = 0;
+    virtual void BeginPass(backend::CommandRecorder& recorder) = 0;
+    virtual void ExecutePass(backend::CommandRecorder& recorder) = 0;
+    virtual void EndPass(backend::CommandRecorder& recorder) = 0;
+
+    virtual ~BasePass() = default;
 
 protected:
     enum class BufferType {
@@ -18,17 +22,10 @@ protected:
         ReadWriteBuffer
     };
 
-    BasePass& DeclareInput(const std::string& name);
-    BasePass& DeclareOutput(const std::string& name);
-    BasePass& DeclareBuffer(const std::string& name);
-    BasePass& DeclareTexture(const std::string& name);
     BasePass& BuildPipeline();
-
-    BasePass& AttachInput(const std::string& name);
     BasePass& SubmitCommands();
 
     explicit BasePass(Passflow& passflow);
-    virtual ~BasePass() = default;
 
     Passflow& passflow;
 };

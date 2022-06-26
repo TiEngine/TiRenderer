@@ -1,14 +1,16 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include "common/TypeCast.hpp"
+#include <memory>        //unique_ptr
+#include <unordered_map> //unordered_map
 #include "BasePass.h"
 
 namespace ti::passflow {
 
 class Passflow {
 public:
+    Passflow(std::string flowName, unsigned int multipleBuffering);
+    virtual ~Passflow();
+
     template <typename Pass, typename ...Args>
     Pass* CreateOrGetPass(const std::string& name, const Args& ...args)
     {
@@ -34,10 +36,17 @@ public:
     void ExecuteWorkflow();
 
 private:
-    static constexpr unsigned int FrameCount = 3;
-
     std::unordered_map<std::string, std::unique_ptr<BasePass>> passes;
     std::vector<std::pair<BasePass*, bool>> passflow;
+
+    std::string passflowName;
+    unsigned int multipleBufferingCount = 0;
+    unsigned int currentBufferingIndex = 0;
+
+    std::vector<std::string> commandRecorderNames;
+
+    backend::Device* bkDevice = nullptr;
+    std::vector<backend::CommandRecorder*> bkCommands;
 };
 
 }

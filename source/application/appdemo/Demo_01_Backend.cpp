@@ -104,41 +104,36 @@ void Demo_01_Backend::Begin()
 
     commandRecorder = device->CreateCommandRecorder({ "DrawToSwapchain" });
 
-    vertexShader = device->CreateShader({
-        ti::backend::ShaderStage::Vertex, vertexShaderString });
-    pixelShader = device->CreateShader({
-        ti::backend::ShaderStage::Pixel, fragmentShaderString });
+    vertexShader = device->CreateShader({ ti::ShaderStage::Vertex, vertexShaderString });
+    pixelShader = device->CreateShader({ ti::ShaderStage::Pixel, fragmentShaderString });
 
     //auto vertexShaderReflection = vertexShader->Reflect();
     //auto pixelShaderReflection = pixelShader->Reflect();
 
     inputVertexAttributes = device->CreateInputVertexAttributes();
-    inputVertexAttributes->AddAttribute({
-        ti::backend::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
-    inputVertexAttributes->AddAttribute({
-        ti::backend::VertexFormat::FLOAT32x4, "COLOR", 1, 12 });
+    inputVertexAttributes->AddAttribute({ ti::VertexFormat::FLOAT32x3, "POSITION", 0,  0 });
+    inputVertexAttributes->AddAttribute({ ti::VertexFormat::FLOAT32x4, "COLOR",    1, 12 });
 
     inputIndexAttribute = device->CreateInputIndexAttribute();
     inputIndexAttribute->SetAttribute({
-        ti::backend::IndexFormat::UINT16, ti::backend::PrimitiveTopology::TRIANGLE_LIST });
+        ti::IndexFormat::UINT16, ti::PrimitiveTopology::TRIANGLE_LIST });
 
     inputVertex = device->CreateInputVertex({
         static_cast<unsigned int>(vertices.size()), sizeof(VertexData) });
     {   // Upload vertex buffer to GPU_ONLY buffer
         auto staging = device->CreateInputVertex({
             static_cast<unsigned int>(vertices.size()), sizeof(VertexData),
-            ti::backend::TransferDirection::CPU_TO_GPU });
-        auto transfer = device->CreateCommandRecorder({
-            "Transfer", ti::backend::CommandType::Transfer});
+            ti::TransferDirection::CPU_TO_GPU });
+        auto transfer = device->CreateCommandRecorder({ "Transfer", ti::CommandType::Transfer});
         transfer->BeginRecord();
         transfer->RcBarrier(inputVertex,
-            ti::backend::ResourceState::GENERAL_READ,
-            ti::backend::ResourceState::COPY_DESTINATION);
+            ti::ResourceState::GENERAL_READ,
+            ti::ResourceState::COPY_DESTINATION);
         transfer->RcUpload(static_cast<const void*>(vertices.data()),
             vertices.size() * sizeof(VertexData), inputVertex, staging);
         transfer->RcBarrier(inputVertex,
-            ti::backend::ResourceState::COPY_DESTINATION,
-            ti::backend::ResourceState::GENERAL_READ);
+            ti::ResourceState::COPY_DESTINATION,
+            ti::ResourceState::GENERAL_READ);
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
@@ -150,71 +145,70 @@ void Demo_01_Backend::Begin()
     {   // Upload index buffer to GPU_ONLY buffer
         auto staging = device->CreateInputIndex({
             static_cast<unsigned int>(indices.size()), sizeof(uint16_t),
-            ti::backend::TransferDirection::CPU_TO_GPU });
+            ti::TransferDirection::CPU_TO_GPU });
         auto transfer = device->CreateCommandRecorder({
-            "Transfer", ti::backend::CommandType::Transfer });
+            "Transfer", ti::CommandType::Transfer });
         transfer->BeginRecord();
         transfer->RcBarrier(inputIndex,
-            ti::backend::ResourceState::GENERAL_READ,
-            ti::backend::ResourceState::COPY_DESTINATION);
+            ti::ResourceState::GENERAL_READ,
+            ti::ResourceState::COPY_DESTINATION);
         transfer->RcUpload(static_cast<const void*>(indices.data()),
             indices.size() * sizeof(uint16_t), inputIndex, staging);
         transfer->RcBarrier(inputIndex,
-            ti::backend::ResourceState::COPY_DESTINATION,
-            ti::backend::ResourceState::GENERAL_READ);
+            ti::ResourceState::COPY_DESTINATION,
+            ti::ResourceState::GENERAL_READ);
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
         device->ReleaseCommandRecordersMemory("Transfer");
     }
 
-    descriptorHeap = device->CreateDescriptorHeap({
-        2, ti::backend::DescriptorType::ShaderResource });
+    descriptorHeap = device->CreateDescriptorHeap({ 2, ti::DescriptorType::ShaderResource });
 
     cbObjectMVP = device->CreateResourceBuffer({ sizeof(ObjectMVP) });
     descriptorForObjectMVP = descriptorHeap->AllocateDescriptor({
-        ti::backend::DescriptorType::ConstantBuffer });
+        ti::DescriptorType::ConstantBuffer });
     descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
 
 
     halfColorTexture = device->CreateResourceImage({
-        ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u });
+        ti::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u });
     {   // Upload half texture to GPU_ONLY texture
         ti::backend::ResourceImage::Description halfColorStagingTextureDesc(
-            ti::backend::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u);
-        halfColorStagingTextureDesc.memoryType = ti::backend::TransferDirection::CPU_TO_GPU;
+            ti::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u);
+        halfColorStagingTextureDesc.memoryType = ti::TransferDirection::CPU_TO_GPU;
         auto staging = device->CreateResourceImage(halfColorStagingTextureDesc);
         auto transfer = device->CreateCommandRecorder({
-            "Transfer", ti::backend::CommandType::Transfer });
+            "Transfer", ti::CommandType::Transfer });
         transfer->BeginRecord();
         transfer->RcBarrier(halfColorTexture,
-            ti::backend::ResourceState::GENERAL_READ,
-            ti::backend::ResourceState::COPY_DESTINATION);
+            ti::ResourceState::GENERAL_READ,
+            ti::ResourceState::COPY_DESTINATION);
         const float gray[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
         transfer->RcUpload(gray, 4 * sizeof(float), // Only a RGBA pixel.
             halfColorTexture, staging);
         transfer->RcBarrier(halfColorTexture,
-            ti::backend::ResourceState::COPY_DESTINATION,
-            ti::backend::ResourceState::GENERAL_READ);
+            ti::ResourceState::COPY_DESTINATION,
+            ti::ResourceState::GENERAL_READ);
         transfer->EndRecord();
         transfer->Submit();
         transfer->Wait();
         device->ReleaseCommandRecordersMemory("Transfer");
     }
     descriptorForTexture = descriptorHeap->AllocateDescriptor({
-        ti::backend::DescriptorType::ReadOnlyTexture });
+        ti::DescriptorType::ReadOnlyTexture });
     descriptorForTexture->BuildDescriptor(halfColorTexture);
 
     descriptorGroup = device->CreateDescriptorGroup({ 0u }); // space/binding is 0
     descriptorGroup->AddDescriptor(                          // descriptor 0
-        ti::backend::DescriptorType::ConstantBuffer,         // ConstantBuffer
-        0, ti::backend::ShaderStage::Graphics);              // register/location is 0
+        ti::DescriptorType::ConstantBuffer,                  // ConstantBuffer
+        0, ti::ShaderStage::Graphics);                       // register/location is 0
     descriptorGroup->AddDescriptor(                          // descriptor 1
-        ti::backend::DescriptorType::ReadOnlyTexture,        // ReadOnlyTexture
-        1, ti::backend::ShaderStage::Graphics);              // register/location is 1
+        ti::DescriptorType::ReadOnlyTexture,                 // ReadOnlyTexture
+        1, ti::ShaderStage::Graphics);                       // register/location is 1
     descriptorGroup->AddDescriptor(                          // descriptor 2
-        ti::backend::DescriptorType::ImageSampler,           // ImageSampler
-        2, ti::backend::ShaderStage::Graphics);              // register/location is 2
+        ti::DescriptorType::ImageSampler,                    // ImageSampler
+        2, ti::ShaderStage::Graphics);                       // register/location is 2
 
     pipelineLayout = device->CreatePipelineLayout();
     pipelineLayout->AddGroup(descriptorGroup);               // this group has descriptor 0 to 2
@@ -224,24 +218,23 @@ void Demo_01_Backend::Begin()
     pipelineState->SetPipelineLayout(pipelineLayout);
     pipelineState->SetIndexAssembly(inputIndexAttribute);
     pipelineState->SetVertexAssembly(inputVertexAttributes);
-    pipelineState->SetShader(ti::backend::ShaderStage::Vertex, vertexShader);
-    pipelineState->SetShader(ti::backend::ShaderStage::Pixel, pixelShader);
+    pipelineState->SetShader(ti::ShaderStage::Vertex, vertexShader);
+    pipelineState->SetShader(ti::ShaderStage::Pixel, pixelShader);
     pipelineState->SetColorOutputFormat(0, ColorAttachmentFormat);
     pipelineState->SetColorOutputFormat(1, ColorAttachmentFormat);
     pipelineState->SetDepthStencilOutputFormat(DepthStencilAttachmentFormat);
     pipelineState->BuildState();
 
-    descriptorHeapRT = device->CreateDescriptorHeap({
-        1, ti::backend::DescriptorType::ColorOutput });
+    descriptorHeapRT = device->CreateDescriptorHeap({ 1, ti::DescriptorType::ColorOutput });
     descriptorForHalfColorOutput = descriptorHeapRT->AllocateDescriptor({
-        ti::backend::DescriptorType::ColorOutput });
+        ti::DescriptorType::ColorOutput });
 
     simpleSampler = device->CreateImageSampler({
-        ti::backend::SamplerState::Filter::Linear, ti::backend::AddressMode::Wrap });
+        ti::SamplerState::Filter::Linear, ti::AddressMode::Wrap });
     descriptorHeapSampler = device->CreateDescriptorHeap({
-        1, ti::backend::DescriptorType::ImageSampler });
+        1, ti::DescriptorType::ImageSampler });
     descriptorForSimpleSampler = descriptorHeapSampler->AllocateDescriptor({
-        ti::backend::DescriptorType::ImageSampler });
+        ti::DescriptorType::ImageSampler });
     descriptorForSimpleSampler->BuildDescriptor(simpleSampler);
 }
 
@@ -272,9 +265,9 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcSetScissors({ scissor });
 
     commandRecorder->RcBarrier(swapchain,
-        ti::backend::ResourceState::PRESENT, ti::backend::ResourceState::COLOR_OUTPUT);
+        ti::ResourceState::PRESENT, ti::ResourceState::COLOR_OUTPUT);
     commandRecorder->RcBarrier(halfColorOutput,
-        ti::backend::ResourceState::GENERAL_READ, ti::backend::ResourceState::COLOR_OUTPUT);
+        ti::ResourceState::GENERAL_READ, ti::ResourceState::COLOR_OUTPUT);
 
     // Global Driven Mode
     //commandRecorder->RcClearColorAttachment(swapchain);
@@ -286,8 +279,8 @@ void Demo_01_Backend::Draw()
     // Pass Driven Mode [BEGIN]
     commandRecorder->RcBeginPass(swapchain,
         { { descriptorForHalfColorOutput,
-            ti::backend::PassAction::Clear,
-            ti::backend::PassAction::Store } },
+            ti::PassAction::Clear,
+            ti::PassAction::Store } },
         {},
         false);
 
@@ -308,9 +301,9 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcEndPass();
 
     commandRecorder->RcBarrier(swapchain,
-        ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::PRESENT);
+        ti::ResourceState::COLOR_OUTPUT, ti::ResourceState::PRESENT);
     commandRecorder->RcBarrier(halfColorOutput,
-        ti::backend::ResourceState::COLOR_OUTPUT, ti::backend::ResourceState::GENERAL_READ);
+        ti::ResourceState::COLOR_OUTPUT, ti::ResourceState::GENERAL_READ);
 
     commandRecorder->EndRecord();
 
@@ -336,7 +329,7 @@ void Demo_01_Backend::Resize(HWND window, unsigned int width, unsigned int heigh
     }
     ti::backend::ResourceImage::Description halfColorOutputDescription{
         ColorAttachmentFormat, width, height };
-    halfColorOutputDescription.usage = ti::backend::ImageType::Color;
+    halfColorOutputDescription.usage = ti::ImageType::Color;
     //halfColorOutputDescription.clearValue = ti::backend::MakeImageClearValue(1.0f, 0.0f, 0.0f, 0.0f);
     halfColorOutput = device->CreateResourceImage(halfColorOutputDescription);
     descriptorForHalfColorOutput->BuildDescriptor(halfColorOutput);

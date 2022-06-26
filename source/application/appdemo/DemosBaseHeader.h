@@ -67,8 +67,8 @@ private:
     float radius = 5.0f;
     float delta = 0.01f;
 
-    ti::backend::Viewport viewport;
-    ti::backend::Scissor scissor;
+    ti::Viewport viewport;
+    ti::Scissor scissor;
 
     ti::backend::BackendContext* backend = nullptr;
     ti::backend::Device* device = nullptr;
@@ -96,10 +96,8 @@ private:
 
     ti::backend::Swapchain* swapchain = nullptr;
     // Default swapchain format, see Swapchain.h for detail.
-    const ti::backend::BasicFormat ColorAttachmentFormat
-        = ti::backend::BasicFormat::R8G8B8A8_UNORM;
-    const ti::backend::BasicFormat DepthStencilAttachmentFormat
-        = ti::backend::BasicFormat::D24_UNORM_S8_UINT;
+    const ti::BasicFormat ColorAttachmentFormat = ti::BasicFormat::R8G8B8A8_UNORM;
+    const ti::BasicFormat DepthStencilAttachmentFormat = ti::BasicFormat::D24_UNORM_S8_UINT;
 
     ti::backend::ResourceImage* halfColorOutput = nullptr;
     ti::backend::DescriptorHeap* descriptorHeapRT = nullptr; // ColorOutput descriptor heap
