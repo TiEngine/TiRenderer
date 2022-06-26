@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>        //unique_ptr
-#include <unordered_map> //unordered_map
+#include <memory>        // unique_ptr
+#include <unordered_map> // unordered_map
 #include "BasePass.h"
 
 namespace ti::passflow {
