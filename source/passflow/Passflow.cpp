@@ -36,7 +36,11 @@ Passflow::~Passflow()
 
 unsigned int Passflow::AddPassToFlow(BasePass* pass)
 {
-    passflow.emplace_back(std::make_pair(pass, false)).first->PreparePass();
+    passflow.emplace_back(std::make_pair(pass, false));
+
+    pass->OnPreparePass(bkDevice);
+    pass->OnEnablePass(false);
+
     return static_cast<unsigned int>(passflow.size() - 1);
 }
 
@@ -52,6 +56,7 @@ bool Passflow::EnablePass(unsigned int index, bool enable)
 {
     if (index < passflow.size()) {
         passflow[index].second = enable;
+        passflow[index].first->OnEnablePass(enable);
         return true;
     }
     return false;
@@ -72,9 +77,9 @@ void Passflow::ExecuteWorkflow()
 
     for (auto& each : passflow) {
         if (each.second) {
-            each.first->BeginPass(*bkCommands[currentBufferingIndex]);
-            each.first->ExecutePass(*bkCommands[currentBufferingIndex]);
-            each.first->EndPass(*bkCommands[currentBufferingIndex]);
+            each.first->OnBeginPass(bkCommands[currentBufferingIndex]);
+            each.first->OnExecutePass(bkCommands[currentBufferingIndex]);
+            each.first->OnEndPass(bkCommands[currentBufferingIndex]);
         }
     }
 
@@ -83,5 +88,15 @@ void Passflow::ExecuteWorkflow()
 
     currentBufferingIndex = (currentBufferingIndex + 1) % multipleBufferingCount;
 }
+
+//inline unsigned int Passflow::GetMultipleBufferingCount() const
+//{
+//    return multipleBufferingCount;
+//}
+//
+//inline unsigned int Passflow::GetCurrentBufferingIndex() const
+//{
+//    return currentBufferingIndex;
+//}
 
 }

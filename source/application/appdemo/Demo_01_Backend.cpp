@@ -1,5 +1,4 @@
 #include "DemosBaseHeader.h"
-#include <vector>
 
 const std::string Demo_01_Backend::vertexShaderString = R"(
 cbuffer cbPerObject : register(b0)
@@ -170,7 +169,6 @@ void Demo_01_Backend::Begin()
         ti::DescriptorType::ConstantBuffer });
     descriptorForObjectMVP->BuildDescriptor(cbObjectMVP);
 
-
     halfColorTexture = device->CreateResourceImage({
         ti::BasicFormat::R32G32B32A32_FLOAT, 1u, 1u, 1u, 1u });
     {   // Upload half texture to GPU_ONLY texture
@@ -269,20 +267,11 @@ void Demo_01_Backend::Draw()
     commandRecorder->RcBarrier(halfColorOutput,
         ti::ResourceState::GENERAL_READ, ti::ResourceState::COLOR_OUTPUT);
 
-    // Global Driven Mode
-    //commandRecorder->RcClearColorAttachment(swapchain);
-    //commandRecorder->RcClearDepthStencilAttachment(swapchain);
-    //commandRecorder->RcClearColorAttachment(descriptorForHalfColorOutput);
-    //commandRecorder->RcSetRenderAttachments(swapchain,
-    //    { descriptorForHalfColorOutput }, {}, false);
-
-    // Pass Driven Mode [BEGIN]
     commandRecorder->RcBeginPass(swapchain,
         { { descriptorForHalfColorOutput,
             ti::PassAction::Clear,
             ti::PassAction::Store } },
-        {},
-        false);
+        {}, false);
 
     commandRecorder->RcSetPipeline(pipelineState);
 
@@ -297,7 +286,6 @@ void Demo_01_Backend::Draw()
 
     commandRecorder->RcDraw(inputIndex);
 
-    // Pass Driven Mode [END]
     commandRecorder->RcEndPass();
 
     commandRecorder->RcBarrier(swapchain,

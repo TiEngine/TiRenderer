@@ -1,8 +1,7 @@
 #pragma once
 
-#include <memory>        // unique_ptr
-#include <unordered_map> // unordered_map
-#include "BasePass.h"
+#include "RasterizePass.h"
+#include "ComputePass.h"
 
 namespace ti::passflow {
 
@@ -23,7 +22,7 @@ public:
     }
 
     template <typename Pass>
-    Pass* CastPass(BasePass* pass)
+    Pass* CastPass(BasePass* pass) const
     {
         return down_cast<Pass*>(pass);
     }
@@ -34,6 +33,9 @@ public:
     bool IsEnablePass(unsigned int index);
 
     void ExecuteWorkflow();
+
+    //inline unsigned int GetMultipleBufferingCount() const;
+    //inline unsigned int GetCurrentBufferingIndex() const;
 
 private:
     std::unordered_map<std::string, std::unique_ptr<BasePass>> passes;

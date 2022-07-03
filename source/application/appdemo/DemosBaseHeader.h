@@ -3,8 +3,7 @@
 #include <Windows.h>
 #include "math/Math.hpp"
 #include "application/Application.h"
-#include "backend/BackendContext.h"
-#include "backend/Device.h"
+#include "passflow/Passflow.h"
 
 class DemoBase {
 public:
@@ -109,4 +108,17 @@ private:
 
     ti::backend::ResourceImage* halfColorTexture = nullptr;
     ti::backend::Descriptor* descriptorForTexture = nullptr; // Allocate from the descriptorHeap
+};
+
+class Demo_02_Passflow : public DemoBase {
+public:
+    void Begin() override;
+    void Finish() override;
+    void Update() override;
+    void Draw() override;
+
+    void Resize(HWND window, unsigned int width, unsigned int height) override;
+
+private:
+    std::unique_ptr<ti::passflow::Passflow> passflow;
 };
