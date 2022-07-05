@@ -10,6 +10,11 @@ public:
     Passflow(std::string flowName, unsigned int multipleBuffering);
     virtual ~Passflow();
 
+    inline unsigned int GetMultipleBufferingCount() const
+    {
+        return multipleBufferingCount;
+    }
+
     template <typename Pass, typename ...Args>
     Pass* CreateOrGetPass(const std::string& name, const Args& ...args)
     {
@@ -34,20 +39,18 @@ public:
 
     void ExecuteWorkflow();
 
-    //inline unsigned int GetMultipleBufferingCount() const;
-    //inline unsigned int GetCurrentBufferingIndex() const;
-
 private:
-    std::unordered_map<std::string, std::unique_ptr<BasePass>> passes;
-    std::vector<std::pair<BasePass*, bool>> passflow;
-
     std::string passflowName;
+
     unsigned int multipleBufferingCount = 0;
     unsigned int currentBufferingIndex = 0;
 
+    std::unordered_map<std::string, std::unique_ptr<BasePass>> passes;
+    std::vector<std::pair<BasePass*, bool>> passflow;
+
     std::vector<std::string> commandRecorderNames;
 
-    backend::Device* bkDevice = nullptr;
+    backend::Device* bkDevice = nullptr; // Not owned!
     std::vector<backend::CommandRecorder*> bkCommands;
 };
 

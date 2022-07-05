@@ -121,4 +121,5 @@ public:
 
 private:
     std::unique_ptr<ti::passflow::Passflow> passflow;
+    ti::passflow::RasterizePass* drawpass;
 };

@@ -12,17 +12,18 @@ public:
     virtual ~BasePass() = default;
 
     virtual void OnPreparePass(backend::Device* device) = 0;
-    virtual void OnBeginPass(backend::CommandRecorder* recorder) = 0;
+    virtual void OnBeforePass(unsigned int currentBufferingIndex) = 0;
     virtual void OnExecutePass(backend::CommandRecorder* recorder) = 0;
-    virtual void OnEndPass(backend::CommandRecorder* recorder) = 0;
+    virtual void OnAfterPass(unsigned int currentPassInFlowIndex) = 0;
     virtual void OnEnablePass(bool enable) = 0;
 
 protected:
     explicit BasePass(Passflow& passflow);
 
     struct InputProperties {
-        std::vector<backend::InputVertexAttributes::Attribute> vertexAttributes;
         backend::InputIndexAttribute::Attribute indexAttribute;
+        std::vector<backend::InputVertexAttributes::Attribute> vertexAttributes;
+        static backend::InputVertexAttributes::Attribute MakeDefaultPositionOnlyVertexAttribute();
     };
 
     struct OutputProperties {

@@ -2,7 +2,7 @@
 
 #include "BasePass.h"
 
-namespace ti::framework {
+namespace ti::passflow {
 class ComputePass : public BasePass {
 };
 }

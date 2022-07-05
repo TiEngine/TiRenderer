@@ -72,31 +72,39 @@ bool Passflow::IsEnablePass(unsigned int index)
 
 void Passflow::ExecuteWorkflow()
 {
-    bkCommands[currentBufferingIndex]->Wait();
-    bkCommands[currentBufferingIndex]->BeginRecord();
-
-    for (auto& each : passflow) {
-        if (each.second) {
-            each.first->OnBeginPass(bkCommands[currentBufferingIndex]);
-            each.first->OnExecutePass(bkCommands[currentBufferingIndex]);
-            each.first->OnEndPass(bkCommands[currentBufferingIndex]);
+    {
+        for (auto& [pass, enable] : passflow) {
+            if (enable) {
+                pass->OnBeforePass(currentBufferingIndex);
+            }
         }
     }
 
-    bkCommands[currentBufferingIndex]->EndRecord();
-    bkCommands[currentBufferingIndex]->Submit();
+    {
+        bkCommands[currentBufferingIndex]->Wait();
+        bkCommands[currentBufferingIndex]->BeginRecord();
+
+        for (auto& [pass, enable] : passflow) {
+            if (enable) {
+                pass->OnExecutePass(bkCommands[currentBufferingIndex]);
+            }
+        }
+
+        bkCommands[currentBufferingIndex]->EndRecord();
+        bkCommands[currentBufferingIndex]->Submit();
+    }
+
+    {
+        unsigned int currentPassInFlowIndex = 0;
+        for (auto& [pass, enable] : passflow) {
+            if (enable) {
+                pass->OnAfterPass(currentPassInFlowIndex);
+            }
+            currentPassInFlowIndex++;
+        }
+    }
 
     currentBufferingIndex = (currentBufferingIndex + 1) % multipleBufferingCount;
 }
-
-//inline unsigned int Passflow::GetMultipleBufferingCount() const
-//{
-//    return multipleBufferingCount;
-//}
-//
-//inline unsigned int Passflow::GetCurrentBufferingIndex() const
-//{
-//    return currentBufferingIndex;
-//}
 
 }
