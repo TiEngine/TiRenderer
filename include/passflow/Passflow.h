@@ -18,18 +18,18 @@ public:
     template <typename Pass, typename ...Args>
     Pass* CreateOrGetPass(const std::string& name, const Args& ...args)
     {
-        static_assert(std::is_base_of<BasePass, Pass>::value,
-            "Pass should inherit from BasePass!");
-        if (auto it = passes.find(name)) {
-            return CastPass(it->second);
+        static_assert(std::is_base_of<BasePass, Pass>(), "Pass should inherit from BasePass!");
+        if (auto it = passes.find(name); it != passes.end()) {
+            return CastPass<Pass>(it->second.get());
         }
-        return CastPass((passes[name] = std::make_unique<Pass>(*this, args...)).get());
+        return CastPass<Pass>((passes[name] = std::make_unique<Pass>(*this, args...)).get());
     }
 
     template <typename Pass>
     Pass* CastPass(BasePass* pass) const
     {
-        return down_cast<Pass*>(pass);
+        static_assert(std::is_base_of<BasePass, Pass>(), "Pass should inherit from BasePass!");
+        return down_cast<Pass*>(pass); // donot use dynamic_pointer_cast
     }
 
     unsigned int AddPassToFlow(BasePass* pass);

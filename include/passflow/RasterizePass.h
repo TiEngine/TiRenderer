@@ -26,14 +26,6 @@ protected:
     std::vector<std::shared_ptr<DrawItem>> stagingDrawItems;
     std::unordered_map<backend::CommandRecorder*, FrameResource> frameResources;
 
-    struct DescriptorHeaps {
-        backend::DescriptorHeap* shaderResource = nullptr;
-        backend::DescriptorHeap* imageSampler = nullptr;
-        backend::DescriptorHeap* renderTarget = nullptr;
-        backend::DescriptorHeap* depthStencil = nullptr;
-    };
-    std::vector<DescriptorHeaps> descriptorHeaps; //>>>?????
-
 private:
     backend::Device* device = nullptr; // Not owned!
 
@@ -45,6 +37,11 @@ private:
 
     std::map<ShaderStage, backend::Shader*> programShaders;
     std::map<uint8_t, backend::DescriptorGroup*> descriptorGroups;
+
+    std::vector<DynamicDescriptorManager> shaderResourceDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> imageSamplerDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> renderTargetDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> depthStencilDescriptorHeaps;
 };
 
 }

@@ -20,13 +20,13 @@ public:
 protected:
     explicit BasePass(Passflow& passflow);
 
-    struct InputProperties {
+    struct InputProperties final {
         backend::InputIndexAttribute::Attribute indexAttribute;
         std::vector<backend::InputVertexAttributes::Attribute> vertexAttributes;
         static backend::InputVertexAttributes::Attribute MakeDefaultPositionOnlyVertexAttribute();
     };
 
-    struct OutputProperties {
+    struct OutputProperties final {
         enum class OutputSlot : int8_t {
             DS = -1,
             C0 = 0,
@@ -38,7 +38,7 @@ protected:
             C6 = 6,
             C7 = 7
         };
-        struct OutputAttribute {
+        struct OutputAttribute final {
             BasicFormat imagePixelFormat;
             PassAction beginAction;
             PassAction endAction;
@@ -46,18 +46,18 @@ protected:
         std::map<OutputSlot, OutputAttribute> targets;
     };
 
-    struct ProgramProperties {
+    struct ProgramProperties final {
         std::map<ShaderStage, std::string> shaders;
     };
 
-    struct ShaderResourceProperties {
+    struct ShaderResourceProperties final {
         enum class ResourceSpace : uint8_t {
             PerObject = 0,
             PerScene  = 1,
             PerView   = 2,
             PerPass   = 3
         };
-        struct ResourceAttribute {
+        struct ResourceAttribute final {
             unsigned int baseBindingPoint;
             unsigned int bindingPointCount;
             ShaderStage resourceVisibility;
@@ -66,6 +66,23 @@ protected:
             ResourceState afterState;
         };
         std::map<ResourceSpace, std::vector<ResourceAttribute>> resources;
+    };
+
+    class DynamicDescriptorManager final {
+    public:
+        DynamicDescriptorManager(backend::Device* device);
+        ~DynamicDescriptorManager();
+
+        void ReallocateDescriptorHeap(unsigned int descriptorCount);
+        backend::Descriptor* AcquireDescriptor(unsigned int index);
+
+    private:
+        void FreeDescriptorHeap();
+
+        backend::Device* device = nullptr;
+
+        backend::DescriptorHeap* descriptorHeap = nullptr;
+        std::vector<backend::Descriptor*> descriptors;
     };
 
     Passflow& passflow;

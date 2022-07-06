@@ -1,4 +1,5 @@
 #include "passflow/RasterizePass.h"
+#include "passflow/Passflow.h"
 
 namespace ti::passflow {
 
@@ -21,6 +22,7 @@ void RasterizePass::InitializePipeline(backend::Device* device)
     this->device = device;
     pipelineState = device->CreatePipelineState();
     pipelineLayout = device->CreatePipelineLayout();
+    //shaderResourceDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
 }
 
 void RasterizePass::DeclareInput(const InputProperties& properties)
