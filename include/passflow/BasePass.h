@@ -77,6 +77,8 @@ protected:
         void ReallocateDescriptorHeap(unsigned int descriptorCount);
         backend::Descriptor* AcquireDescriptor(unsigned int index);
 
+        unsigned int GetDescriptorCapcity() const;
+
     private:
         void FreeDescriptorHeap();
 

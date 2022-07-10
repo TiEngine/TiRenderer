@@ -27,17 +27,28 @@ protected:
         unsigned int colorOutputCount = 0;
         unsigned int depthStencilOutputCount = 0;
         unsigned int reservedObjectsCount = 1;
+        unsigned int objectShaderResourcesCount = 0; // Update each object draw call.
+        unsigned int shaderResourcesCount = 0;       // Update each execute pass.
+        unsigned int imageSamplersCount = 0;         // Update each execute pass.
     } rasterizePipelineCounters;
 
-    std::vector<DynamicDescriptorManager> shaderResourceDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> imageSamplerDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> renderTargetDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> depthStencilDescriptorHeaps;
+    std::vector<std::unique_ptr<DynamicDescriptorManager>> shaderResourceDescriptorHeaps;
+    std::vector<std::unique_ptr<DynamicDescriptorManager>> imageSamplerDescriptorHeaps;
+    std::vector<std::unique_ptr<DynamicDescriptorManager>> renderTargetDescriptorHeaps;
+    std::vector<std::unique_ptr<DynamicDescriptorManager>> depthStencilDescriptorHeaps;
+    std::vector<std::unique_ptr<DynamicDescriptorManager>> delayCleanupDescriptorHeaps;
 
+    // Shader resource descriptor heap expansion operation (reservedObjectsCount changed will
+    // trigger it). This function should be called in the OnBeforePass function.
+    void CheckAndExpandShaderResourceDescriptorHeaps(unsigned int currentBufferingIndex);
+    // Because the GPU commands may not have been executed when the expansion operation occurs,
+    // so delay the cleanup of previous descriptor heap until it is determined that the commands
+    // in the GPU have been executed. This function should be called in the OnAfterPass function.
+    void ClearDelayCleanupDescriptorHeaps();
 
-    FrameResource::PerFrame stagingPerFrameResource;
+    //FrameResource::PerFrame stagingPerFrameResource;
     std::vector<std::shared_ptr<DrawItem>> stagingDrawItems;
-    std::unordered_map<backend::CommandRecorder*, FrameResource> frameResources;
+    //std::unordered_map<backend::CommandRecorder*, FrameResource> frameResources;
 
 private:
     backend::Device* device = nullptr; // Not owned!

@@ -52,6 +52,11 @@ backend::Descriptor* BasePass::DynamicDescriptorManager::AcquireDescriptor(unsig
     return descriptor;
 }
 
+unsigned int BasePass::DynamicDescriptorManager::GetDescriptorCapcity() const
+{
+    return descriptors.size();
+}
+
 void BasePass::DynamicDescriptorManager::FreeDescriptorHeap()
 {
     if (descriptorHeap) {
