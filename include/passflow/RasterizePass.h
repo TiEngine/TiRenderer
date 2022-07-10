@@ -22,6 +22,19 @@ protected:
     void BuildPipeline();
     void CleanPipeline();
 
+    struct RasterizePipelineCounters final {
+        bool allowMultiObjects = false;
+        unsigned int colorOutputCount = 0;
+        unsigned int depthStencilOutputCount = 0;
+        unsigned int reservedObjectsCount = 1;
+    } rasterizePipelineCounters;
+
+    std::vector<DynamicDescriptorManager> shaderResourceDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> imageSamplerDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> renderTargetDescriptorHeaps;
+    std::vector<DynamicDescriptorManager> depthStencilDescriptorHeaps;
+
+
     FrameResource::PerFrame stagingPerFrameResource;
     std::vector<std::shared_ptr<DrawItem>> stagingDrawItems;
     std::unordered_map<backend::CommandRecorder*, FrameResource> frameResources;
@@ -37,11 +50,6 @@ private:
 
     std::map<ShaderStage, backend::Shader*> programShaders;
     std::map<uint8_t, backend::DescriptorGroup*> descriptorGroups;
-
-    std::vector<DynamicDescriptorManager> shaderResourceDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> imageSamplerDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> renderTargetDescriptorHeaps;
-    std::vector<DynamicDescriptorManager> depthStencilDescriptorHeaps;
 };
 
 }

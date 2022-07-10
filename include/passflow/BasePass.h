@@ -21,9 +21,10 @@ protected:
     explicit BasePass(Passflow& passflow);
 
     struct InputProperties final {
-        backend::InputIndexAttribute::Attribute indexAttribute;
+        static backend::InputVertexAttributes::Attribute MakeDefaultPositionVertexAttribute();
         std::vector<backend::InputVertexAttributes::Attribute> vertexAttributes;
-        static backend::InputVertexAttributes::Attribute MakeDefaultPositionOnlyVertexAttribute();
+        backend::InputIndexAttribute::Attribute indexAttribute;
+        bool multipleObjects = true;
     };
 
     struct OutputProperties final {
@@ -70,7 +71,7 @@ protected:
 
     class DynamicDescriptorManager final {
     public:
-        DynamicDescriptorManager(backend::Device* device);
+        DynamicDescriptorManager(backend::Device* device, DescriptorType type);
         ~DynamicDescriptorManager();
 
         void ReallocateDescriptorHeap(unsigned int descriptorCount);
@@ -79,8 +80,8 @@ protected:
     private:
         void FreeDescriptorHeap();
 
-        backend::Device* device = nullptr;
-
+        DescriptorType heapType;
+        backend::Device* device; // Not owned!
         backend::DescriptorHeap* descriptorHeap = nullptr;
         std::vector<backend::Descriptor*> descriptors;
     };

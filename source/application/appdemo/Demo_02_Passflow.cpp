@@ -13,7 +13,7 @@ StructuredBuffer<float4> inColor : register(t0);
 struct VertexIn
 {
     float3 inLocalPos : POSITION;
-    uint vertexId     : SV_VertexID;
+    uint   vertexId   : SV_VertexID;
 };
 
 struct VertexOut
@@ -93,10 +93,11 @@ void DrawPass::OnPreparePass(ti::backend::Device* device)
     InitializePipeline(device);
 
     inputProperties = std::make_unique<InputProperties>(InputProperties{
+        { InputProperties::MakeDefaultPositionVertexAttribute() },
         { ti::IndexFormat::UINT16,
           ti::PrimitiveTopology::TRIANGLE_LIST,
           ti::IndexStripCutValue::UINT16_MAX_VALUE },
-        { InputProperties::MakeDefaultPositionOnlyVertexAttribute() }
+        true // Support to add multiple draw items, default is true.
     });
     DeclareInput(*inputProperties);
 

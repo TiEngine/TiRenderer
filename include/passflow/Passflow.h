@@ -7,7 +7,7 @@ namespace ti::passflow {
 
 class Passflow {
 public:
-    Passflow(std::string flowName, unsigned int multipleBuffering);
+    explicit Passflow(std::string name);
     virtual ~Passflow();
 
     inline unsigned int GetMultipleBufferingCount() const
@@ -29,7 +29,10 @@ public:
     Pass* CastPass(BasePass* pass) const
     {
         static_assert(std::is_base_of<BasePass, Pass>(), "Pass should inherit from BasePass!");
-        return down_cast<Pass*>(pass); // donot use dynamic_pointer_cast
+        // Do not use std::dynamic_pointer_cast because it is highly dependent on the compiler
+        // implementation, and different compiler implementations may have different behavior
+        // when use it across dynamic libraries, and it will cause cast work incorrectly.
+        return down_cast<Pass*>(pass);
     }
 
     unsigned int AddPassToFlow(BasePass* pass);

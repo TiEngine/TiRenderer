@@ -20,9 +20,15 @@ void RasterizePass::AddDrawItem(std::shared_ptr<DrawItem> item)
 void RasterizePass::InitializePipeline(backend::Device* device)
 {
     this->device = device;
+
     pipelineState = device->CreatePipelineState();
     pipelineLayout = device->CreatePipelineLayout();
-    //shaderResourceDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
+
+    unsigned int mbc = passflow.GetMultipleBufferingCount();
+    shaderResourceDescriptorHeaps.resize(mbc, { device, DescriptorType::ShaderResource });
+    imageSamplerDescriptorHeaps.resize(mbc, { device, DescriptorType::ImageSampler });
+    renderTargetDescriptorHeaps.resize(mbc, { device, DescriptorType::ShaderResource });
+    depthStencilDescriptorHeaps.resize(mbc, { device, DescriptorType::ShaderResource });
 }
 
 void RasterizePass::DeclareInput(const InputProperties& properties)
@@ -33,16 +39,29 @@ void RasterizePass::DeclareInput(const InputProperties& properties)
     }
     inputIndexAttribute = device->CreateInputIndexAttribute();
     inputIndexAttribute->SetAttribute(properties.indexAttribute);
+
+    rasterizePipelineCounters.allowMultiObjects = properties.multipleObjects;
+    if (rasterizePipelineCounters.allowMultiObjects) {
+        // The number of objects reserved initially.
+        // If the number of objects added by calling AddDrawItem exceeds it,
+        // it will be doubled when the reserved descriptor heap is not enough.
+        rasterizePipelineCounters.reservedObjectsCount = 16;
+    }
 }
 
 void RasterizePass::DeclareOutput(const OutputProperties& properties)
 {
+    rasterizePipelineCounters.colorOutputCount = 0;
+    rasterizePipelineCounters.depthStencilOutputCount = 0;
+
     for (const auto& [outputSlot, outputAttribute] : properties.targets) {
         if (outputSlot == OutputProperties::OutputSlot::DS) {
             pipelineState->SetDepthStencilOutputFormat(outputAttribute.imagePixelFormat);
+            rasterizePipelineCounters.depthStencilOutputCount = 1;
         } else { // Color: C0,...,C7
             pipelineState->SetColorOutputFormat(
                 common::EnumCast(outputSlot), outputAttribute.imagePixelFormat);
+            rasterizePipelineCounters.colorOutputCount++;
         }
     }
 }
@@ -90,6 +109,16 @@ void RasterizePass::BuildPipeline()
         pipelineState->SetShader(stage, shader);
     }
     pipelineState->BuildState();
+
+    for (unsigned int index = 0; index < passflow.GetMultipleBufferingCount(); index++) {
+        shaderResourceDescriptorHeaps[index].ReallocateDescriptorHeap();
+        imageSamplerDescriptorHeaps[index].ReallocateDescriptorHeap();
+        renderTargetDescriptorHeaps[index].ReallocateDescriptorHeap(
+            rasterizePipelineCounters.colorOutputCount);
+        depthStencilDescriptorHeaps[index].ReallocateDescriptorHeap(
+            rasterizePipelineCounters.depthStencilOutputCount);
+
+    }
 }
 
 void RasterizePass::CleanPipeline()
@@ -125,6 +154,9 @@ void RasterizePass::CleanPipeline()
 
         // Not owned the device, so set it to null simply.
         device = nullptr;
+
+        // Reset recorded counters variable to default values.
+        rasterizePipelineCounters = {};
     }
 }
 

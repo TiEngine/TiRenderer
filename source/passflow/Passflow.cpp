@@ -1,12 +1,12 @@
 #include "passflow/Passflow.h"
+#include "general/Configuration.h"
 #include "general/Backend.h"
 
 namespace ti::passflow {
 
-Passflow::Passflow(std::string flowName, unsigned int multipleBuffering)
+Passflow::Passflow(std::string name) : passflowName(name)
 {
-    passflowName = flowName;
-    multipleBufferingCount = multipleBuffering;
+    multipleBufferingCount = Configuration::GetReference().GetMultipleBufferingCount();
 
     commandRecorderNames.resize(multipleBufferingCount);
     for (unsigned int n = 0; n < multipleBufferingCount; n++) {
