@@ -1,6 +1,12 @@
 #include "passflow/RasterizePass.h"
 #include "passflow/Passflow.h"
 
+namespace {
+
+LOG_TAG(RasterizePass)
+
+}
+
 namespace ti::passflow {
 
 RasterizePass::RasterizePass(Passflow& passflow) : BasePass(passflow)
@@ -14,7 +20,12 @@ RasterizePass::~RasterizePass()
 
 void RasterizePass::AddDrawItem(std::shared_ptr<DrawItem> item)
 {
-    //stagingDrawItems.emplace_back(item);
+    stagingDrawItems.emplace_back(item);
+}
+
+void RasterizePass::AddDrawItems(std::vector<std::shared_ptr<DrawItem>> items)
+{
+    stagingDrawItems.insert(stagingDrawItems.end(), items.begin(), items.end()); // Append.
 }
 
 void RasterizePass::InitializePipeline(backend::Device* device)
@@ -23,12 +34,6 @@ void RasterizePass::InitializePipeline(backend::Device* device)
 
     pipelineState = device->CreatePipelineState();
     pipelineLayout = device->CreatePipelineLayout();
-
-    shaderResourceDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
-    imageSamplerDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
-    renderTargetDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
-    depthStencilDescriptorHeaps.resize(passflow.GetMultipleBufferingCount());
-    delayCleanupDescriptorHeaps.reserve(1);
 }
 
 void RasterizePass::DeclareInput(const InputProperties& properties)
@@ -43,8 +48,8 @@ void RasterizePass::DeclareInput(const InputProperties& properties)
     rasterizePipelineCounters.allowMultiObjects = properties.multipleObjects;
     if (rasterizePipelineCounters.allowMultiObjects) {
         // The number of objects reserved initially.
-        // If the number of objects added by calling AddDrawItem exceeds it,
-        // it will be doubled when the reserved descriptor heap is not enough.
+        // If the number of objects added by calling AddDrawItem exceeds it, it will
+        // be doubled when the reserved descriptors in descriptor heap is not enough.
         rasterizePipelineCounters.reservedObjectsCount = 16;
     }
 }
@@ -88,7 +93,9 @@ void RasterizePass::DeclareResource(const ShaderResourceProperties& properties)
                 if (attribute.resourceType == DescriptorType::ShaderResource) {
                     rasterizePipelineCounters.objectShaderResourcesCount++;
                 } else {
-                    // TODO: LOG_E
+                    TI_LOG_F(TAG, "PerObject only can have the resource type of ShaderResource.");
+                    // Note that continue will cause the descriptor group to be out of order,
+                    // but there is no way to solve it, so use LOG_F to print fatal error.
                     continue;
                 }
             } else {
@@ -97,8 +104,8 @@ void RasterizePass::DeclareResource(const ShaderResourceProperties& properties)
                 } else if (attribute.resourceType == DescriptorType::ImageSampler) {
                     rasterizePipelineCounters.imageSamplersCount++;
                 } else {
-                    // TODO: LOG_E
-                    continue;
+                    TI_LOG_F(TAG, "Resource only can be the type of ShaderResource/ImageSampler.");
+                    continue; // NB: Ditto.
                 }
             }
 
@@ -132,29 +139,13 @@ void RasterizePass::BuildPipeline()
     }
     pipelineState->BuildState();
 
-    for (unsigned int index = 0; index < passflow.GetMultipleBufferingCount(); index++) {
-        // Shader resources
-        shaderResourceDescriptorHeaps[index] = std::make_unique<
-            DynamicDescriptorManager>(device, DescriptorType::ShaderResource);
-        shaderResourceDescriptorHeaps[index]->ReallocateDescriptorHeap(
-            rasterizePipelineCounters.shaderResourcesCount +
-            rasterizePipelineCounters.reservedObjectsCount *
-            rasterizePipelineCounters.objectShaderResourcesCount);
-        // Image samplers
-        imageSamplerDescriptorHeaps[index] = std::make_unique<
-            DynamicDescriptorManager>(device, DescriptorType::ImageSampler);
-        imageSamplerDescriptorHeaps[index]->ReallocateDescriptorHeap(
-            rasterizePipelineCounters.imageSamplersCount);
-        // Color outputs
-        renderTargetDescriptorHeaps[index] = std::make_unique<
-            DynamicDescriptorManager>(device, DescriptorType::ColorOutput);
-        renderTargetDescriptorHeaps[index]->ReallocateDescriptorHeap(
-            rasterizePipelineCounters.colorOutputCount);
-        // Depth stencil output
-        depthStencilDescriptorHeaps[index] = std::make_unique<
-            DynamicDescriptorManager>(device, DescriptorType::DepthStencil);
-        depthStencilDescriptorHeaps[index]->ReallocateDescriptorHeap(
-            rasterizePipelineCounters.depthStencilOutputCount);
+    unsigned int mbc = passflow.GetMultipleBufferingCount();
+    shaderResourceDescriptorHeaps.resize(mbc, { device, DescriptorType::ShaderResource });
+    imageSamplerDescriptorHeaps.resize(mbc, { device, DescriptorType::ImageSampler });
+    renderTargetDescriptorHeaps.resize(mbc, { device, DescriptorType::ColorOutput });
+    depthStencilDescriptorHeaps.resize(mbc, { device, DescriptorType::DepthStencil });
+    for (unsigned int index = 0; index < mbc; index++) {
+        ReserveEnoughAllTypesDescriptors(index);
     }
 }
 
@@ -193,7 +184,6 @@ void RasterizePass::CleanPipeline()
         imageSamplerDescriptorHeaps.clear();
         renderTargetDescriptorHeaps.clear();
         depthStencilDescriptorHeaps.clear();
-        delayCleanupDescriptorHeaps.clear();
 
         // Not owned the device, so set it to null simply.
         device = nullptr;
@@ -203,23 +193,36 @@ void RasterizePass::CleanPipeline()
     }
 }
 
-void RasterizePass::CheckAndExpandShaderResourceDescriptorHeaps(unsigned int currentBufferingIndex)
+void RasterizePass::ReserveEnoughShaderResourceDescriptors(unsigned int bufferingIndex)
 {
-    if (stagingDrawItems.size() <
-        shaderResourceDescriptorHeaps[currentBufferingIndex]->GetDescriptorCapcity()) {
-        return;
+    do {
+        if (rasterizePipelineCounters.reservedObjectsCount >= stagingDrawItems.size()) {
+            break;
+        }
+    } while (rasterizePipelineCounters.reservedObjectsCount <<= 1);
+
+    if (rasterizePipelineCounters.reservedObjectsCount == 0) {
+        TI_LOG_F(TAG, "Draw items count overflow and no enough descriptors!");
     }
 
-    delayCleanupDescriptorHeaps.emplace_back(std::move(
-        shaderResourceDescriptorHeaps[currentBufferingIndex]));
-
-    //TODO
-
+    shaderResourceDescriptorHeaps[bufferingIndex].ReallocateDescriptorHeap(
+        rasterizePipelineCounters.shaderResourcesCount +
+        rasterizePipelineCounters.reservedObjectsCount *
+        rasterizePipelineCounters.objectShaderResourcesCount);
 }
 
-void RasterizePass::ClearDelayCleanupDescriptorHeaps()
+void RasterizePass::ReserveEnoughAllTypesDescriptors(unsigned int bufferingIndex)
 {
-    delayCleanupDescriptorHeaps.clear();
+    ReserveEnoughShaderResourceDescriptors(bufferingIndex);
+
+    imageSamplerDescriptorHeaps[bufferingIndex].ReallocateDescriptorHeap(
+        rasterizePipelineCounters.imageSamplersCount);
+
+    renderTargetDescriptorHeaps[bufferingIndex].ReallocateDescriptorHeap(
+        rasterizePipelineCounters.colorOutputCount);
+
+    depthStencilDescriptorHeaps[bufferingIndex].ReallocateDescriptorHeap(
+        rasterizePipelineCounters.depthStencilOutputCount);
 }
 
 }

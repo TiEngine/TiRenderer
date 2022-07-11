@@ -184,7 +184,7 @@ void DrawPass::OnEnablePass(bool enable)
 
 void Demo_02_Passflow::Begin()
 {
-    passflow = std::make_unique<ti::passflow::Passflow>("[Demo][Passflow]", 3);
+    passflow = std::make_unique<ti::passflow::Passflow>("[Demo][Passflow]");
     drawpass = passflow->CreateOrGetPass<DrawPass>("[Demo][DrawPass]");
     passflow->EnablePass(passflow->AddPassToFlow(drawpass), true);
 }

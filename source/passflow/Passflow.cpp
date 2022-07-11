@@ -72,35 +72,28 @@ bool Passflow::IsEnablePass(unsigned int index)
 
 void Passflow::ExecuteWorkflow()
 {
-    {
-        for (auto& [pass, enable] : passflow) {
-            if (enable) {
-                pass->OnBeforePass(currentBufferingIndex);
-            }
+    bkCommands[currentBufferingIndex]->Wait();
+
+    for (const auto& [pass, enable] : passflow) {
+        if (enable) {
+            pass->OnBeforePass(currentBufferingIndex);
         }
     }
 
-    {
-        bkCommands[currentBufferingIndex]->Wait();
-        bkCommands[currentBufferingIndex]->BeginRecord();
+    bkCommands[currentBufferingIndex]->BeginRecord();
 
-        for (auto& [pass, enable] : passflow) {
-            if (enable) {
-                pass->OnExecutePass(bkCommands[currentBufferingIndex]);
-            }
+    for (const auto& [pass, enable] : passflow) {
+        if (enable) {
+            pass->OnExecutePass(bkCommands[currentBufferingIndex]);
         }
-
-        bkCommands[currentBufferingIndex]->EndRecord();
-        bkCommands[currentBufferingIndex]->Submit();
     }
 
-    {
-        unsigned int currentPassInFlowIndex = 0;
-        for (auto& [pass, enable] : passflow) {
-            if (enable) {
-                pass->OnAfterPass(currentPassInFlowIndex);
-            }
-            currentPassInFlowIndex++;
+    bkCommands[currentBufferingIndex]->EndRecord();
+    bkCommands[currentBufferingIndex]->Submit();
+
+    for (unsigned int index = 0; index < passflow.size(); index++) {
+        if (passflow[index].second) {
+            passflow[index].first->OnAfterPass(index);
         }
     }
 

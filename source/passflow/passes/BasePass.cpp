@@ -37,7 +37,7 @@ void BasePass::DynamicDescriptorManager::ReallocateDescriptorHeap(unsigned int d
 backend::Descriptor* BasePass::DynamicDescriptorManager::AcquireDescriptor(unsigned int index)
 {
     if (!descriptorHeap || index >= descriptors.size()) {
-        return nullptr;
+        TI_LOG_RETN_W("DynamicDescriptorManager", "Acquire descriptor out of range!");
     }
     auto& descriptor = descriptors[index];
     if (!descriptor) {
@@ -50,11 +50,6 @@ backend::Descriptor* BasePass::DynamicDescriptorManager::AcquireDescriptor(unsig
         descriptor = descriptorHeap->AllocateDescriptor({ heapType });
     }
     return descriptor;
-}
-
-unsigned int BasePass::DynamicDescriptorManager::GetDescriptorCapcity() const
-{
-    return descriptors.size();
 }
 
 void BasePass::DynamicDescriptorManager::FreeDescriptorHeap()
