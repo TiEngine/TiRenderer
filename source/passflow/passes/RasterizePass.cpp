@@ -18,14 +18,19 @@ RasterizePass::~RasterizePass()
     CleanPipeline();
 }
 
-void RasterizePass::AddDrawItem(std::shared_ptr<DrawItem> item)
+unsigned int RasterizePass::AddDrawItem(std::weak_ptr<DrawItem> item)
 {
-    stagingDrawItems.emplace_back(item);
+    if (auto lockedItem = item.lock()) {
+        frameResources[StagingFrameResourceKey].drawItems.emplace_back(lockedItem);
+        return frameResources[StagingFrameResourceKey].drawItems.size() - 1;
+    }
+    TI_LOG_W(TAG, "Draw item has been released and cannot be added to pass for rendering.");
+    return std::numeric_limits<unsigned int>::max();
 }
 
-void RasterizePass::AddDrawItems(std::vector<std::shared_ptr<DrawItem>> items)
+bool RasterizePass::VerifyDrawItemIndex(unsigned int index)
 {
-    stagingDrawItems.insert(stagingDrawItems.end(), items.begin(), items.end()); // Append.
+    return (index < frameResources[StagingFrameResourceKey].drawItems.size()) ? true : false;
 }
 
 void RasterizePass::InitializePipeline(backend::Device* device)
@@ -196,7 +201,8 @@ void RasterizePass::CleanPipeline()
 void RasterizePass::ReserveEnoughShaderResourceDescriptors(unsigned int bufferingIndex)
 {
     do {
-        if (rasterizePipelineCounters.reservedObjectsCount >= stagingDrawItems.size()) {
+        if (rasterizePipelineCounters.reservedObjectsCount >=
+            frameResources[StagingFrameResourceKey].drawItems.size()) {
             break;
         }
     } while (rasterizePipelineCounters.reservedObjectsCount <<= 1);

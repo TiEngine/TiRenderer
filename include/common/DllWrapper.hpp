@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <Windows.h>
 #define LIB_LIBRARY          HMODULE
 #define LIB_PROCESS          FARPROC

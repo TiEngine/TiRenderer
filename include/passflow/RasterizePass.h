@@ -9,8 +9,27 @@ class RasterizePass : public BasePass {
 public:
     ~RasterizePass() override;
 
-    virtual void AddDrawItem(std::shared_ptr<DrawItem> item);
-    virtual void AddDrawItems(std::vector<std::shared_ptr<DrawItem>> items);
+    virtual unsigned int AddDrawItem(std::weak_ptr<DrawItem> item);
+    virtual bool VerifyDrawItemIndex(unsigned int index);
+
+    virtual void ImportResource(const std::string& name,
+        std::shared_ptr<BaseConstantBuffer> constantBuffer);
+    virtual void ImportResource(const std::string& name,
+        std::shared_ptr<BaseStructuredBuffer> structuredBuffer);
+    virtual void ImportResource(const std::string& name,
+        std::shared_ptr<BaseReadWriteBuffer> readWriteBuffer);
+
+    virtual void ImportResource(const std::string& name,
+        std::shared_ptr<Texture2D> texture2D);
+    virtual void ImportResource(const std::string& name,
+        std::shared_ptr<ReadWriteTexture2D> readWriteTexture2D);
+
+    virtual void ImportOutput(const std::string& name,
+        std::shared_ptr<ColorOutput> colorOutput);
+    virtual void ImportOutput(const std::string& name,
+        std::shared_ptr<DepthStencilOutput> depthStencilOutput);
+    virtual void ImportOutput(const std::string& name,
+        std::shared_ptr<DisplayPresentOutput> displayPresentOutput);
 
 protected:
     explicit RasterizePass(Passflow& passflow);
@@ -26,9 +45,11 @@ protected:
     void ReserveEnoughShaderResourceDescriptors(unsigned int bufferingIndex);
     void ReserveEnoughAllTypesDescriptors(unsigned int bufferingIndex);
 
-    //FrameResource::PerFrame stagingPerFrameResource;
-    std::vector<std::shared_ptr<DrawItem>> stagingDrawItems;
-    //std::unordered_map<backend::CommandRecorder*, FrameResource> frameResources;
+    void UpdateDrawItems(unsigned int bufferingIndex);
+    void UpdateFrameResources(unsigned int bufferingIndex);
+
+    Resources& AcquireFrameResource(unsigned int bufferingIndex);
+    Resources& AcquireStagingFrameResource();
 
 private:
     backend::Device* device = nullptr; // Not owned!
@@ -56,6 +77,8 @@ private:
         unsigned int shaderResourcesCount = 0;
         unsigned int imageSamplersCount = 0;
     } rasterizePipelineCounters;
+
+    std::vector<Resources> frameResources;
 };
 
 }

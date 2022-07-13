@@ -10,48 +10,48 @@ class BaseConstantBuffer {
 };
 
 template <typename T>
-class ConstantBuffer : public BaseConstantBuffer {
+class ConstantBuffer final : public BaseConstantBuffer {
 };
 
 class BaseStructuredBuffer {
 };
 
 template <typename T>
-class StructuredBuffer : public BaseStructuredBuffer {
+class StructuredBuffer final : public BaseStructuredBuffer {
 };
 
 class BaseReadWriteBuffer {
 };
 
 template <typename T>
-class ReadWriteBuffer : public BaseReadWriteBuffer {
+class ReadWriteBuffer final : public BaseReadWriteBuffer {
 };
 
 class BaseTexture {
 };
 
-class Texture2D : public BaseTexture {
+class Texture2D final : public BaseTexture {
 };
 
-class ReadWriteTexture2D : public BaseTexture {
+class ReadWriteTexture2D final : public BaseTexture {
 };
 
-class ColorOutput : public BaseTexture {
+class ColorOutput final : public BaseTexture {
 };
 
-class DepthStencilOutput : public BaseTexture {
+class DepthStencilOutput final : public BaseTexture {
 };
 
-class DisplayPresentOutput : public BaseTexture {
+class DisplayPresentOutput final {
 };
 
-class MeshBuffer {
+class MeshBuffer final {
 };
 
-class IndexBuffer {
+class IndexBuffer final {
 };
 
-struct DrawMesh {
+struct DrawMesh final {
     std::shared_ptr<MeshBuffer> vertexBuffer;
     std::shared_ptr<IndexBuffer> indexBuffer;
 
@@ -60,8 +60,8 @@ struct DrawMesh {
     std::shared_ptr<StructuredBuffer<float[2]>> coord1Buffer;
 };
 
-struct DrawMaterial {
-    struct MaterialProperties {
+struct DrawMaterial final {
+    struct MaterialProperties final {
         float albedoFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
         float metallicFactor = 0.5f;
         float roughnessFactor = 0.5f;
@@ -78,32 +78,35 @@ struct DrawMaterial {
     std::shared_ptr<Texture2D> emissiveTexture;
 };
 
-struct DrawItem {
+struct DrawItem final {
     std::shared_ptr<DrawMesh> drawMesh;
     std::shared_ptr<DrawMaterial> drawMaterial;
 };
 
-struct DispatchItem {
+struct DispatchItem final {
     unsigned int threads[3] = { 1u, 1u, 1u };
-    // TODO
 };
 
-struct FrameResource {
-    std::vector<std::shared_ptr<DrawItem>> drawItems;         // per draw call resource
-    std::vector<std::shared_ptr<DispatchItem>> dispatchItems; // per dispatch call resource
-
-    struct PerFrame {
+struct Resources final {
+    struct OneFrame final {
+        // Buffers
         std::unordered_map<std::string, std::shared_ptr<BaseConstantBuffer>> constantBuffers;
         std::unordered_map<std::string, std::shared_ptr<BaseStructuredBuffer>> structuredBuffers;
         std::unordered_map<std::string, std::shared_ptr<BaseReadWriteBuffer>> readWriteBuffers;
-
+        // Textures
         std::unordered_map<std::string, std::shared_ptr<Texture2D>> texture2Ds;
         std::unordered_map<std::string, std::shared_ptr<ReadWriteTexture2D>> readWriteTexture2Ds;
-
+        // Outputs
         std::unordered_map<std::string, std::shared_ptr<ColorOutput>> colorOutputs;
         std::unordered_map<std::string, std::shared_ptr<DepthStencilOutput>> depthStencilOutputs;
-        std::unordered_map<std::string, std::shared_ptr<DisplayPresentOutput>> presentOutputs;
-    } perFrameResource; // per pass frame resource
+        std::unordered_map<std::string, std::shared_ptr<DisplayPresentOutput>> swapchainOutputs;
+    } oneFrameResources;
+
+    std::vector<std::shared_ptr<DrawItem>> drawItems;
+    std::vector<std::shared_ptr<OneFrame>> drawItemsExtraResources;
+
+    std::vector<std::shared_ptr<DispatchItem>> dispatchItems;
+    std::vector<std::shared_ptr<OneFrame>> dispatchItemsExtraResources;
 };
 
 }
