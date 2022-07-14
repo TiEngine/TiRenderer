@@ -168,6 +168,8 @@ void DrawPass::OnPreparePass(ti::backend::Device* device)
 
 void DrawPass::OnBeforePass(unsigned int currentBufferingIndex)
 {
+    UpdateDrawItems(currentBufferingIndex);
+    UpdateFrameResources(currentBufferingIndex);
 }
 
 void DrawPass::OnExecutePass(ti::backend::CommandRecorder* recorder)

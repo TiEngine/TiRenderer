@@ -11,6 +11,7 @@ namespace ti::passflow {
 
 RasterizePass::RasterizePass(Passflow& passflow) : BasePass(passflow)
 {
+    ClearFrameResources();
 }
 
 RasterizePass::~RasterizePass()
@@ -21,8 +22,8 @@ RasterizePass::~RasterizePass()
 unsigned int RasterizePass::AddDrawItem(std::weak_ptr<DrawItem> item)
 {
     if (auto lockedItem = item.lock()) {
-        frameResources[StagingFrameResourceKey].drawItems.emplace_back(lockedItem);
-        return frameResources[StagingFrameResourceKey].drawItems.size() - 1;
+        AcquireStagingFrameResource().drawItems.emplace_back(lockedItem);
+        return static_cast<unsigned int>(AcquireStagingFrameResource().drawItems.size() - 1);
     }
     TI_LOG_W(TAG, "Draw item has been released and cannot be added to pass for rendering.");
     return std::numeric_limits<unsigned int>::max();
@@ -30,7 +31,55 @@ unsigned int RasterizePass::AddDrawItem(std::weak_ptr<DrawItem> item)
 
 bool RasterizePass::VerifyDrawItemIndex(unsigned int index)
 {
-    return (index < frameResources[StagingFrameResourceKey].drawItems.size()) ? true : false;
+    return (index < AcquireStagingFrameResource().drawItems.size()) ? true : false;
+}
+
+void RasterizePass::ImportResource(const std::string& name,
+    std::shared_ptr<BaseConstantBuffer> constantBuffer)
+{
+    AcquireStagingFrameResource().oneFrameResources.constantBuffers[name] = constantBuffer;
+}
+
+void RasterizePass::ImportResource(const std::string& name,
+    std::shared_ptr<BaseStructuredBuffer> structuredBuffer)
+{
+    AcquireStagingFrameResource().oneFrameResources.structuredBuffers[name] = structuredBuffer;
+}
+
+void RasterizePass::ImportResource(const std::string& name,
+    std::shared_ptr<BaseReadWriteBuffer> readWriteBuffer)
+{
+    AcquireStagingFrameResource().oneFrameResources.readWriteBuffers[name] = readWriteBuffer;
+}
+
+void RasterizePass::ImportResource(const std::string& name,
+    std::shared_ptr<Texture2D> texture2D)
+{
+    AcquireStagingFrameResource().oneFrameResources.texture2Ds[name] = texture2D;
+}
+
+void RasterizePass::ImportResource(const std::string& name,
+    std::shared_ptr<ReadWriteTexture2D> readWriteTexture2D)
+{
+    AcquireStagingFrameResource().oneFrameResources.readWriteTexture2Ds[name] = readWriteTexture2D;
+}
+
+void RasterizePass::ImportOutput(const std::string& name,
+    std::shared_ptr<ColorOutput> colorOutput)
+{
+    AcquireStagingFrameResource().oneFrameResources.colorOutputs[name] = colorOutput;
+}
+
+void RasterizePass::ImportOutput(const std::string& name,
+    std::shared_ptr<DepthStencilOutput> depthStencilOutput)
+{
+    AcquireStagingFrameResource().oneFrameResources.depthStencilOutputs[name] = depthStencilOutput;
+}
+
+void RasterizePass::ImportOutput(const std::string& name,
+    std::shared_ptr<DisplayPresentOutput> displayPresentOutput)
+{
+    AcquireStagingFrameResource().oneFrameResources.swapchainOutputs[name] = displayPresentOutput;
 }
 
 void RasterizePass::InitializePipeline(backend::Device* device)
@@ -202,7 +251,7 @@ void RasterizePass::ReserveEnoughShaderResourceDescriptors(unsigned int bufferin
 {
     do {
         if (rasterizePipelineCounters.reservedObjectsCount >=
-            frameResources[StagingFrameResourceKey].drawItems.size()) {
+            AcquireStagingFrameResource().drawItems.size()) {
             break;
         }
     } while (rasterizePipelineCounters.reservedObjectsCount <<= 1);
@@ -229,6 +278,75 @@ void RasterizePass::ReserveEnoughAllTypesDescriptors(unsigned int bufferingIndex
 
     depthStencilDescriptorHeaps[bufferingIndex].ReallocateDescriptorHeap(
         rasterizePipelineCounters.depthStencilOutputCount);
+}
+
+void RasterizePass::UpdateDrawItems(unsigned int bufferingIndex)
+{
+    Resources& updating = AcquireFrameResource(bufferingIndex);
+    Resources& staging = AcquireStagingFrameResource();
+
+    auto Updater = [](auto& updating, auto& staging) {
+        updating.clear();
+        updating.swap(staging);
+    };
+
+    Updater(updating.drawItems,
+             staging.drawItems);
+    Updater(updating.drawItemsExtraResources,
+             staging.drawItemsExtraResources);
+}
+
+void RasterizePass::UpdateFrameResources(unsigned int bufferingIndex)
+{
+    Resources& updating = AcquireFrameResource(bufferingIndex);
+    Resources& staging = AcquireStagingFrameResource();
+
+    auto Updater = [](auto& updating, auto& staging) {
+        for (const auto& [name, resource] : updating) {
+            staging[name] = resource;
+        }
+        updating.clear();
+    };
+
+    Updater(updating.oneFrameResources.constantBuffers,
+             staging.oneFrameResources.constantBuffers);
+    Updater(updating.oneFrameResources.structuredBuffers,
+             staging.oneFrameResources.structuredBuffers);
+    Updater(updating.oneFrameResources.readWriteBuffers,
+             staging.oneFrameResources.readWriteBuffers);
+
+    Updater(updating.oneFrameResources.texture2Ds,
+             staging.oneFrameResources.texture2Ds);
+    Updater(updating.oneFrameResources.readWriteTexture2Ds,
+             staging.oneFrameResources.readWriteTexture2Ds);
+
+    Updater(updating.oneFrameResources.colorOutputs,
+             staging.oneFrameResources.colorOutputs);
+    Updater(updating.oneFrameResources.depthStencilOutputs,
+             staging.oneFrameResources.depthStencilOutputs);
+    Updater(updating.oneFrameResources.swapchainOutputs,
+             staging.oneFrameResources.swapchainOutputs);
+}
+
+Resources& RasterizePass::AcquireFrameResource(unsigned int bufferingIndex)
+{
+    if (bufferingIndex < (frameResources.size() - 1)) {
+        return frameResources[bufferingIndex];
+    }
+    TI_LOG_F(TAG, "Acquire frame resource out of range! "
+                  "Return the staging frame resource instead.");
+    return frameResources.back();
+}
+
+Resources& RasterizePass::AcquireStagingFrameResource()
+{
+    return frameResources.back();
+}
+
+void RasterizePass::ClearFrameResources()
+{
+    frameResources.clear(); // Clear all contents first.
+    frameResources.resize(static_cast<size_t>(passflow.GetMultipleBufferingCount()) + 1);
 }
 
 }

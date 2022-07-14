@@ -31,6 +31,8 @@ public:
     virtual void ImportOutput(const std::string& name,
         std::shared_ptr<DisplayPresentOutput> displayPresentOutput);
 
+    void ClearFrameResources();
+
 protected:
     explicit RasterizePass(Passflow& passflow);
 
