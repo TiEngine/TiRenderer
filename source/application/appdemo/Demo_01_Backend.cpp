@@ -123,7 +123,7 @@ void Demo_01_Backend::Begin()
         auto staging = device->CreateInputVertex({
             static_cast<unsigned int>(vertices.size()), sizeof(VertexData),
             ti::TransferDirection::CPU_TO_GPU });
-        auto transfer = device->CreateCommandRecorder({ "Transfer", ti::CommandType::Transfer});
+        auto transfer = device->CreateCommandRecorder({ "Transfer", ti::CommandType::Transfer });
         transfer->BeginRecord();
         transfer->RcBarrier(inputVertex,
             ti::ResourceState::GENERAL_READ,

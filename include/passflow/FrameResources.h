@@ -1,63 +1,18 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include "backend/BackendContext.h"
+#include "Resources.h"
 
 namespace ti::passflow {
 
-class BaseConstantBuffer {
-};
-
-template <typename T>
-class ConstantBuffer final : public BaseConstantBuffer {
-};
-
-class BaseStructuredBuffer {
-};
-
-template <typename T>
-class StructuredBuffer final : public BaseStructuredBuffer {
-};
-
-class BaseReadWriteBuffer {
-};
-
-template <typename T>
-class ReadWriteBuffer final : public BaseReadWriteBuffer {
-};
-
-class BaseTexture {
-};
-
-class Texture2D final : public BaseTexture {
-};
-
-class ReadWriteTexture2D final : public BaseTexture {
-};
-
-class ColorOutput final : public BaseTexture {
-};
-
-class DepthStencilOutput final : public BaseTexture {
-};
-
-class DisplayPresentOutput final {
-};
-
-class MeshBuffer final {
-};
-
-class IndexBuffer final {
-};
-
 struct DrawMesh final {
-    std::shared_ptr<MeshBuffer> vertexBuffer;
     std::shared_ptr<IndexBuffer> indexBuffer;
+    std::shared_ptr<MeshBuffer> positionBuffer;
 
     std::shared_ptr<StructuredBuffer<float[3]>> normalBuffer;
     std::shared_ptr<StructuredBuffer<float[2]>> coord0Buffer;
     std::shared_ptr<StructuredBuffer<float[2]>> coord1Buffer;
+
+    std::shared_ptr<ReadWriteBuffer<float[3]>> positionResolvedBuffer;
 };
 
 struct DrawMaterial final {
@@ -84,10 +39,12 @@ struct DrawItem final {
 };
 
 struct DispatchItem final {
-    unsigned int threads[3] = { 1u, 1u, 1u };
+    // The total number of threads in a group needs to be a multiple of 64.
+    unsigned int threadsEachGroup[3] = { 64u, 1u, 1u };
+    unsigned int threadGroups[3] = { 1u, 1u, 1u };
 };
 
-struct Resources final {
+struct FrameResources final {
     struct OneFrame final {
         // Buffers
         std::unordered_map<std::string, std::shared_ptr<BaseConstantBuffer>> constantBuffers;

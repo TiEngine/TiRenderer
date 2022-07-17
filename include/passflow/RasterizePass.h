@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BasePass.h"
-#include "FrameResource.h"
+#include "FrameResources.h"
 
 namespace ti::passflow {
 
@@ -50,8 +50,8 @@ protected:
     void UpdateDrawItems(unsigned int bufferingIndex);
     void UpdateFrameResources(unsigned int bufferingIndex);
 
-    Resources& AcquireFrameResource(unsigned int bufferingIndex);
-    Resources& AcquireStagingFrameResource();
+    FrameResources& AcquireFrameResource(unsigned int bufferingIndex);
+    FrameResources& AcquireStagingFrameResource();
 
 private:
     backend::Device* device = nullptr; // Not owned!
@@ -80,7 +80,7 @@ private:
         unsigned int imageSamplersCount = 0;
     } rasterizePipelineCounters;
 
-    std::vector<Resources> frameResources;
+    std::vector<FrameResources> frameResources;
 };
 
 }

@@ -282,8 +282,8 @@ void RasterizePass::ReserveEnoughAllTypesDescriptors(unsigned int bufferingIndex
 
 void RasterizePass::UpdateDrawItems(unsigned int bufferingIndex)
 {
-    Resources& updating = AcquireFrameResource(bufferingIndex);
-    Resources& staging = AcquireStagingFrameResource();
+    FrameResources& updating = AcquireFrameResource(bufferingIndex);
+    FrameResources& staging = AcquireStagingFrameResource();
 
     auto Updater = [](auto& updating, auto& staging) {
         updating.clear();
@@ -298,8 +298,8 @@ void RasterizePass::UpdateDrawItems(unsigned int bufferingIndex)
 
 void RasterizePass::UpdateFrameResources(unsigned int bufferingIndex)
 {
-    Resources& updating = AcquireFrameResource(bufferingIndex);
-    Resources& staging = AcquireStagingFrameResource();
+    FrameResources& updating = AcquireFrameResource(bufferingIndex);
+    FrameResources& staging = AcquireStagingFrameResource();
 
     auto Updater = [](auto& updating, auto& staging) {
         for (const auto& [name, resource] : updating) {
@@ -328,7 +328,7 @@ void RasterizePass::UpdateFrameResources(unsigned int bufferingIndex)
              staging.oneFrameResources.swapchainOutputs);
 }
 
-Resources& RasterizePass::AcquireFrameResource(unsigned int bufferingIndex)
+FrameResources& RasterizePass::AcquireFrameResource(unsigned int bufferingIndex)
 {
     if (bufferingIndex < (frameResources.size() - 1)) {
         return frameResources[bufferingIndex];
@@ -338,7 +338,7 @@ Resources& RasterizePass::AcquireFrameResource(unsigned int bufferingIndex)
     return frameResources.back();
 }
 
-Resources& RasterizePass::AcquireStagingFrameResource()
+FrameResources& RasterizePass::AcquireStagingFrameResource()
 {
     return frameResources.back();
 }
