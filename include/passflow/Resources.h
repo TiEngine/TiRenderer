@@ -2,8 +2,8 @@
 
 #include <memory>
 #include <unordered_map>
+#include "math/Math.hpp"
 #include "backend/BackendContext.h"
-//#include "common/Logger.hpp"
 
 namespace ti::passflow {
 
@@ -24,7 +24,7 @@ public:
     void UploadConstantBuffer();
 
     virtual void* RawPtr() = 0;
-    backend::ResourceBuffer* Buffer();
+    backend::ResourceBuffer* RawInst();
 
 protected:
     void SetupGPU();
@@ -45,7 +45,7 @@ protected:
     void* RawPtr() override;
 
 private:
-    T constantBufferValue;
+    std::unique_ptr<T> constantBufferValue;
 };
 
 class BaseStructuredBuffer {
@@ -87,25 +87,34 @@ class IndexBuffer final : public BaseIndexBuffer {
 };
 
 class BaseVertexBuffer : public DeviceHolder {
-
-};
-
-class MeshBuffer final : public DeviceHolder {
 public:
-    MeshBuffer() = default;
-    ~MeshBuffer() override;
+    BaseVertexBuffer() = default;
+    ~BaseVertexBuffer() override;
 
-    void UploadMeshBuffer();
+    void UploadVertexBuffer();
 
-    backend::InputVertex* Buffer();
+    virtual void* RawPtr() = 0;
+    backend::InputVertex* RawInst();
 
 protected:
     void SetupGPU();
-    virtual void* RawPtr();
+
+    backend::InputVertex::Description description{ 0u, 0u }; // Memory type: GPU_ONLY
+    backend::InputVertex* vertex = nullptr;
+};
+
+class MeshBuffer final : public BaseVertexBuffer {
+public:
+    void SetupMeshBuffer(unsigned int verticesCount);
+
+    std::vector<math::XMFLOAT3>& AcquireMeshBuffer();
+    void UpdateMeshBuffer(const std::vector<math::XMFLOAT3>& value, unsigned int offset);
+
+protected:
+    void* RawPtr() override;
 
 private:
-    backend::InputVertex::Description description{ 0u, 0u };
-    backend::InputVertex* vertex = nullptr;
+    std::vector<math::XMFLOAT3> meshPositionBuffer;
 };
 
 }
