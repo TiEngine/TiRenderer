@@ -5,7 +5,7 @@
 namespace ti::passflow {
 
 struct DrawMesh final {
-    std::shared_ptr<IndexBuffer> indexBuffer;
+    std::shared_ptr<IndexBuffer32> indexBuffer;
     std::shared_ptr<MeshBuffer> positionBuffer;
 
     std::shared_ptr<StructuredBuffer<float[3]>> normalBuffer;

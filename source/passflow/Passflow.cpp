@@ -73,6 +73,7 @@ bool Passflow::IsEnablePass(unsigned int index)
 void Passflow::ExecuteWorkflow()
 {
     bkCommands[currentBufferingIndex]->Wait();
+    bkDevice->ReleaseCommandRecordersMemory(commandRecorderNames[currentBufferingIndex]);
 
     for (const auto& [pass, enable] : passflow) {
         if (enable) {

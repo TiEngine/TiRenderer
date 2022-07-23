@@ -2,9 +2,7 @@
 
 namespace ti::passflow {
 
-inline void SafeCopyMemory(
-    void* dstAddr, unsigned int dstSize,
-    void* srcAddr, unsigned int srcSize)
+inline void SafeCopyMemory(void* dstAddr, size_t dstSize, const void* srcAddr, size_t srcSize)
 {
     #ifdef _MSC_VER
     memcpy_s(dstAddr, dstSize, srcAddr, srcSize);
@@ -16,7 +14,7 @@ inline void SafeCopyMemory(
 //////////////////////////////////////////////////
 // ConstantBuffer<T>
 
-template<typename T>
+template <typename T>
 inline void ConstantBuffer<T>::SetupConstantBuffer()
 {
     constantBufferValue = std::make_unique<T>();
@@ -24,49 +22,90 @@ inline void ConstantBuffer<T>::SetupConstantBuffer()
     SetupGPU();
 }
 
-template<typename T>
+template <typename T>
 inline T& ConstantBuffer<T>::AcquireConstantBuffer()
 {
-    return constantBufferValue;
+    return *constantBufferValue;
 }
 
-template<typename T>
+template <typename T>
 inline void ConstantBuffer<T>::UpdateConstantBuffer(const T& value)
 {
-    constantBufferValue = value;
+    SafeCopyMemory(constantBufferValue.get(), sizeof(T), &value, sizeof(value));
 }
 
-template<typename T>
+template <typename T>
 inline void* ConstantBuffer<T>::RawPtr()
 {
-    return &constantBufferValue;
+    return constantBufferValue.get();
 }
 
 //////////////////////////////////////////////////
-// MeshBuffer
+// IndexBuffer
 
-inline void MeshBuffer::SetupMeshBuffer(unsigned int verticesCount)
+template <typename T>
+inline void IndexBuffer<T>::SetupIndexBuffer(unsigned int indicesCount)
 {
-    meshPositionBuffer.resize(verticesCount);
-    description.verticesCount = verticesCount;
-    description.attributesByteSize = sizeof(math::XMFLOAT3);
+    indexBufferValue.resize(indicesCount);
+    description.indicesCount = indicesCount;
+    description.indexByteSize = sizeof(T);
     SetupGPU();
 }
 
-inline std::vector<math::XMFLOAT3>& MeshBuffer::AcquireMeshBuffer()
+template <typename T>
+inline std::vector<T>& IndexBuffer<T>::AcquireIndexBuffer()
 {
-    return meshPositionBuffer;
+    return indexBufferValue;
 }
 
-inline void MeshBuffer::UpdateMeshBuffer(
-    const std::vector<math::XMFLOAT3>& value, unsigned int offset)
+template <typename T>
+void IndexBuffer<T>::UpdateIndexBuffer(const std::vector<T>& value, unsigned int offset)
 {
-    //TODO
+    SafeCopyMemory(
+        indexBufferValue.data() + offset,
+        (indexBufferValue.size() - offset) * sizeof(T),
+        value.data(),
+        value.size() * sizeof(T));
 }
 
-inline void* MeshBuffer::RawPtr()
+template <typename T>
+inline void* IndexBuffer<T>::RawPtr()
 {
-    return meshPositionBuffer.data();
+    return indexBufferValue.data();
+}
+
+//////////////////////////////////////////////////
+// VertexBuffer
+
+template <typename T>
+inline void VertexBuffer<T>::SetupVertexBuffer(unsigned int verticesCount)
+{
+    vertexBufferValue.resize(verticesCount);
+    description.verticesCount = verticesCount;
+    description.attributesByteSize = sizeof(T);
+    SetupGPU();
+}
+
+template <typename T>
+inline std::vector<T>& VertexBuffer<T>::AcquireVertexBuffer()
+{
+    return vertexBufferValue;
+}
+
+template <typename T>
+inline void VertexBuffer<T>::UpdateVertexBuffer(const std::vector<T>& value, unsigned int offset)
+{
+    SafeCopyMemory(
+        vertexBufferValue.data() + offset,
+        (vertexBufferValue.size() - offset) * sizeof(T),
+        value.data(),
+        value.size() * sizeof(T));
+}
+
+template <typename T>
+inline void* VertexBuffer<T>::RawPtr()
+{
+    return vertexBufferValue.data();
 }
 
 }

@@ -3,7 +3,7 @@
 
 namespace {
 
-LOG_TAG(RasterizePass)
+LOG_TAG(passflow::RasterizePass)
 
 }
 
